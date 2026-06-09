@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /pillar-radha.html
+Allow: /pillar-veronica.html
+Allow: /pillar-tour.html
+Allow: /booking.html
+Allow: /gallery.html
+Allow: /media-kit.html
+Allow: /assets/
+
+# Block sensitive areas
+Disallow: /admin/
+Disallow: /uploads/
+Disallow: /api/
+Disallow: /node_modules/
+Disallow: /*.ps1$
+Disallow: /*.sh$
+Disallow: /*.bat$
+Disallow: /404.html
+Disallow: /instagram_mockups.html
+Disallow: /pillars_brochure.html
+
+# Crawl delay for bots
+Crawl-delay: 10
+
+Sitemap: https://antigravitystudio.in/sitemap.xml

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery — Anti Gravity Studio | Wedding, Corporate & Trail Photos & Videos</title>
+<meta name="description" content="Browse the full portfolio of Anti Gravity Studio — cinematic sangeet reels, corporate event coverage, heritage trail films, and wedding photography across India.">
+<meta name="keywords" content="anti gravity studio gallery, sangeet video, wedding photographer India, corporate event anchor, trail curator videos, Radha Dudega portfolio">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://antigravitystudio.in/gallery.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Gallery — Anti Gravity Studio">
+<meta property="og:description" content="Full portfolio: sangeet, weddings, corporate events, heritage trails.">
+<meta property="og:url" content="https://antigravitystudio.in/gallery.html">
+<meta property="og:image" content="/assets/media/gallery/photos/IMG20260509214426.jpg">
+<meta property="og:site_name" content="Anti Gravity Studio">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Gallery — Anti Gravity Studio">
+<meta name="twitter:image" content="/assets/media/gallery/photos/IMG20260509214426.jpg">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  "name": "Anti Gravity Studio Gallery",
+  "description": "Full portfolio of wedding, corporate, and trail experiences",
+  "url": "https://antigravitystudio.in/gallery.html",
+  "author": { "@type": "Person", "name": "Radha Dudega" }
+}</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06060c;--surface:#0f0f1a;--border:rgba(255,255,255,0.07);
+  --cyan:#00f9ff;--magenta:#ff00aa;--gold:#ffd700;--green:#22c55e;
+  --text:#f0f0f8;--muted:#6b6b8a;
+  --radha:#e8871e;--corp:#00f9ff;--tour:#22c55e;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* ── NAV ── */
+.site-nav{position:sticky;top:0;z-index:100;background:rgba(6,6,12,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px}
+.nav-logo{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--text);text-decoration:none}
+.nav-logo span{color:var(--radha)}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.88rem;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+
+/* ── HERO ── */
+.gallery-hero{padding:4rem 2rem 2.5rem;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,249,255,0.06),transparent)}
+.hero-label{font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:0.75rem}
+.hero-title{font-family:'Cinzel',serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:700;background:linear-gradient(135deg,#fff 30%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.75rem}
+.hero-sub{color:var(--muted);font-size:0.95rem;max-width:500px;margin:0 auto 2rem}
+
+/* ── FILTER TABS ── */
+.filters{display:flex;justify-content:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:2.5rem;padding:0 1rem}
+.filter-btn{padding:0.5rem 1.25rem;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:0.85rem;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.filter-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
+.filter-btn.active{color:#000;font-weight:600}
+.filter-btn[data-filter="all"].active{background:linear-gradient(135deg,var(--cyan),var(--magenta));border-color:transparent}
+.filter-btn[data-filter="radha"].active{background:var(--radha);border-color:var(--radha);color:#000}
+.filter-btn[data-filter="corporate"].active{background:var(--corp);border-color:var(--corp);color:#000}
+.filter-btn[data-filter="tour"].active{background:var(--tour);border-color:var(--tour);color:#000}
+.filter-btn[data-filter="video"].active{background:var(--magenta);border-color:var(--magenta);color:#fff}
+
+/* ── STATS BAR ── */
+.stats-bar{display:flex;justify-content:center;gap:2.5rem;margin-bottom:2.5rem;font-size:0.82rem;color:var(--muted)}
+.stats-bar span{display:flex;align-items:center;gap:0.4rem}
+.stats-bar strong{color:var(--text)}
+
+/* ── GALLERY GRID ── */
+.gallery-container{max-width:1400px;margin:0 auto;padding:0 1.5rem 4rem}
+.gallery-grid{columns:3;column-gap:0.75rem}
+@media(max-width:900px){.gallery-grid{columns:2}}
+@media(max-width:500px){.gallery-grid{columns:1}}
+
+.gallery-item{break-inside:avoid;margin-bottom:0.75rem;position:relative;border-radius:10px;overflow:hidden;cursor:pointer;background:var(--surface)}
+.gallery-item img,.gallery-item video{width:100%;display:block;transition:transform 0.4s ease}
+.gallery-item:hover img,.gallery-item:hover video{transform:scale(1.03)}
+.gallery-item video{max-height:300px;object-fit:cover}
+
+.gallery-item .overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 50%);opacity:0;transition:opacity 0.3s;display:flex;flex-direction:column;justify-content:flex-end;padding:1rem}
+.gallery-item:hover .overlay{opacity:1}
+.overlay-name{font-size:0.8rem;font-weight:600;color:#fff;margin-bottom:0.3rem}
+.overlay-pillar{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;padding:0.2rem 0.6rem;border-radius:999px;display:inline-block;width:fit-content}
+.overlay-pillar.radha{background:rgba(232,135,30,0.8);color:#000}
+.overlay-pillar.corporate{background:rgba(0,249,255,0.8);color:#000}
+.overlay-pillar.tour{background:rgba(34,197,94,0.8);color:#000}
+
+.video-badge{position:absolute;top:0.5rem;right:0.5rem;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:0.2rem 0.5rem;font-size:0.7rem;color:#fff;display:flex;align-items:center;gap:0.3rem;backdrop-filter:blur(4px)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
+.empty-state h3{font-size:1.1rem;margin-bottom:0.5rem;color:var(--text)}
+.loading-dots{display:inline-flex;gap:0.4rem;margin-top:1rem}
+.loading-dots span{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:blink 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* ── LIGHTBOX ── */
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;backdrop-filter:blur(10px)}
+.lightbox.open{opacity:1;pointer-events:all}
+.lightbox-inner{position:relative;max-width:90vw;max-height:90vh;display:flex;align-items:center;justify-content:center}
+.lightbox-inner img,.lightbox-inner video{max-width:90vw;max-height:85vh;border-radius:8px;object-fit:contain}
+.lightbox-close{position:fixed;top:1.5rem;right:1.5rem;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:background .2s}
+.lightbox-close:hover{background:rgba(255,255,255,0.2)}
+.lightbox-nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:background .2s}
+.lightbox-nav:hover{background:rgba(255,255,255,0.2)}
+.lightbox-prev{left:1rem}
+.lightbox-next{right:1rem}
+.lightbox-meta{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);text-align:center;color:rgba(255,255,255,0.7);font-size:0.82rem}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--muted);font-size:0.82rem}
+footer a{color:var(--cyan);text-decoration:none}
+
+/* ── WHATSAPP ── */
+.wa-float{position:fixed;bottom:1.5rem;right:1.5rem;z-index:90;width:52px;height:52px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.4);transition:transform .2s}
+.wa-float:hover{transform:scale(1.1)}
+.wa-float svg{width:28px;height:28px;fill:#fff}
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+  // Load real Measurement ID from server config
+  fetch('/api/ga4-id').then(r=>r.json()).then(d=>{
+    if(d.id && d.id !== 'G-XXXXXXXXXX') {
+      gtag('config', d.id);
+      document.querySelectorAll('script[src*="gtag/js"]').forEach(s=>{
+        s.src = s.src.replace('G-XXXXXXXXXX', d.id);
+      });
+    }
+  }).catch(()=>{});
+</script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="index.html" class="nav-logo">RD<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="pillar-radha.html">💍 Radha</a></li>
+    <li><a href="pillar-veronica.html">🏢 Veronica</a></li>
+    <li><a href="pillar-tour.html">🌍 Trail</a></li>
+    <li><a href="gallery.html" class="active">Gallery</a></li>
+    <li><a href="media-kit.html">Media Kit</a></li>
+    <li><a href="#enquire-footer">Book Now</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="gallery-hero">
+  <div class="hero-label">Portfolio</div>
+  <h1 class="hero-title">Three Worlds. Every Frame.</h1>
+  <p class="hero-sub">Sangeet celebrations, corporate stages, and mountain trails — captured with cinema-grade intention.</p>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">✦ All</button>
+  <button class="filter-btn" data-filter="radha">💍 Radha — Weddings & Sangeet</button>
+  <button class="filter-btn" data-filter="corporate">🏢 Veronica — Corporate</button>
+  <button class="filter-btn" data-filter="tour">🌍 Trail Curator</button>
+  <button class="filter-btn" data-filter="video">🎬 Videos Only</button>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="statsBar">
+  <span><strong id="totalCount">—</strong> Total Items</span>
+  <span><strong id="radhaCount">—</strong> 💍 Radha</span>
+  <span><strong id="corpCount">—</strong> 🏢 Corporate</span>
+  <span><strong id="tourCount">—</strong> 🌍 Trail</span>
+  <span><strong id="videoCount">—</strong> Videos</span>
+</div>
+
+<!-- GALLERY -->
+<div class="gallery-container">
+  <div class="gallery-grid" id="galleryGrid">
+    <div class="empty-state" id="loadingState">
+      <h3>Loading Gallery…</h3>
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-inner" id="lightboxInner"></div>
+  <button class="lightbox-close" onclick="closeLightboxBtn()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1,event)">‹</button>
+  <button class="lightbox-nav lightbox-next" onclick="navLightbox(1,event)">›</button>
+  <div class="lightbox-meta" id="lightboxMeta"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Anti Gravity Studio · <a href="https://wa.me/918192901515">+91 81929 01515</a> · <a href="media-kit.html">Media Kit</a></p>
+</footer>
+
+<!-- WHATSAPP -->
+<a href="https://wa.me/918192901515" class="wa-float" target="_blank" rel="noopener">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script>
+// ── LOCAL FALLBACK MEDIA (when server not running) ─────────────────────────────
+const LOCAL_MEDIA = [
+  // Photos
+  { id:'l1',  url:'/assets/media/gallery/photos/FB_IMG_1682789867128.jpg',    pillar:'radha',     type:'image', name:'Sangeet Celebration' },
+  { id:'l2',  url:'/assets/media/gallery/photos/FB_IMG_1682789911317.jpg',    pillar:'radha',     type:'image', name:'Family Gathering' },
+  { id:'l3',  url:'/assets/media/gallery/photos/IMG-20230316-WA0027.jpg',     pillar:'radha',     type:'image', name:'Wedding Moment' },
+  { id:'l4',  url:'/assets/media/gallery/photos/IMG-20230322-WA0069.jpg',     pillar:'radha',     type:'image', name:'Sangeet Night' },
+  { id:'l5',  url:'/assets/media/gallery/photos/IMG20221010221048.jpg',       pillar:'radha',     type:'image', name:'Celebration 2022' },
+  { id:'l6',  url:'/assets/media/gallery/photos/IMG20240814151201.jpg',       pillar:'radha',     type:'image', name:'Event 2024' },
+  { id:'l7',  url:'/assets/media/gallery/photos/IMG20241117132110_BURST001.jpg', pillar:'radha',  type:'image', name:'Performance' },
+  { id:'l8',  url:'/assets/media/gallery/photos/IMG20241121115211.jpg',       pillar:'corporate', type:'image', name:'Corporate Event' },
+  { id:'l9',  url:'/assets/media/gallery/photos/IMG20241121115246.jpg',       pillar:'corporate', type:'image', name:'Corporate Moment' },
+  { id:'l10', url:'/assets/media/gallery/photos/IMG20260509214426.jpg',       pillar:'radha',     type:'image', name:'Show 2026' },
+  { id:'l11', url:'/assets/media/gallery/photos/IMG20260509214438.jpg',       pillar:'radha',     type:'image', name:'Stage 2026' },
+  { id:'l12', url:'/assets/media/gallery/photos/IMG_20180310_175841.jpg',     pillar:'corporate', type:'image', name:'Corporate 2018' },
+  { id:'l13', url:'/assets/media/gallery/photos/IMG_20181018_165753.jpg',     pillar:'tour',      type:'image', name:'Trail 2018' },
+  { id:'l14', url:'/assets/media/gallery/photos/IMG_20230717_115452_381.webp',pillar:'radha',     type:'image', name:'Summer Event' },
+  { id:'l15', url:'/assets/media/gallery/photos/Screenshot_2023-07-17-10-31-15-61.jpg', pillar:'radha', type:'image', name:'Performance 2023' },
+  { id:'l16', url:'/assets/media/gallery/photos/original_1f2f93a5-9873-4a6a-8b3d-5b42c183ab0c_IMG-20230624-WA0052.jpg', pillar:'radha', type:'image', name:'Sangeet Jun 2023' },
+  // Videos
+  { id:'v1',  url:'/assets/media/gallery/videos/VID20230422112652.mp4',       pillar:'radha',     type:'video', name:'Sangeet Performance Apr 2023' },
+  { id:'v2',  url:'/assets/media/gallery/videos/VID20230425153446.mp4',       pillar:'radha',     type:'video', name:'Sangeet Reel Apr 2023' },
+  { id:'v3',  url:'/assets/media/gallery/videos/VID20211120123205.mp4',       pillar:'radha',     type:'video', name:'Family Event Nov 2021' },
+  { id:'v4',  url:'/assets/media/gallery/videos/VID20211120163552.mp4',       pillar:'radha',     type:'video', name:'Evening Celebration 2021' },
+  { id:'v5',  url:'/assets/media/gallery/videos/VID20210920120648.mp4',       pillar:'corporate', type:'video', name:'Corporate Reel 2021' },
+  { id:'v6',  url:'/assets/media/gallery/videos/video_20180310_175726.mp4',   pillar:'corporate', type:'video', name:'Corporate Event 2018' },
+  { id:'v7',  url:'/assets/media/gallery/videos/VID20210816112816.mp4',       pillar:'radha',     type:'video', name:'Performance Aug 2021' },
+  { id:'v8',  url:'/assets/media/gallery/videos/VID20260204184449.mp4',       pillar:'corporate', type:'video', name:'Corporate Show 2026' },
+  { id:'v9',  url:'/assets/media/gallery/videos/VID20260506161939.mp4',       pillar:'radha',     type:'video', name:'Stage Performance May 2026' },
+  { id:'v10', url:'/assets/media/gallery/videos/VID20250220124953.mp4',       pillar:'tour',      type:'video', name:'Trail Walk Feb 2025' },
+  { id:'v11', url:'/assets/media/gallery/videos/VID20230623205127.mp4',       pillar:'radha',     type:'video', name:'Evening Show Jun 2023' },
+  { id:'v12', url:'/assets/media/gallery/videos/VID20250220123919~2.mp4',     pillar:'tour',      type:'video', name:'Heritage Trail Feb 2025' },
+  // Radha gallery
+  ...Array.from({length:23},(_,i)=>({
+    id:'r'+(i+1), url:`/assets/media/gallery/radha/radha-${String(i+1).padStart(2,'0')}.jpg`,
+    pillar:'radha', type:'image', name:`Radha Gallery ${i+1}`
+  }))
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────────
+let allItems = [];
+let filtered = [];
+let currentFilter = 'all';
+let lightboxIndex = 0;
+
+// ── LOAD GALLERY ──────────────────────────────────────────────────────────────
+async function loadGallery() {
+  try {
+    const r = await fetch('/api/media/public', { signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      const data = await r.json();
+      // Merge API data with local, dedup by URL
+      const seen = new Set(data.map(d => d.url));
+      const extra = LOCAL_MEDIA.filter(m => !seen.has(m.url));
+      allItems = [...data, ...extra];
+    } else throw new Error('non-ok');
+  } catch {
+    allItems = LOCAL_MEDIA;
+  }
+  applyFilter(currentFilter);
+  updateStats();
+}
+
+function applyFilter(f) {
+  currentFilter = f;
+  if (f === 'all') filtered = [...allItems];
+  else if (f === 'video') filtered = allItems.filter(m => m.type === 'video');
+  else filtered = allItems.filter(m => m.pillar === f);
+  renderGrid();
+}
+
+function updateStats() {
+  document.getElementById('totalCount').textContent = allItems.length;
+  document.getElementById('radhaCount').textContent = allItems.filter(m=>m.pillar==='radha').length;
+  document.getElementById('corpCount').textContent  = allItems.filter(m=>m.pillar==='corporate').length;
+  document.getElementById('tourCount').textContent  = allItems.filter(m=>m.pillar==='tour').length;
+  document.getElementById('videoCount').textContent = allItems.filter(m=>m.type==='video').length;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderGrid() {
+  const grid = document.getElementById('galleryGrid');
+  document.getElementById('loadingState')?.remove();
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state"><h3>No items in this category yet</h3><p>Upload via the admin panel to populate this section.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((item, i) => {
+    const pillarLabel = item.pillar === 'radha' ? 'Radha 💍' : item.pillar === 'corporate' ? 'Corporate 🏢' : 'Trail 🌍';
+    if (item.type === 'video') {
+      return `<div class="gallery-item" data-index="${i}" onclick="openLightbox(${i})">
+        <video src="${item.url}" muted loop playsinline preload="none"
+          onmouseenter="this.play()" onmouseleave="this.pause();this.currentTime=0"></video>
+        <div class="overlay">
+          <div class="overlay-name">${item.name || 'Video'}</div>
+          <span class="overlay-pillar ${item.pillar}">${pillarLabel}</span>
+        </div>
+        <div class="video-badge">▶ Video</div>
+      </div>`;
+    }
+    return `<div class="gallery-item" data-index="${i}" onclick="openLightbox(${i})">
+      <img src="${item.url}" alt="${item.name || 'Gallery'}" loading="lazy" onerror="this.closest('.gallery-item').style.display='none'">
+      <div class="overlay">
+        <div class="overlay-name">${item.name || 'Photo'}</div>
+        <span class="overlay-pillar ${item.pillar}">${pillarLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── LIGHTBOX ──────────────────────────────────────────────────────────────────
+function openLightbox(i) {
+  lightboxIndex = i;
+  showLightboxItem();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function showLightboxItem() {
+  const item = filtered[lightboxIndex];
+  const inner = document.getElementById('lightboxInner');
+  const meta  = document.getElementById('lightboxMeta');
+  if (item.type === 'video') {
+    inner.innerHTML = `<video src="${item.url}" controls autoplay muted loop playsinline></video>`;
+  } else {
+    inner.innerHTML = `<img src="${item.url}" alt="${item.name}">`;
+  }
+  meta.textContent = `${item.name || ''} · ${lightboxIndex+1} / ${filtered.length}`;
+}
+function closeLightboxBtn() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('lightboxInner').innerHTML = '';
+}
+function closeLightbox(e) { if (e.target === document.getElementById('lightbox')) closeLightboxBtn(); }
+function navLightbox(dir, e) {
+  e.stopPropagation();
+  lightboxIndex = (lightboxIndex + dir + filtered.length) % filtered.length;
+  showLightboxItem();
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightboxBtn();
+  if (e.key === 'ArrowLeft') navLightbox(-1, {stopPropagation:()=>{}});
+  if (e.key === 'ArrowRight') navLightbox(1, {stopPropagation:()=>{}});
+});
+
+// ── FILTER BUTTONS ────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter(btn.dataset.filter);
+  });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+// Read ?filter= URL param so pillar pages can deep-link into a filtered view
+// e.g. gallery.html?filter=corporate  or  gallery.html?filter=tour
+(function applyUrlFilter() {
+  const param = new URLSearchParams(location.search).get('filter');
+  if (param) {
+    currentFilter = param;
+    // Activate the matching button visually
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === param);
+    });
+  }
+})();
+
+loadGallery();
+</script>
+</body>
+</html>

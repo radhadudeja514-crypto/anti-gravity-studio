@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Media Studio — Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--c:#00f9ff;--m:#ff00aa;--p:#9d4edd;--g:#ffd700;--bg:#0a0a0f;--s:rgba(255,255,255,.03)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100vh;overflow-x:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(10,10,15,.95);position:sticky;top:0;z-index:100}
+.brand{font-family:'Orbitron',sans-serif;color:var(--c);font-size:1rem;letter-spacing:2px}
+.nav-links{display:flex;gap:.5rem}
+.nav-link{padding:.45rem 1rem;border-radius:999px;font-size:.75rem;color:rgba(255,255,255,.5);text-decoration:none;border:1px solid transparent;transition:.2s}
+.nav-link:hover,.nav-link.active{color:#fff;border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.05)}
+.voice-btn{display:flex;align-items:center;gap:.5rem;padding:.45rem 1rem;border:1px solid rgba(0,249,255,.3);border-radius:999px;background:transparent;color:var(--c);font-size:.75rem;cursor:pointer;transition:.2s}
+.voice-btn:hover,.voice-btn.active{background:rgba(0,249,255,.1)}
+.voice-btn.active{animation:pulse-border 1s infinite}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,249,255,.4)}50%{box-shadow:0 0 0 6px rgba(0,249,255,0)}}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 61px)}
+.sidebar{border-right:1px solid rgba(255,255,255,.07);padding:1.5rem 1rem;display:flex;flex-direction:column;gap:.25rem}
+.sidebar-label{font-size:.65rem;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;padding:.5rem .75rem;margin-top:.5rem}
+.side-btn{display:flex;align-items:center;gap:.75rem;padding:.65rem .75rem;border-radius:.75rem;background:transparent;border:none;color:rgba(255,255,255,.55);font-size:.82rem;cursor:pointer;transition:.2s;width:100%;text-align:left}
+.side-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.side-btn.active{background:rgba(0,249,255,.08);color:var(--c)}
+.side-btn .icon{font-size:1rem;width:20px;text-align:center}
+.main{padding:2rem;overflow-y:auto}
+.panel{display:none}.panel.active{display:block}
+.panel-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;color:var(--c);margin-bottom:.25rem}
+.panel-sub{color:rgba(255,255,255,.35);font-size:.78rem;margin-bottom:1.5rem}
+
+/* Upload zone */
+.upload-zone{border:2px dashed rgba(0,249,255,.25);border-radius:1.5rem;padding:3rem;text-align:center;cursor:pointer;transition:.3s;background:var(--s);margin-bottom:1.5rem}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--c);background:rgba(0,249,255,.04)}
+.upload-zone .uz-icon{font-size:3rem;margin-bottom:.75rem}
+.upload-zone p{color:rgba(255,255,255,.45);font-size:.88rem}
+.upload-zone strong{color:var(--c)}
+.hidden-input{display:none}
+.progress-wrap{height:4px;background:rgba(255,255,255,.06);border-radius:99px;margin-bottom:1.5rem;overflow:hidden;display:none}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--c),var(--p));width:0;transition:width .3s;border-radius:99px}
+.status{font-size:.82rem;color:rgba(255,255,255,.4);margin-bottom:1rem;min-height:1.2rem}
+
+/* Grid */
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+.m-card{background:var(--s);border:1px solid rgba(255,255,255,.07);border-radius:1rem;overflow:hidden;transition:.25s;position:relative}
+.m-card:hover{border-color:rgba(0,249,255,.2);transform:translateY(-3px)}
+.m-card img,.m-card video{width:100%;height:140px;object-fit:cover;display:block}
+.m-card-body{padding:.75rem}
+.m-card-name{font-size:.72rem;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.4rem}
+.m-card-actions{display:flex;gap:.3rem}
+.m-action{flex:1;padding:.3rem;border:1px solid rgba(255,255,255,.1);border-radius:.5rem;background:transparent;color:rgba(255,255,255,.5);font-size:.65rem;cursor:pointer;transition:.2s}
+.m-action:hover{background:rgba(0,249,255,.1);color:var(--c);border-color:rgba(0,249,255,.25)}
+
+/* Video editor */
+.video-editor{background:var(--s);border:1px solid rgba(255,255,255,.08);border-radius:1.5rem;padding:1.5rem;margin-bottom:1.5rem}
+.video-editor video{width:100%;max-height:360px;border-radius:.75rem;background:#000;margin-bottom:1rem}
+.timeline{background:rgba(0,0,0,.4);border-radius:.5rem;height:48px;position:relative;margin-bottom:1rem;overflow:hidden;cursor:pointer}
+.tl-bar{position:absolute;top:0;height:100%;background:linear-gradient(90deg,rgba(0,249,255,.15),rgba(157,78,221,.15));border:1px solid rgba(0,249,255,.3)}
+.tl-handle{position:absolute;top:0;height:100%;width:6px;background:var(--c);cursor:ew-resize;border-radius:3px}
+.tl-playhead{position:absolute;top:0;height:100%;width:2px;background:var(--m);pointer-events:none}
+.editor-controls{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+.time-input{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:rgba(255,255,255,.6)}
+.time-input input{width:70px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:.4rem;color:#fff;padding:.3rem .5rem;font-size:.8rem;text-align:center}
+
+/* Image enhancer */
+.enhancer-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.canvas-wrap{position:relative;background:#000;border-radius:1rem;overflow:hidden;aspect-ratio:4/3}
+.canvas-wrap canvas,.canvas-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+.canvas-label{position:absolute;top:.5rem;left:.5rem;background:rgba(0,0,0,.7);padding:.2rem .6rem;border-radius:999px;font-size:.65rem;letter-spacing:1px;color:rgba(255,255,255,.7)}
+.enhance-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin-bottom:1rem}
+.slider-group{background:var(--s);border:1px solid rgba(255,255,255,.07);border-radius:.75rem;padding:.75rem}
+.slider-label{display:flex;justify-content:space-between;font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:.4rem}
+.slider-label span:last-child{color:var(--c)}
+input[type=range]{width:100%;accent-color:var(--c)}
+.ai-presets{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:999px;font-size:.78rem;cursor:pointer;border:none;transition:.2s;font-family:'Inter',sans-serif}
+.btn-primary{background:linear-gradient(90deg,var(--c),var(--p));color:#000;font-weight:700}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.btn-danger{background:rgba(255,60,60,.12);border:1px solid rgba(255,60,60,.25);color:#ff8080}
+.btn-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+
+/* Stats strip */
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-box{background:var(--s);border:1px solid rgba(255,255,255,.07);border-radius:1rem;padding:1rem;text-align:center}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:.2rem}
+.stat-lbl{font-size:.65rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px}
+
+/* Voice overlay */
+.voice-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:flex-end;justify-content:center;padding:2rem}
+.voice-overlay.open{display:flex}
+.voice-card{background:#111118;border:1px solid rgba(0,249,255,.3);border-radius:1.5rem;padding:1.5rem 2rem;min-width:340px;text-align:center}
+.voice-wave{display:flex;align-items:center;justify-content:center;gap:4px;height:40px;margin:1rem 0}
+.voice-wave span{display:inline-block;width:4px;border-radius:2px;background:var(--c);animation:wave 1s ease-in-out infinite}
+.voice-wave span:nth-child(2){animation-delay:.1s}
+.voice-wave span:nth-child(3){animation-delay:.2s}
+.voice-wave span:nth-child(4){animation-delay:.3s}
+.voice-wave span:nth-child(5){animation-delay:.4s}
+@keyframes wave{0%,100%{height:8px}50%{height:32px}}
+.voice-transcript{font-size:1rem;color:#fff;min-height:1.4rem;margin-bottom:.75rem}
+.voice-hint{font-size:.72rem;color:rgba(255,255,255,.35)}
+
+/* Empty state */
+.empty{text-align:center;padding:3rem;color:rgba(255,255,255,.2)}
+.empty .ei{font-size:3rem;margin-bottom:.75rem}
+
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .enhancer-grid{grid-template-columns:1fr}
+  .stats-strip{grid-template-columns:1fr 1fr}
+}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="brand">⚙ AI MEDIA STUDIO</div>
+  <nav class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="bifurcate.html" class="nav-link">Bifurcator</a>
+    <a href="leads.html" class="nav-link">Leads</a>
+  </nav>
+  <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" aria-label="Voice commands" aria-pressed="false">
+    🎙 VOICE
+  </button>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-label">Studio Tools</div>
+    <button class="side-btn active" onclick="showPanel('upload',this)"><span class="icon">☁</span> Smart Upload</button>
+    <button class="side-btn" onclick="showPanel('videos',this)"><span class="icon">✂</span> Video Editor</button>
+    <button class="side-btn" onclick="showPanel('enhance',this)"><span class="icon">✨</span> Image Enhancer</button>
+    <button class="side-btn" onclick="showPanel('bifurcate',this)"><span class="icon">🤖</span> AI Bifurcator</button>
+    <button class="side-btn" onclick="showPanel('logs',this)"><span class="icon">📜</span> God Logs</button>
+    <div class="sidebar-label">Gallery</div>
+    <button class="side-btn" onclick="showPanel('gallery',this)"><span class="icon">🖼</span> All Media</button>
+    <button class="side-btn" onclick="showPanel('gallery-radha',this)"><span class="icon">💍</span> Radha</button>
+    <button class="side-btn" onclick="showPanel('gallery-veronica',this)"><span class="icon">🏢</span> Veronica</button>
+    <button class="side-btn" onclick="showPanel('gallery-tour',this)"><span class="icon">🌍</span> Tour</button>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Stats -->
+    <div class="stats-strip">
+      <div class="stat-box"><div class="stat-num" id="s-total" style="color:var(--p)">0</div><div class="stat-lbl">Total Media</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-radha" style="color:var(--m)">0</div><div class="stat-lbl">💍 Radha Media</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-veronica" style="color:var(--c)">0</div><div class="stat-lbl">🏢 Veronica Media</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-tour" style="color:var(--g)">0</div><div class="stat-lbl">🌍 Tour Media</div></div>
+    </div>
+    
+    <div class="stats-strip" id="analytics-strip">
+      <div class="stat-box"><div class="stat-num" id="a-leads" style="color:#fff">0</div><div class="stat-lbl">Total Leads</div></div>
+      <div class="stat-box"><div class="stat-num" id="a-radha" style="color:var(--m)">0</div><div class="stat-lbl">💍 Radha Leads</div></div>
+      <div class="stat-box"><div class="stat-num" id="a-veronica" style="color:var(--c)">0</div><div class="stat-lbl">🏢 Veronica Leads</div></div>
+      <div class="stat-box"><div class="stat-num" id="a-rev" style="color:#00ff9d">₹0</div><div class="stat-lbl">Est. Revenue Potential</div></div>
+    </div>
+
+    <!-- God Insights (Auto-Generated) -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(0,249,255,0.2);border-radius:1rem;padding:1.5rem;margin-bottom:2rem;">
+      <div style="font-family:'Orbitron',sans-serif;color:var(--c);font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+        <span style="animation:pulse-glow 2s infinite">🧠</span> GOD INSIGHTS
+      </div>
+      <div id="ai-insights-list" style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.85rem;color:rgba(255,255,255,0.8);">
+        <div>Loading intelligence...</div>
+      </div>
+    </div>
+
+    <!-- Upload Panel -->
+    <div class="panel active" id="panel-upload">
+      <div class="panel-title">☁ SMART UPLOAD</div>
+      <div class="panel-sub">Drag & drop • Multi-file • Auto-pillar detection • 500MB per file</div>
+
+      <div class="upload-zone" id="upload-zone"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event,'upload')"
+           onclick="document.getElementById('up-input').click()">
+        <input class="hidden-input" type="file" id="up-input" multiple accept="image/*,video/*" onchange="handleUploadFiles(this.files)">
+        <div class="uz-icon">☁</div>
+        <p>Drop <strong>images or videos</strong> here — or click to browse</p>
+        <p style="font-size:.72rem;margin-top:.4rem;color:rgba(255,255,255,.25)">Supports JPG · PNG · WEBP · MP4 · MOV · up to 500MB each</p>
+      </div>
+      <div class="progress-wrap" id="up-progress"><div class="progress-bar" id="up-bar"></div></div>
+      <div class="status" id="up-status">Ready to upload.</div>
+
+      <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <label style="font-size:.78rem;color:rgba(255,255,255,.5)">Assign to pillar:</label>
+        <select id="up-pillar" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:.5rem;color:#fff;padding:.3rem .7rem;font-size:.78rem">
+          <option value="auto">🤖 Auto-detect</option>
+          <option value="radha">💍 Radha</option>
+          <option value="corporate">🏢 Veronica</option>
+          <option value="tour">🌍 Tour</option>
+          <option value="main">📌 Main</option>
+        </select>
+        <select id="up-type" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:.5rem;color:#fff;padding:.3rem .7rem;font-size:.78rem">
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </select>
+      </div>
+      <div class="media-grid" id="up-preview"></div>
+    </div>
+
+    <!-- Video Editor Panel -->
+    <div class="panel" id="panel-videos">
+      <div class="panel-title">✂ VIDEO EDITOR</div>
+      <div class="panel-sub">Trim · Cut · Preview — server-side FFmpeg processing</div>
+
+      <div class="upload-zone"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event,'video')"
+           onclick="document.getElementById('vid-input').click()">
+        <input class="hidden-input" type="file" id="vid-input" accept="video/*" onchange="loadVideoEditor(this.files[0])">
+        <div class="uz-icon">🎬</div>
+        <p>Drop a <strong>video file</strong> to edit</p>
+      </div>
+
+      <div class="video-editor" id="video-editor" style="display:none">
+        <video id="edit-video" controls preload="metadata"></video>
+        <div class="timeline" id="timeline" onclick="seekVideo(event)">
+          <div class="tl-bar" id="tl-bar"></div>
+          <div class="tl-handle" id="tl-start" style="left:0" onmousedown="startDrag('start',event)"></div>
+          <div class="tl-handle" id="tl-end" style="right:0;background:var(--m)" onmousedown="startDrag('end',event)"></div>
+          <div class="tl-playhead" id="tl-playhead"></div>
+        </div>
+        <div class="editor-controls">
+          <div class="time-input">Start: <input type="number" id="trim-start" value="0" step="0.1" min="0" onchange="updateTrimFromInput()">s</div>
+          <div class="time-input">End: <input type="number" id="trim-end" value="0" step="0.1" min="0" onchange="updateTrimFromInput()">s</div>
+          <button class="btn btn-ghost" onclick="previewTrim()">▶ Preview</button>
+          <button class="btn btn-primary" id="trim-btn" onclick="applyTrim()">✂ Trim &amp; Save</button>
+        </div>
+        <div class="status" id="trim-status"></div>
+      </div>
+
+      <div class="media-grid" id="video-gallery"></div>
+    </div>
+
+    <!-- Image Enhancer Panel -->
+    <div class="panel" id="panel-enhance">
+      <div class="panel-title">✨ IMAGE ENHANCER</div>
+      <div class="panel-sub">AI-powered brightness · contrast · saturation · sharpness · HDR · BG removal</div>
+
+      <div class="upload-zone"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event,'enhance')"
+           onclick="document.getElementById('enh-input').click()">
+        <input class="hidden-input" type="file" id="enh-input" accept="image/*" onchange="loadEnhancer(this.files[0])">
+        <div class="uz-icon">✨</div>
+        <p>Drop an <strong>image</strong> to enhance</p>
+      </div>
+
+      <div id="enhancer-ui" style="display:none">
+        <div class="enhancer-grid">
+          <div class="canvas-wrap">
+            <img id="orig-img" alt="Original"><div class="canvas-label">ORIGINAL</div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="enh-canvas"></canvas><div class="canvas-label">ENHANCED</div>
+          </div>
+        </div>
+
+        <div class="ai-presets">
+          <button class="btn btn-ghost" onclick="applyPreset('auto')">🤖 Auto</button>
+          <button class="btn btn-ghost" onclick="applyPreset('vivid')">🌈 Vivid</button>
+          <button class="btn btn-ghost" onclick="applyPreset('cinematic')">🎬 Cinematic</button>
+          <button class="btn btn-ghost" onclick="applyPreset('portrait')">🤳 Portrait</button>
+          <button class="btn btn-ghost" onclick="applyPreset('hdr')">💥 HDR</button>
+          <button class="btn btn-ghost" onclick="applyPreset('bw')">⬛ B&amp;W</button>
+          <button class="btn btn-ghost" onclick="applyPreset('warm')">🌅 Warm</button>
+          <button class="btn btn-ghost" onclick="applyPreset('cool')">🧊 Cool</button>
+        </div>
+
+        <div class="enhance-controls" id="enhance-sliders"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="downloadEnhanced()">⬇ Download</button>
+          <button class="btn btn-ghost" onclick="saveEnhancedToGallery()">💾 Save to Gallery</button>
+          <button class="btn btn-ghost" onclick="resetEnhancer()">↺ Reset</button>
+        </div>
+        <div class="status" id="enh-status"></div>
+      </div>
+    </div>
+
+    <!-- AI Bifurcator panel (iframe) -->
+    <div class="panel" id="panel-bifurcate">
+      <div class="panel-title">🤖 AI BIFURCATOR</div>
+      <div class="panel-sub">Auto-classify photos into Radha · Veronica · Tour using TensorFlow.js</div>
+      <a href="bifurcate.html" target="_blank" class="btn btn-primary" style="margin-bottom:1rem">Open Full Bifurcator →</a>
+    </div>
+
+    <!-- God Logs Panel -->
+    <div class="panel" id="panel-logs">
+      <div class="panel-title">📜 GOD LOGS</div>
+      <div class="panel-sub">Real-time terminal output of the server and Media God background tasks.</div>
+      <button class="btn btn-primary" onclick="fetchLogs()" style="margin-bottom:1rem">↻ Refresh Logs</button>
+      <div id="logs-container" style="display:flex;flex-direction:column;gap:1.5rem"></div>
+    </div>
+
+    <!-- Gallery panels -->
+    <div class="panel" id="panel-gallery">
+      <div class="panel-title">🖼 ALL MEDIA</div>
+      <div class="panel-sub">Everything uploaded to the server</div>
+      <div class="status" id="gallery-status">Loading…</div>
+      <div class="media-grid" id="gallery-grid"></div>
+    </div>
+    <div class="panel" id="panel-gallery-radha">
+      <div class="panel-title">💍 RADHA GALLERY</div><div class="panel-sub">Weddings · Bhakti · Family · Sangeet</div>
+      <div class="media-grid" id="gallery-grid-radha"></div>
+    </div>
+    <div class="panel" id="panel-gallery-veronica">
+      <div class="panel-title">🏢 VERONICA GALLERY</div><div class="panel-sub">Corporate · Pool Parties · Cocktail Events</div>
+      <div class="media-grid" id="gallery-grid-veronica"></div>
+    </div>
+    <div class="panel" id="panel-gallery-tour">
+      <div class="panel-title">🌍 TOUR GALLERY</div><div class="panel-sub">Travel · Concerts · Events</div>
+      <div class="media-grid" id="gallery-grid-tour"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Voice Overlay -->
+<div class="voice-overlay" id="voice-overlay">
+  <div class="voice-card">
+    <div style="font-family:'Orbitron',sans-serif;color:var(--c);margin-bottom:.25rem">🎙 VOICE COMMAND</div>
+    <div style="font-size:.72rem;color:rgba(255,255,255,.35);margin-bottom:.5rem">Say a command below</div>
+    <div class="voice-wave">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="voice-transcript" id="voice-transcript">Listening…</div>
+    <div class="voice-hint">"upload video" · "enhance image" · "open bifurcator" · "show radha gallery"</div>
+    <button class="btn btn-ghost" style="margin-top:1rem;width:100%" onclick="toggleVoice()">✕ Close</button>
+  </div>
+</div>
+
+<script src="studio.js"></script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

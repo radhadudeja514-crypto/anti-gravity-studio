@@ -1,0 +1,75 @@
+{
+  "photos": [
+    "/assets/media/gallery/radha/radha-01.jpg",
+    "/assets/media/gallery/radha/radha-02.jpg",
+    "/assets/media/gallery/radha/radha-03.jpg",
+    "/assets/media/gallery/radha/radha-04.jpg",
+    "/assets/media/gallery/radha/radha-05.jpg",
+    "/assets/media/gallery/radha/radha-06.jpg",
+    "/assets/media/gallery/radha/radha-07.jpg",
+    "/assets/media/gallery/radha/radha-08.jpg",
+    "/assets/media/gallery/radha/radha-09.jpg",
+    "/assets/media/gallery/radha/radha-10.jpg",
+    "/assets/media/gallery/radha/radha-11.jpg",
+    "/assets/media/gallery/radha/radha-12.jpg",
+    "/assets/media/gallery/radha/radha-13.jpg",
+    "/assets/media/gallery/radha/radha-14.jpg",
+    "/assets/media/gallery/radha/radha-15.jpg",
+    "/assets/media/gallery/radha/radha-16.jpg",
+    "/assets/media/gallery/radha/radha-17.jpg",
+    "/assets/media/gallery/radha/radha-18.jpg",
+    "/assets/media/gallery/radha/radha-19.jpg",
+    "/assets/media/gallery/radha/radha-20.jpg",
+    "/assets/media/gallery/radha/radha-21.jpg",
+    "/assets/media/gallery/radha/radha-22.jpg",
+    "/assets/media/gallery/radha/radha-23.jpg",
+    "/assets/media/gallery/radha/radha-24.jpg",
+    "/assets/media/gallery/radha/radha-25.jpg",
+    "/assets/media/gallery/radha/radha-26.jpg",
+    "/assets/media/gallery/radha/radha-27.jpg"
+  ],
+  "albums": [
+    {
+      "title": "Radha Gallery",
+      "photos": [
+        "/assets/media/gallery/radha/radha-01.jpg",
+        "/assets/media/gallery/radha/radha-02.jpg",
+        "/assets/media/gallery/radha/radha-03.jpg",
+        "/assets/media/gallery/radha/radha-04.jpg",
+        "/assets/media/gallery/radha/radha-05.jpg",
+        "/assets/media/gallery/radha/radha-06.jpg",
+        "/assets/media/gallery/radha/radha-07.jpg",
+        "/assets/media/gallery/radha/radha-08.jpg",
+        "/assets/media/gallery/radha/radha-09.jpg"
+      ]
+    },
+    {
+      "title": "Events",
+      "photos": [
+        "/assets/media/gallery/radha/radha-10.jpg",
+        "/assets/media/gallery/radha/radha-11.jpg",
+        "/assets/media/gallery/radha/radha-12.jpg",
+        "/assets/media/gallery/radha/radha-13.jpg",
+        "/assets/media/gallery/radha/radha-14.jpg",
+        "/assets/media/gallery/radha/radha-15.jpg",
+        "/assets/media/gallery/radha/radha-16.jpg",
+        "/assets/media/gallery/radha/radha-17.jpg",
+        "/assets/media/gallery/radha/radha-18.jpg"
+      ]
+    },
+    {
+      "title": "Portraits",
+      "photos": [
+        "/assets/media/gallery/radha/radha-19.jpg",
+        "/assets/media/gallery/radha/radha-20.jpg",
+        "/assets/media/gallery/radha/radha-21.jpg",
+        "/assets/media/gallery/radha/radha-22.jpg",
+        "/assets/media/gallery/radha/radha-23.jpg",
+        "/assets/media/gallery/radha/radha-24.jpg",
+        "/assets/media/gallery/radha/radha-25.jpg",
+        "/assets/media/gallery/radha/radha-26.jpg",
+        "/assets/media/gallery/radha/radha-27.jpg"
+      ]
+    }
+  ]
+}

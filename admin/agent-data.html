@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Data Agent — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.health-item{display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.82rem;}
+.health-item:last-child{border:none;}
+.health-val{font-family:var(--font-display);font-size:0.8rem;font-weight:600;}
+.export-card{
+  display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:var(--radius-sm);
+  background:var(--surface);border:1px solid var(--border);transition:all 0.2s;cursor:pointer;
+}
+.export-card:hover{background:var(--surface-hover);border-color:var(--border-light);}
+.export-icon{font-size:1.5rem;flex-shrink:0;}
+.stat-bar{height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;margin-top:0.35rem;}
+.stat-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>🧠 DATA & HEALTH AGENT</h1><p>System monitoring, exports & operational intelligence</p></div>
+    <div class="header-actions">
+      <a href="agent-hub.html" class="btn btn-ghost btn-sm">← Agent Hub</a>
+      <button class="btn btn-cyan btn-sm" onclick="loadAll()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:var(--green);">🟢</div><div class="kpi-value" id="kStatus">—</div><div class="kpi-label">Server Status</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,0.1);color:var(--cyan);">⏱️</div><div class="kpi-value" id="kUptime">—</div><div class="kpi-label">Uptime</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,135,30,0.1);color:var(--orange);">🎯</div><div class="kpi-value" id="kLeads">0</div><div class="kpi-label">Total Leads</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(157,78,221,0.1);color:var(--purple);">📁</div><div class="kpi-value" id="kMedia">0</div><div class="kpi-label">Total Media</div></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Health Details -->
+    <div>
+      <div class="glass-card accent-cyan">
+        <div class="card-header"><div class="card-title" style="color:var(--cyan);"><span class="icon">🖥️</span> SYSTEM HEALTH</div></div>
+        <div id="healthDetails"><div class="shimmer" style="height:200px;"></div></div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header"><div class="card-title"><span class="icon">📊</span> MEDIA STATISTICS</div></div>
+        <div id="mediaStats"><div class="shimmer" style="height:150px;"></div></div>
+      </div>
+    </div>
+
+    <!-- Exports & Actions -->
+    <div>
+      <div class="glass-card accent-purple">
+        <div class="card-header"><div class="card-title" style="color:var(--purple);"><span class="icon">📥</span> DATA EXPORTS</div></div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <a href="/api/backup/leads" class="export-card"><div class="export-icon">📋</div><div><strong>Export All Leads (CSV)</strong><div style="font-size:0.72rem;color:var(--text-dim);">Download complete lead database</div></div></a>
+          <div class="export-card" onclick="exportFiltered()"><div class="export-icon">🔍</div><div><strong>Filtered Lead Export</strong><div style="font-size:0.72rem;color:var(--text-dim);">Export by pillar, status, or date range</div></div></div>
+        </div>
+      </div>
+
+      <!-- Filter Export -->
+      <div class="glass-card" id="filterBox" style="display:none;">
+        <div class="card-header"><div class="card-title"><span class="icon">🔍</span> FILTER OPTIONS</div></div>
+        <div class="form-group"><label class="form-label">Pillar</label><select class="form-select" id="exPillar"><option value="">All</option><option value="Radha">Radha</option><option value="Corporate">Corporate</option><option value="Tour">Tour</option></select></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="exStatus"><option value="">All</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Converted">Converted</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group"><label class="form-label">From Date</label><input type="date" class="form-input" id="exFrom"/></div>
+          <div class="form-group"><label class="form-label">To Date</label><input type="date" class="form-input" id="exTo"/></div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="runExport()">📥 Export Filtered</button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header"><div class="card-title"><span class="icon">🛡️</span> DATABASE INFO</div></div>
+        <div id="dbInfo"><div class="shimmer" style="height:100px;"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadAll(){
+  try{
+    const [health,mstats]=await Promise.all([
+      fetch('/api/agent/data/health').then(r=>r.json()).catch(()=>({})),
+      fetch('/api/agent/data/media-stats').then(r=>r.json()).catch(()=>({stats:{}}))
+    ]);
+    renderHealth(health);renderMedia(mstats);
+  }catch(e){console.error(e);}
+}
+
+function renderHealth(h){
+  document.getElementById('kStatus').textContent=h.status==='ok'?'ONLINE':'OFFLINE';
+  document.getElementById('kUptime').textContent=h.uptime||'—';
+  document.getElementById('kLeads').textContent=h.leads||0;
+  document.getElementById('kMedia').textContent=h.media||0;
+
+  const el=document.getElementById('healthDetails');
+  const items=[
+    ['Server Status',h.status==='ok'?'🟢 Online':'🔴 Offline'],
+    ['Uptime',h.uptime||'—'],
+    ['Memory Usage',h.memory||'—'],
+    ['Node Version',h.nodeVersion||'—'],
+    ['Database',h.dbStatus||'Connected'],
+    ['Tables',h.tables||'—'],
+    ['Total Leads',h.leads||0],
+    ['Total Media',h.media||0],
+    ['Scheduled Posts',h.scheduled||0],
+  ];
+  el.innerHTML=items.map(([k,v])=>`<div class="health-item"><span>${k}</span><span class="health-val">${v}</span></div>`).join('');
+
+  document.getElementById('dbInfo').innerHTML=`
+    <div class="health-item"><span>Engine</span><span class="health-val">SQLite (WAL)</span></div>
+    <div class="health-item"><span>Tables</span><span class="health-val">${h.tables||7}</span></div>
+    <div class="health-item"><span>Location</span><span class="health-val" style="font-size:0.68rem;">./database.sqlite</span></div>
+  `;
+}
+
+function renderMedia(ms){
+  const stats=ms.stats||{};const el=document.getElementById('mediaStats');
+  const entries=Object.entries(stats);
+  if(!entries.length){el.innerHTML='<div class="empty-state">No media data</div>';return;}
+  const colors={radha:'var(--orange)',corporate:'#C0C0C0',veronica:'#C0C0C0',tour:'#F2A541'};
+  let totalAll=0;entries.forEach(([,types])=>{Object.values(types).forEach(c=>{totalAll+=c;});});
+  el.innerHTML=entries.map(([pillar,types])=>{
+    const total=Object.values(types).reduce((a,b)=>a+b,0);
+    const pct=totalAll?(total/totalAll)*100:0;
+    const col=colors[pillar.toLowerCase()]||'var(--cyan)';
+    return`<div style="margin-bottom:0.75rem;">
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.15rem;">
+        <span style="font-weight:600;">${pillar}</span>
+        <span style="color:${col};font-family:var(--font-display);font-weight:700;">${total}</span>
+      </div>
+      <div class="stat-bar"><div class="stat-fill" style="width:${pct}%;background:${col};"></div></div>
+      <div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.2rem;">${Object.entries(types).map(([t,c])=>`${t}: ${c}`).join(' · ')}</div>
+    </div>`;
+  }).join('');
+}
+
+function exportFiltered(){document.getElementById('filterBox').style.display=document.getElementById('filterBox').style.display==='none'?'block':'none';}
+
+async function runExport(){
+  const params=new URLSearchParams();
+  const p=document.getElementById('exPillar').value;if(p)params.set('pillar',p);
+  const s=document.getElementById('exStatus').value;if(s)params.set('status',s);
+  const from=document.getElementById('exFrom').value;if(from)params.set('from',from);
+  const to=document.getElementById('exTo').value;if(to)params.set('to',to);
+  try{
+    const r=await fetch('/api/agent/data/leads-export?'+params);const d=await r.json();
+    if(d.leads){
+      const csv=['Name,Phone,Email,Pillar,EventType,Budget,Status,Date',...d.leads.map(l=>`"${l.name}","${l.phone}","${l.email}","${l.pillar}","${l.eventType}","${l.budget}","${l.status}","${l.timestamp}"`)].join('\n');
+      const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='leads-export.csv';a.click();
+      showToast(`Exported ${d.leads.length} leads`,'success');
+    }
+  }catch(e){showToast('Export failed','error');}
+}
+
+loadAll();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

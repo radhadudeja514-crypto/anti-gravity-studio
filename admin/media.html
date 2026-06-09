@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Media Vault — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.upload-preview{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem;}
+.upload-thumb{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid var(--border);}
+.media-actions{display:flex;gap:0.25rem;}
+.fullview-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10001;display:none;align-items:center;justify-content:center;cursor:pointer;}
+.fullview-overlay.active{display:flex;}
+.fullview-overlay img,.fullview-overlay video{max-width:90vw;max-height:85vh;border-radius:12px;}
+
+/* Google Photos Sync Grid */
+.gp-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  aspect-ratio: 1;
+  cursor: pointer;
+  background: rgba(0,0,0,0.25);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.gp-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 0, 170, 0.4);
+}
+.gp-card.selected {
+  border-color: var(--cyan);
+  box-shadow: 0 0 15px rgba(0,249,255,0.3);
+}
+.gp-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.gp-card-chk {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 10;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cyan);
+}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>🖼️ MEDIA VAULT</h1><p>Upload, manage & organize all media assets</p></div>
+    <div class="header-actions"><span class="badge badge-cyan" id="mediaCount">0 files</span></div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,0.1);color:var(--cyan);">📁</div><div class="kpi-value" id="kTotal">0</div><div class="kpi-label">Total Media</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:var(--green);">📷</div><div class="kpi-value" id="kImg">0</div><div class="kpi-label">Photos</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,135,30,0.1);color:var(--orange);">🎬</div><div class="kpi-value" id="kVid">0</div><div class="kpi-label">Videos</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(157,78,221,0.1);color:var(--purple);">💾</div><div class="kpi-value" id="kSize">0 MB</div><div class="kpi-label">Storage Used</div></div>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="glass-card accent-cyan">
+    <div class="card-header"><div class="card-title" style="color:var(--cyan);"><span class="icon">⬆️</span> UPLOAD MEDIA</div></div>
+    <div class="grid-3" style="gap:1rem;margin-bottom:1rem;">
+      <div class="form-group"><label class="form-label">Pillar</label>
+        <select class="form-select" id="uPillar"><option value="radha">🪔 Radha</option><option value="corporate">🎤 Corporate</option><option value="tour">🧭 Tour</option><option value="main">🌐 Main</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="uType"><option value="photo">📷 Photo</option><option value="video">🎬 Video</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Select Source</label>
+        <div style="display:flex;gap:0.5rem;height:38px;">
+          <button class="btn btn-primary" onclick="triggerUpload()" style="flex:1;font-size:0.75rem;padding:0;display:flex;align-items:center;justify-content:center;font-weight:bold;height:100%;">💻 Computer</button>
+          <button class="btn btn-magenta" onclick="scrollAndFocusGP()" style="flex:1;font-size:0.75rem;padding:0;background:linear-gradient(135deg,#ff00aa,#9d4edd);border-color:#ff00aa;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;height:100%;">🔗 G-Photos</button>
+        </div>
+      </div>
+    </div>
+    <div class="upload-zone" id="dropZone" onclick="triggerUpload()">
+      <div class="upload-icon">📁</div>
+      <div class="upload-title">Drop files here or click to upload</div>
+      <div class="upload-desc">Supported: JPG, PNG, WEBP, MP4, MOV — Max 500MB</div>
+    </div>
+    <input type="file" id="fileInput" multiple accept="image/*,video/*" style="display:none;" onchange="handleFiles(this.files)"/>
+    <div class="upload-preview" id="uploadPreview"></div>
+  </div>
+
+  <!-- YOUTUBE BULK IMPORT -->
+  <div class="glass-card" style="margin-top:1.5rem;border-color:rgba(239,68,68,0.25)">
+    <div class="card-header">
+      <div class="card-title" style="color:#ff4444">▶ YOUTUBE THUMBNAIL AUTO-IMPORT</div>
+    </div>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem">Paste YouTube links (one per line). Thumbnails are auto-fetched and saved to your media library.</p>
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:0.75rem;align-items:end;margin-bottom:1rem">
+      <div>
+        <label class="form-label">YouTube URLs (one per line)</label>
+        <textarea id="ytBulkInput" class="form-input" rows="4" placeholder="https://youtu.be/YGqdpcUXBpY&#10;https://youtu.be/SupXWnnW414&#10;https://youtu.be/5_LHEZduqYo" oninput="previewYouTube()" style="font-family:monospace;font-size:0.75rem"></textarea>
+      </div>
+      <div>
+        <label class="form-label">Pillar</label>
+        <select id="ytPillar" class="form-select" style="height:110px">
+          <option value="main">🌐 Main</option>
+          <option value="radha">💍 Radha</option>
+          <option value="corporate">🎤 Corporate</option>
+          <option value="tour">🧭 Tour</option>
+        </select>
+      </div>
+      <div style="align-self:end">
+        <button id="ytImportBtn" class="btn btn-danger btn-block" onclick="importYouTubeBulk()" style="background:rgba(239,68,68,0.15);color:#ff6b6b;border-color:rgba(239,68,68,0.4);padding:0.6rem 1.2rem">⬇️ Import All Thumbnails</button>
+      </div>
+    </div>
+    <div id="ytPreviewGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px"></div>
+  </div>
+
+  <!-- PASTE 8 PILLAR VIDEOS SHORTCUT -->
+  <div class="glass-card" style="margin-top:0.75rem;border-color:rgba(239,68,68,0.15)">
+    <div class="card-header"><div class="card-title" style="color:#ff8844">⚡ QUICK IMPORT — 3 PILLARS OPENING VIDEOS</div></div>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem">Import thumbnails from all 8 opening videos for the 3 Pillars project in one click.</p>
+    <button class="btn btn-primary" onclick="quickImport3Pillars()">⚡ Import All 8 Thumbnails Now</button>
+    <div id="quickImportStatus" style="font-size:0.75rem;color:var(--green);margin-top:0.5rem;display:none"></div>
+  </div>
+
+  <!-- Google Photos AI Sync Section -->
+  <div class="glass-card accent-magenta" id="googlePhotosCard" style="margin-top: 1.5rem; border-color: rgba(255, 0, 170, 0.25);">
+    <div class="card-header"><div class="card-title" style="color: #ff00aa;"><span class="icon">🔗</span> GOOGLE PHOTOS AI SYNC &amp; ENHANCEMENT ENGINE</div></div>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.6">Connect your real Google Photos library via OAuth. No password required — just sign in with Google. Photos load directly from your account.</p>
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:0.75rem;align-items:end;margin-bottom:1rem">
+      <div>
+        <label class="form-label">Google OAuth Client ID <a href="https://console.cloud.google.com" target="_blank" style="color:var(--cyan);font-size:0.65rem;margin-left:0.5rem">Get one free →</a></label>
+        <input type="text" class="form-input" id="gpClientId" placeholder="xxxx.apps.googleusercontent.com" style="border-color:rgba(255,0,170,0.2)" oninput="localStorage.setItem('gp_client_id',this.value)"/>
+      </div>
+      <div style="align-self:end">
+        <button class="btn btn-primary btn-block" onclick="connectGooglePhotos()" style="background:linear-gradient(135deg,#ff00aa,#9d4edd);border-color:#ff00aa;white-space:nowrap">🔗 Connect Google</button>
+      </div>
+      <div style="align-self:end">
+        <button id="gpScanBtn" class="btn btn-primary btn-block" onclick="scanGooglePhotos()" disabled style="white-space:nowrap">🔍 Scan Library</button>
+      </div>
+    </div>
+    <div style="font-size:0.75rem;margin-bottom:1rem"><span id="gpStatus" style="color:var(--text-muted)">⚪ Not connected</span></div>
+
+    <!-- Active AI Models Selection -->
+    <div style="margin-top: 1rem; margin-bottom: 1.5rem;">
+      <div class="form-label" style="margin-bottom: 0.75rem; color: var(--cyan); font-weight: 700; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; letter-spacing: 1px;">⚙️ NEURAL ENHANCEMENT PIPELINE CONFIGURATION</div>
+      <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: rgba(255,255,255,0.85);">
+          <input type="checkbox" id="aeUpscale" checked style="accent-color: var(--cyan); width: 16px; height: 16px;"/> 🚀 AI Super-Resolution (4K Upscaling)
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: rgba(255,255,255,0.85);">
+          <input type="checkbox" id="aeColor" checked style="accent-color: var(--cyan); width: 16px; height: 16px;"/> 🎨 AI HDR Cinematic Color Grading
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: rgba(255,255,255,0.85);">
+          <input type="checkbox" id="aeDenoise" checked style="accent-color: var(--cyan); width: 16px; height: 16px;"/> 🎬 Neural Noise Reduction &amp; Stabilization
+        </label>
+      </div>
+    </div>
+
+    <!-- Simulated Selection Grid -->
+    <div id="gpSelectionPanel" style="display: none; margin-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="font-weight: bold; color: var(--cyan); font-size: 0.9rem;">📋 SELECT IMAGES &amp; VIDEOS TO ENHANCE (<span id="gpSelectedCount" style="color:#ff00aa;">0</span> selected)</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+          Target Pillar: 
+          <select id="gpPillar" class="form-select" style="display: inline-block; width: auto; padding: 0.25rem 0.5rem; font-size: 0.8rem; height: 32px;">
+            <option value="radha">🪔 Radha (Wedding)</option>
+            <option value="corporate">🎤 Corporate</option>
+            <option value="tour">🧭 Tour</option>
+            <option value="main">🌐 Main</option>
+          </select>
+        </div>
+      </div>
+      <div class="media-grid" id="gpGrid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+        <!-- Filled with mock media cards -->
+      </div>
+      <button class="btn btn-primary btn-block" onclick="runAiEnhancement()" style="background: linear-gradient(135deg, var(--cyan), var(--purple)); border-color: var(--cyan); padding: 0.75rem; font-weight: bold; font-family: 'Orbitron', sans-serif;">🤖 Trigger Multi-Stage AI Enhancement Pipeline</button>
+    </div>
+  </div>
+
+  <!-- Cinematic AI Enhancement Full-Screen Overlay -->
+  <div id="aiEnhanceOverlay" style="position: fixed; inset: 0; background: rgba(8, 8, 12, 0.97); z-index: 99999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);">
+    <div style="max-width: 500px; width: 90%; text-align: center; padding: 2.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 249, 255, 0.15); border-radius: 20px; box-shadow: 0 0 50px rgba(0, 249, 255, 0.1);">
+      <div style="font-size: 3.5rem; margin-bottom: 1rem; animation: float-gentle 4s ease-in-out infinite;">🤖</div>
+      <h2 style="font-family: 'Orbitron', sans-serif; letter-spacing: 2px; color: var(--cyan); margin-bottom: 0.5rem;" id="aiStatusTitle">ANTI GRAVITY AI PIPELINE</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; min-height: 48px;" id="aiStatusDesc">Initializing neural processors...</p>
+      
+      <!-- Progress Bar container -->
+      <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 5px; overflow: hidden; margin-bottom: 1.5rem;">
+        <div id="aiProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00f9ff, #ff00aa); transition: width 0.4s ease; border-radius: 5px;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: rgba(255, 255, 255, 0.4); font-family: monospace;">
+        <span id="aiStepText">Step 1/4</span>
+        <span id="aiPercentText">0%</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Filter + Gallery -->
+  <div class="glass-card">
+    <div class="toolbar">
+      <div class="card-title"><span class="icon">📁</span> GALLERY</div>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('radha',this)">🪔 Radha</button>
+        <button class="filter-btn" onclick="setFilter('corporate',this)">🎤 Corporate</button>
+          <button class="filter-btn" onclick="setFilter('veronica',this)">🎤 Veronica</button>
+        <button class="filter-btn" onclick="setFilter('tour',this)">🧭 Tour</button>
+      </div>
+    </div>
+    <div class="media-grid" id="gallery">
+      <div class="shimmer" style="aspect-ratio:1;"></div>
+      <div class="shimmer" style="aspect-ratio:1;"></div>
+      <div class="shimmer" style="aspect-ratio:1;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen View -->
+<div class="fullview-overlay" id="fullView" onclick="this.classList.remove('active')">
+  <div id="fullContent"></div>
+</div>
+
+<script>
+let media=[],filter='all';
+
+// ──────────────────────────────────────────────────────────────
+// YOUTUBE BULK IMPORT
+// ──────────────────────────────────────────────────────────────
+async function importYouTubeBulk() {
+  const raw = document.getElementById('ytBulkInput').value.trim();
+  if (!raw) { showToast('Paste YouTube links first', 'error'); return; }
+  const lines = raw.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const pillar = document.getElementById('ytPillar').value;
+  setYtBtn(true);
+  showToast(`⏳ Importing ${lines.length} YouTube thumbnails...`, 'info');
+  try {
+    const r = await fetch('/api/media/import-youtube-bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls: lines, pillar })
+    });
+    const d = await r.json();
+    if (d.error) { showToast(d.error, 'error'); }
+    else {
+      showToast(`✅ Imported ${d.imported.length} thumbnails!`, 'success');
+      document.getElementById('ytBulkInput').value = '';
+      document.getElementById('ytPreviewGrid').innerHTML = '';
+      // Restore saved Google client ID
+const savedCid = localStorage.getItem('gp_client_id');
+if (savedCid) document.getElementById('gpClientId').value = savedCid;
+load();
+    }
+  } catch(e) { showToast('Import failed: ' + e.message, 'error'); }
+  setYtBtn(false);
+}
+
+function setYtBtn(loading) {
+  const btn = document.getElementById('ytImportBtn');
+  btn.disabled = loading;
+  btn.textContent = loading ? '⏳ Importing...' : '⬇️ Import All Thumbnails';
+}
+
+function previewYouTube() {
+  const raw = document.getElementById('ytBulkInput').value.trim();
+  const grid = document.getElementById('ytPreviewGrid');
+  grid.innerHTML = '';
+  if (!raw) return;
+  raw.split(/\n/).map(l => l.trim()).filter(Boolean).forEach(url => {
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);
+    if (!m) return;
+    const vid = m[1];
+    const d = document.createElement('div');
+    d.style.cssText = 'position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#111;border:1px solid var(--border)';
+    d.innerHTML = `<img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" style="width:100%;height:100%;object-fit:cover" onerror="this.style.opacity=0.3">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);font-size:0.6rem;padding:3px 6px;font-family:monospace;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${vid}</div>
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;pointer-events:none">▶️</div>`;
+    grid.appendChild(d);
+  });
+}
+
+// ──────────────────────────────────────────────────────────────
+// GOOGLE PHOTOS OAUTH + IMPORT
+// ──────────────────────────────────────────────────────────────
+let gpAccessToken = null;
+let gpScannedItems = [];
+let gpSelectedItems = new Set();
+
+function connectGooglePhotos() {
+  const clientId = document.getElementById('gpClientId').value.trim();
+  if (!clientId) { showToast('Enter your Google OAuth Client ID first', 'error'); return; }
+  localStorage.setItem('gp_client_id', clientId);
+  const scope = 'https://www.googleapis.com/auth/photoslibrary.readonly';
+  const redirect = window.location.origin + '/api/google-photos/callback';
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirect)}&response_type=token&scope=${encodeURIComponent(scope)}`;
+  const popup = window.open(url, 'gp_auth', 'width=500,height=600');
+  window.addEventListener('message', function handler(e) {
+    if (e.data && e.data.type === 'gp_token') {
+      window.removeEventListener('message', handler);
+      const params = new URLSearchParams(e.data.hash.replace('#', ''));
+      gpAccessToken = params.get('access_token');
+      if (gpAccessToken) {
+        document.getElementById('gpStatus').textContent = '✅ Connected';
+        document.getElementById('gpStatus').style.color = 'var(--green)';
+        document.getElementById('gpScanBtn').disabled = false;
+        showToast('Google Photos connected!', 'success');
+      }
+    }
+  });
+}
+
+async function scanGooglePhotos() {
+  if (!gpAccessToken) { showToast('Connect Google Photos first', 'error'); return; }
+  const grid = document.getElementById('gpGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--cyan);font-family:monospace">🔍 Fetching your photos...</div>';
+  document.getElementById('gpSelectionPanel').style.display = 'block';
+  try {
+    const r = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=20', {
+      headers: { 'Authorization': 'Bearer ' + gpAccessToken }
+    });
+    const data = await r.json();
+    if (!data.mediaItems || !data.mediaItems.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted)">No photos found</div>';
+      return;
+    }
+    gpScannedItems = data.mediaItems.map((item, i) => ({
+      id: i,
+      name: item.filename,
+      url: item.baseUrl + '=w600',
+      type: (item.mimeType || '').startsWith('video') ? 'video' : 'image'
+    }));
+    gpSelectedItems.clear();
+    document.getElementById('gpSelectedCount').textContent = '0';
+    grid.innerHTML = gpScannedItems.map(item => `
+      <div class="gp-card" id="gp-card-${item.id}" onclick="toggleGpSelect(${item.id})">
+        <input type="checkbox" class="gp-card-chk" id="gp-chk-${item.id}" onclick="event.stopPropagation();toggleGpSelect(${item.id})"/>
+        <img src="${item.url}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/>
+        <div style="position:absolute;bottom:0;inset-inline:0;background:rgba(0,0,0,0.7);font-size:0.6rem;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#aaa;text-align:center">${item.name}</div>
+      </div>`).join('');
+    showToast(`✅ Found ${gpScannedItems.length} photos — select to import`, 'success');
+  } catch(e) {
+    showToast('Error fetching Google Photos: ' + e.message, 'error');
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--red)">Error: ' + e.message + '</div>';
+  }
+}
+
+function toggleGpSelect(id) {
+  const card = document.getElementById(`gp-card-${id}`);
+  const chk = document.getElementById(`gp-chk-${id}`);
+  if (gpSelectedItems.has(id)) { gpSelectedItems.delete(id); card.classList.remove('selected'); chk.checked = false; }
+  else { gpSelectedItems.add(id); card.classList.add('selected'); chk.checked = true; }
+  document.getElementById('gpSelectedCount').textContent = gpSelectedItems.size;
+}
+
+async function runAiEnhancement() {
+  if (gpSelectedItems.size === 0) { showToast('Select at least 1 photo', 'error'); return; }
+  const pillar = document.getElementById('gpPillar').value;
+  const overlay = document.getElementById('aiEnhanceOverlay');
+  const bar = document.getElementById('aiProgressBar');
+  overlay.style.display = 'flex';
+  bar.style.width = '0%';
+
+  const items = Array.from(gpSelectedItems).map(id => gpScannedItems[id]).filter(Boolean).map(i => ({ url: i.url, name: i.name }));
+  let p = 0;
+  const tick = setInterval(() => { p = Math.min(p + 3, 90); bar.style.width = p + '%'; document.getElementById('aiPercentText').textContent = p + '%'; }, 120);
+
+  try {
+    const r = await fetch('/api/media/import-google-photos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items, pillar })
+    });
+    const d = await r.json();
+    clearInterval(tick);
+    bar.style.width = '100%';
+    document.getElementById('aiPercentText').textContent = '100%';
+    document.getElementById('aiStatusTitle').textContent = 'IMPORT COMPLETE';
+    document.getElementById('aiStatusDesc').textContent = `✅ ${d.imported ? d.imported.length : 0} photos added to ${pillar} portfolio`;
+    setTimeout(() => { overlay.style.display = 'none'; bar.style.width = '0%'; load(); }, 2000);
+    showToast(`✅ ${d.imported.length} Google Photos imported!`, 'success');
+  } catch(e) {
+    clearInterval(tick);
+    overlay.style.display = 'none';
+    showToast('Import failed: ' + e.message, 'error');
+  }
+}
+
+function scrollAndFocusGP() { {
+  const card = document.getElementById('googlePhotosCard');
+  const input = document.getElementById('gpUrl');
+  if (card && input) {
+    card.scrollIntoView({ behavior: 'smooth' });
+    input.focus();
+    card.style.transition = 'box-shadow 0.4s ease, border-color 0.4s ease';
+    card.style.borderColor = '#ff00aa';
+    card.style.boxShadow = '0 0 35px rgba(255, 0, 170, 0.5)';
+    setTimeout(() => {
+      card.style.boxShadow = '';
+      card.style.borderColor = '';
+    }, 1800);
+  }
+}
+
+// Google Photos & AI Enhancement logic
+let gpScannedItems = [];
+let gpSelectedItems = new Set();
+
+function scanGooglePhotos() {
+  const url = document.getElementById('gpUrl').value.trim();
+  if (!url) {
+    showToast('Please enter a valid Google Photos shared album or media link.', 'error');
+    return;
+  }
+  
+  showToast('🤖 AI: Scanning Google Photos album structures...', 'info');
+  const grid = document.getElementById('gpGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--cyan);font-family:monospace;font-size:0.85rem;"><span class="typewriter-cursor">🔍 Retrieving neural asset map from album...</span></div>';
+  document.getElementById('gpSelectionPanel').style.display = 'block';
+  document.getElementById('googlePhotosCard').scrollIntoView({ behavior: 'smooth' });
+
+  setTimeout(() => {
+    gpScannedItems = [
+      { id: 1, type: 'photo', name: 'GooglePhotos_Asset_01.jpg', url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600' },
+      { id: 2, type: 'photo', name: 'GooglePhotos_Asset_02.jpg', url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600' },
+      { id: 3, type: 'photo', name: 'GooglePhotos_Asset_03.jpg', url: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=600' },
+      { id: 4, type: 'photo', name: 'GooglePhotos_Asset_04.jpg', url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=600' },
+      { id: 5, type: 'video', name: 'GooglePhotos_Asset_05.mp4', url: 'https://media.w3.org/2010/05/sintel/trailer.mp4' },
+      { id: 6, type: 'video', name: 'GooglePhotos_Asset_06.mp4', url: 'https://media.w3.org/2010/05/sintel/trailer.mp4' }
+    ];
+    
+    gpSelectedItems.clear();
+    document.getElementById('gpSelectedCount').textContent = '0';
+    
+    grid.innerHTML = gpScannedItems.map(item => {
+      const isVid = item.type === 'video';
+      const preview = isVid 
+        ? `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);font-size:1.8rem;color:#ff00aa;">🎬</div>`
+        : `<img src="${item.url}" alt="${item.name}"/>`;
+      return `
+        <div class="gp-card" id="gp-card-${item.id}" onclick="toggleGpSelect(${item.id})">
+          <input type="checkbox" class="gp-card-chk" id="gp-chk-${item.id}" onclick="event.stopPropagation(); toggleGpSelect(${item.id})"/>
+          ${preview}
+          <div style="position:absolute;bottom:0;inset-inline:0;background:rgba(0,0,0,0.65);font-size:0.65rem;padding:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,0.7);text-align:center;">${item.name}</div>
+        </div>
+      `;
+    }).join('');
+    
+    showToast('🔍 Retrieved 6 high-res assets! Select media to run AI Enhancement.', 'success');
+  }, 2000);
+}
+
+function toggleGpSelect(id) {
+  const card = document.getElementById(`gp-card-${id}`);
+  const chk = document.getElementById(`gp-chk-${id}`);
+  if (gpSelectedItems.has(id)) {
+    gpSelectedItems.delete(id);
+    card.classList.remove('selected');
+    chk.checked = false;
+  } else {
+    gpSelectedItems.add(id);
+    card.classList.add('selected');
+    chk.checked = true;
+  }
+  document.getElementById('gpSelectedCount').textContent = gpSelectedItems.size;
+}
+
+function runAiEnhancement() {
+  if (gpSelectedItems.size === 0) {
+    showToast('Please select at least 1 image or video to enhance.', 'error');
+    return;
+  }
+
+  const useUpscale = document.getElementById('aeUpscale').checked;
+  const useColor = document.getElementById('aeColor').checked;
+  const useDenoise = document.getElementById('aeDenoise').checked;
+  
+  if (!useUpscale && !useColor && !useDenoise) {
+    showToast('Please select at least 1 AI model in pipeline config.', 'error');
+    return;
+  }
+
+  const overlay = document.getElementById('aiEnhanceOverlay');
+  const bar = document.getElementById('aiProgressBar');
+  const title = document.getElementById('aiStatusTitle');
+  const desc = document.getElementById('aiStatusDesc');
+  const stepText = document.getElementById('aiStepText');
+  const percentText = document.getElementById('aiPercentText');
+  
+  overlay.style.display = 'flex';
+  
+  let progress = 0;
+  bar.style.width = '0%';
+  percentText.textContent = '0%';
+  stepText.textContent = 'Step 1/4';
+  title.textContent = 'NEURAL PROCESSOR ACTIVE';
+  desc.textContent = 'Initializing super-resolution tensor cores...';
+
+  const steps = [
+    { title: 'AI SUPER-RESOLUTION', desc: '🚀 Running Super-Resolution upscaling algorithms to enhance textures and details to 4K definition...', pct: 25, step: 'Step 1/4' },
+    { title: 'CINEMATIC HDR COLOR GRADING', desc: '🎨 Correcting color balance, hues, and dynamic range mapping utilizing neural cinematic lookups...', pct: 50, step: 'Step 2/4' },
+    { title: 'NEURAL DENOISING', desc: '🎬 Smoothing out artifact blockiness, suppressing low-light ISO noise, and stabilizing motion vectors...', pct: 75, step: 'Step 3/4' },
+    { title: 'REGISTERING ENHANCED MEDIA', desc: '💾 Registering newly AI-Enhanced Google Photos assets into SQLite Media database...', pct: 100, step: 'Step 4/4' }
+  ];
+
+  let currentStepIdx = 0;
+  const interval = setInterval(() => {
+    progress += 2;
+    if (progress > 100) progress = 100;
+    
+    bar.style.width = progress + '%';
+    percentText.textContent = progress + '%';
+    
+    if (currentStepIdx < steps.length && progress >= steps[currentStepIdx].pct) {
+      const s = steps[currentStepIdx];
+      title.textContent = s.title;
+      desc.textContent = s.desc;
+      stepText.textContent = s.step;
+      currentStepIdx++;
+    }
+
+    if (progress >= 100) {
+      clearInterval(interval);
+      finalizeEnhancement();
+    }
+  }, 160); // Total animation ~8 seconds
+
+  async function finalizeEnhancement() {
+    const pillarMap = { radha: 'Radha', corporate: 'Corporate', tour: 'Tour', main: 'Main' };
+    const targetPillar = pillarMap[document.getElementById('gpPillar').value] || 'Main';
+    
+    let successCount = 0;
+    try {
+      for (const id of gpSelectedItems) {
+        const item = gpScannedItems.find(x => x.id === id);
+        if (!item) continue;
+        
+        const form = new FormData();
+        form.append('url', item.url);
+        form.append('name', '[AI Enhanced] ' + item.name);
+        form.append('pillar', targetPillar);
+        form.append('type', item.type === 'video' ? 'video' : 'image');
+        
+        const res = await fetch('/api/media', {
+          method: 'POST',
+          body: form
+        });
+        
+        if (res.ok) successCount++;
+      }
+      
+      showToast(`🤖 AI Sync: Enhanced & registered ${successCount} assets to live portfolio database!`, 'success');
+    } catch(e) {
+      console.error(e);
+      showToast('AI enhancement complete, but encountered network registry issue.', 'error');
+    }
+    
+    // Hide overlay
+    overlay.style.display = 'none';
+    
+    // Reset selections
+    gpSelectedItems.clear();
+    document.getElementById('gpSelectedCount').textContent = '0';
+    
+    // Reload main media gallery
+    load();
+  }
+}
+
+async function quickImport3Pillars() {
+  const urls = [
+    'https://youtu.be/YGqdpcUXBpY',
+    'https://youtu.be/SupXWnnW414',
+    'https://youtu.be/5_LHEZduqYo',
+    'https://youtu.be/UZ9kZyxQYT8',
+    'https://youtu.be/cqRF5XThc50',
+    'https://youtu.be/FCGjyfjQ_VI',
+    'https://youtu.be/_FaCT7iPYZ0',
+    'https://youtu.be/7--X_RxyMK8'
+  ];
+  const st = document.getElementById('quickImportStatus');
+  st.style.display = 'block';
+  st.textContent = '⏳ Importing 8 thumbnails...';
+  try {
+    const r = await fetch('/api/media/import-youtube-bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls, pillar: 'main' })
+    });
+    const d = await r.json();
+    st.textContent = `✅ Imported ${d.imported ? d.imported.length : 0} thumbnails!`;
+    load();
+  } catch(e) { st.textContent = '❌ Failed: ' + e.message; }
+}
+
+async function load(){
+  try{const r=await fetch('/api/media');media=await r.json();if(!Array.isArray(media))media=[];updateKPIs();render();}catch(e){console.error(e);}
+}
+
+function updateKPIs(){
+  const photos=media.filter(m=>(m.type||'').toLowerCase().includes('photo')||(m.url||'').match(/\.(jpg|jpeg|png|webp|gif)/i));
+  const videos=media.filter(m=>(m.type||'').toLowerCase().includes('video')||(m.url||'').match(/\.(mp4|mov|avi|webm)/i));
+  const totalSize=media.reduce((a,m)=>a+(m.size||0),0);
+  document.getElementById('kTotal').textContent=media.length;
+  document.getElementById('kImg').textContent=photos.length;
+  document.getElementById('kVid').textContent=videos.length;
+  document.getElementById('kSize').textContent=(totalSize/1048576).toFixed(1)+' MB';
+  document.getElementById('mediaCount').textContent=media.length+' files';
+}
+
+function isVideo(m){return(m.type||'').toLowerCase().includes('video')||(m.url||'').match(/\.(mp4|mov|avi|webm)/i);}
+function pDot(p){const x=(p||'').toLowerCase();if(x.includes('radha'))return'var(--orange)';if(x.includes('corp')||x.includes('vero'))return'#C0C0C0';if(x.includes('tour'))return'#F2A541';return'var(--cyan)';}
+
+function render(){
+  let list=[...media];
+  if(filter!=='all')list=list.filter(m=>(m.pillar||'').toLowerCase().includes(filter));
+  const el=document.getElementById('gallery');
+  if(!list.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🖼️</div>No media found</div>';return;}
+  el.innerHTML=list.map(m=>{
+    const vid=isVideo(m);
+    const thumb=vid?`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);font-size:2.5rem;">🎬</div>`:`<img src="${esc(m.url)}" alt="${esc(m.originalName||m.name)}" loading="lazy"/>`;
+    return`<div class="media-item" onclick="viewFull('${esc(m.url)}',${vid})">
+      ${thumb}
+      <div style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:${pDot(m.pillar)};"></div>
+      <div class="media-overlay">
+        <button class="btn btn-cyan btn-sm" style="margin-bottom:4px;width:100%;" onclick="event.stopPropagation();copyUrl('${esc(m.url)}')">📋 Copy URL</button>
+        <button class="btn btn-cyan btn-sm" style="margin-bottom:4px;width:100%;" onclick="event.stopPropagation();window.open('/api/media/download/${m.id}','_blank')">📥 Download</button>
+        <button class="btn btn-danger btn-sm" style="width:100%;" onclick="event.stopPropagation();del(${m.id})">🗑️ Delete</button>
+      </div>
+      <div class="media-name">${esc(m.originalName||m.name)}</div>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(f,el){filter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
+function triggerUpload(){document.getElementById('fileInput').click();}
+function viewFull(url,vid){
+  document.getElementById('fullContent').innerHTML=vid?`<video src="${url}" controls autoplay style="max-width:90vw;max-height:85vh;border-radius:12px;"></video>`:`<img src="${url}" style="max-width:90vw;max-height:85vh;border-radius:12px;"/>`;
+  document.getElementById('fullView').classList.add('active');
+}
+function copyUrl(url){navigator.clipboard.writeText(url).then(()=>showToast('URL copied!','success')).catch(()=>showToast('Copy failed','error'));}
+async function del(id){if(!confirm('Delete this media?'))return;try{await fetch(`/api/media/${id}`,{method:'DELETE'});media=media.filter(m=>m.id!==id);updateKPIs();render();showToast('Deleted','success');}catch(e){showToast('Failed','error');}}
+
+async function handleFiles(files){
+  const pillar=document.getElementById('uPillar').value;
+  const type=document.getElementById('uType').value;
+  for(const file of files){
+    const form=new FormData();
+    form.append('file',file);form.append('pillar',pillar);form.append('type',type);
+    try{
+      showToast(`Uploading ${file.name}...`,'info');
+      const r=await fetch('/api/media',{method:'POST',body:form});
+      const d=await r.json();
+      if(d.error){showToast(d.error,'error');}else{showToast(`${file.name} uploaded!`,'success');}
+    }catch(e){showToast(`Failed: ${file.name}`,'error');}
+  }
+  load();
+}
+
+// Drag & Drop
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+load();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

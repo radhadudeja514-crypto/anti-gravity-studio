@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Instagram Agent — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.time-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.5rem;}
+.time-slot{
+  padding:0.6rem 0.75rem;border-radius:var(--radius-xs);background:rgba(157,78,221,0.04);
+  border:1px solid rgba(157,78,221,0.1);display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;
+}
+.time-slot .day{font-weight:700;color:var(--purple);}
+.time-slot .time{font-family:var(--font-display);font-size:0.72rem;font-weight:600;}
+.hashtag{display:inline-block;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.68rem;font-weight:600;background:rgba(0,249,255,0.08);color:var(--cyan);border:1px solid rgba(0,249,255,0.15);margin:0.15rem;}
+.post-card{
+  padding:0.85rem;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);
+  margin-bottom:0.5rem;display:flex;align-items:flex-start;gap:0.75rem;transition:all 0.2s;
+}
+.post-card:hover{border-color:var(--border-light);}
+.post-card .date-box{
+  min-width:55px;text-align:center;padding:0.5rem;border-radius:8px;
+  background:rgba(157,78,221,0.08);border:1px solid rgba(157,78,221,0.15);flex-shrink:0;
+}
+.post-card .date-day{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--purple);}
+.post-card .date-month{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>📸 INSTAGRAM AGENT</h1><p>Smart scheduling, hashtags & optimal posting times</p></div>
+    <div class="header-actions">
+      <a href="agent-hub.html" class="btn btn-ghost btn-sm">← Agent Hub</a>
+      <span class="badge badge-purple" id="postBadge">0 scheduled</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('schedule',this)">📅 Schedule</button>
+    <button class="tab" onclick="showTab('bestTimes',this)">⏰ Best Times</button>
+    <button class="tab" onclick="showTab('hashtags',this)">#️⃣ Hashtags</button>
+  </div>
+
+  <!-- Schedule Tab -->
+  <div class="tab-panel active" id="tab-schedule">
+    <div class="grid-3-1">
+      <div>
+        <div class="glass-card accent-purple">
+          <div class="card-header"><div class="card-title" style="color:var(--purple);"><span class="icon">✨</span> NEW POST</div></div>
+          <div class="form-group"><label class="form-label">Pillar</label><select class="form-select" id="iPillar"><option value="radha">🪔 Radha</option><option value="veronica">🎤 Veronica</option><option value="tour">🧭 Tour</option></select></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="iDate"/></div>
+            <div class="form-group"><label class="form-label">Time</label><input type="time" class="form-input" id="iTime" value="10:00"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Topic</label><input type="text" class="form-input" id="iTopic" placeholder="e.g. Behind the scenes"/></div>
+          <div class="form-group"><label class="form-label">Caption</label><textarea class="form-textarea" id="iCaption" placeholder="Write caption..." style="min-height:100px;"></textarea></div>
+          <div class="form-group"><label class="form-label">Media URL</label><input type="text" class="form-input" id="iMedia" placeholder="Optional Cloudinary URL"/></div>
+          <button class="btn btn-primary btn-block" onclick="schedPost()">⚡ Schedule Post</button>
+        </div>
+      </div>
+      <div>
+        <div class="glass-card">
+          <div class="card-header"><div class="card-title"><span class="icon">📋</span> QUEUE</div></div>
+          <div id="postQueue" style="max-height:500px;overflow-y:auto;"><div class="shimmer" style="height:200px;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Best Times Tab -->
+  <div class="tab-panel" id="tab-bestTimes">
+    <div class="glass-card">
+      <div class="card-header"><div class="card-title"><span class="icon">⏰</span> AI-OPTIMIZED POSTING WINDOWS</div></div>
+      <div class="tabs" style="margin-bottom:1rem;">
+        <button class="tab active" onclick="loadTimes('radha',this)">🪔 Radha</button>
+        <button class="tab" onclick="loadTimes('veronica',this)">🎤 Veronica</button>
+        <button class="tab" onclick="loadTimes('tour',this)">🧭 Tour</button>
+      </div>
+      <div class="time-grid" id="timeGrid"><div class="shimmer" style="height:200px;grid-column:1/-1;"></div></div>
+    </div>
+  </div>
+
+  <!-- Hashtags Tab -->
+  <div class="tab-panel" id="tab-hashtags">
+    <div class="grid-3">
+      <div class="glass-card accent-orange">
+        <div class="card-header"><div class="card-title" style="color:var(--orange);">🪔 RADHA HASHTAGS</div></div>
+        <div id="hashRadha"></div>
+      </div>
+      <div class="glass-card">
+        <div class="card-header"><div class="card-title" style="color:#C0C0C0;">🎤 VERONICA HASHTAGS</div></div>
+        <div id="hashVero"></div>
+      </div>
+      <div class="glass-card" style="border-color:rgba(242,165,65,0.15);">
+        <div class="card-header"><div class="card-title" style="color:#F2A541;">🧭 TOUR HASHTAGS</div></div>
+        <div id="hashTour"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let allPosts=[],bestTimesData={};
+
+function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+
+async function loadData(){
+  try{
+    const [sched,times]=await Promise.all([
+      fetch('/api/agent/instagram/scheduled').then(r=>r.json()).catch(()=>({posts:[]})),
+      fetch('/api/agent/instagram/best-times').then(r=>r.json()).catch(()=>({bestTimes:{}}))
+    ]);
+    allPosts=sched.posts||[];bestTimesData=times.bestTimes||{};
+    document.getElementById('postBadge').textContent=allPosts.length+' scheduled';
+    renderQueue();loadTimes('radha',document.querySelector('#tab-bestTimes .tab.active'));loadHashtags();
+  }catch(e){console.error(e);}
+}
+
+function renderQueue(){
+  const el=document.getElementById('postQueue');
+  const sorted=[...allPosts].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(!sorted.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div>No posts scheduled</div>';return;}
+  el.innerHTML=sorted.map(p=>{
+    const d=new Date(p.date+'T00:00:00');
+    return`<div class="post-card">
+      <div class="date-box"><div class="date-day">${d.getDate()}</div><div class="date-month">${d.toLocaleString('en',{month:'short'})}</div></div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.2rem;">
+          <span class="pillar-tag pillar-${(p.pillar||'tour').toLowerCase()}">${p.pillar||'—'}</span>
+          <span style="font-size:0.7rem;color:var(--text-dim);">${p.time||''}</span>
+        </div>
+        <div style="font-size:0.82rem;font-weight:600;">${esc(p.topic||'Untitled')}</div>
+        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc((p.caption||'').substring(0,100))}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="delPost(${p.id})" style="flex-shrink:0;">🗑️</button>
+    </div>`;
+  }).join('');
+}
+
+function loadTimes(pillar,el){
+  if(el){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+  const times=bestTimesData[pillar]||[];
+  const grid=document.getElementById('timeGrid');
+  if(!times.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No timing data</div>';return;}
+  grid.innerHTML=times.map(t=>`<div class="time-slot"><span class="day">${t.day}</span><span class="time">${t.time}</span><span style="font-size:0.7rem;color:var(--text-dim);">${t.reason||''}</span></div>`).join('');
+}
+
+function loadHashtags(){
+  const sets={
+    radha:['#SangeetNight','#WeddingHost','#RadhaDudega','#FamilyEvents','#IndianWedding','#MehendiVibes','#SangeetChoreography','#HindiHost','#EventMC','#WeddingCelebration','#TraditionalEvents','#CulturalCelebrations'],
+    vero:['#CorporateMC','#EventHost','#ConferenceHost','#TechSummit','#Emcee','#StagePresence','#CorporateEvents','#KeynoteSpeaker','#PanelModerator','#BusinessEvents','#AwardsCeremony','#LeadershipSummit'],
+    tour:['#HeritageWalk','#CulturalTour','#TrailCurator','#HiddenGems','#IndiaTravel','#HeritageIndia','#WalkingTour','#OldDelhiWalk','#CulturalExperience','#TravelIndia','#MountainTrails','#HistoryWalk']
+  };
+  ['Radha','Vero','Tour'].forEach(p=>{
+    const el=document.getElementById('hash'+p);
+    const tags=sets[p.toLowerCase()]||[];
+    el.innerHTML=tags.map(t=>`<span class="hashtag" onclick="navigator.clipboard.writeText('${t}');showToast('Copied!','success')">${t}</span>`).join('');
+  });
+}
+
+async function schedPost(){
+  const pillar=document.getElementById('iPillar').value,date=document.getElementById('iDate').value,time=document.getElementById('iTime').value;
+  const topic=document.getElementById('iTopic').value,caption=document.getElementById('iCaption').value,mediaUrl=document.getElementById('iMedia').value;
+  if(!date||!time){showToast('Date & time required','error');return;}
+  try{
+    const r=await fetch('/api/agent/instagram/schedule-post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,date,time,topic,caption,mediaUrl})});
+    const d=await r.json();if(d.success){showToast('Scheduled!','success');document.getElementById('iTopic').value='';document.getElementById('iCaption').value='';loadData();}
+    else showToast(d.error||'Failed','error');
+  }catch(e){showToast('Error','error');}
+}
+
+async function delPost(id){if(!confirm('Delete?'))return;try{await fetch(`/api/agent/instagram/post/${id}`,{method:'DELETE'});showToast('Deleted','success');loadData();}catch(e){showToast('Error','error');}}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+const tmrw=new Date();tmrw.setDate(tmrw.getDate()+1);document.getElementById('iDate').value=tmrw.toISOString().split('T')[0];
+loadData();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

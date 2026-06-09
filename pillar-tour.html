@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var pillar = document.body.dataset.pillar || '';
+  if(!pillar) return;
+  fetch('/api/agent/design/theme/' + pillar)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.success || !d.theme) return;
+      var t = d.theme;
+      var root = document.documentElement;
+      if(t.primary)  root.style.setProperty('--pillar-primary', t.primary);
+      if(t.accent)   root.style.setProperty('--pillar-accent', t.accent);
+      if(t.bg)       document.body.style.background = t.bg;
+    }).catch(function(){});
+})();
+</script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trail Curator — Heritage Travel & Mountain Expeditions India | Anti Gravity Studio</title>
+  <meta name="description" content="Trail Curator by Anti Gravity Studio — immersive heritage expeditions, luxury mountain trails, and cultural deep-dives across India. Corbett, Himalayas, Rajasthan and beyond.">
+  <meta name="keywords" content="Trail Curator, heritage trail India, mountain expedition, luxury travel India, Corbett safari, Himalayan trek, cultural tour India, travel documentary, heritage walk Delhi">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="robots" content="index, follow">
+
+  <!-- Canonical & hreflang -->
+  <link rel="canonical" href="https://antigravitystudio.in/pillar-tour.html">
+  <link rel="alternate" hreflang="en" href="https://antigravitystudio.in/pillar-tour.html">
+  <link rel="alternate" hreflang="x-default" href="https://antigravitystudio.in/pillar-tour.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="Trail Curator — Heritage Travel & Mountain Expeditions India | Anti Gravity Studio">
+  <meta property="og:description" content="Immersive heritage expeditions, luxury mountain trails, and cultural deep-dives. Corbett, Himalayas, Rajasthan and beyond.">
+  <meta property="og:url"         content="https://antigravitystudio.in/pillar-tour.html">
+  <meta property="og:image"       content="/assets/media/gallery/photos/IMG_20181018_165753.jpg">
+  <meta property="og:site_name"   content="Anti Gravity Studio">
+  <meta property="og:locale"      content="en_IN">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:site"        content="@AntiGravityStudio">
+  <meta name="twitter:title"       content="Trail Curator — Heritage Travel & Mountain Expeditions India | Anti Gravity Studio">
+  <meta name="twitter:description" content="Immersive heritage expeditions, luxury mountain trails, and cultural deep-dives across India. Corbett, Himalayas, Rajasthan.">
+  <meta name="twitter:image"       content="/assets/media/gallery/photos/IMG_20181018_165753.jpg">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/media/icon-192.png" onerror="this.remove()">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vfx.css">
+  <link rel="stylesheet" href="assets/css/pillar-tour.css">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "TouristInformationCenter",
+  "name": "Trail Curator — Anti Gravity Studio",
+  "description": "Immersive heritage expeditions, luxury mountain trails, and high-end cultural deep-dives across India. Meticulously curated by Anti Gravity Studio.",
+  "url": "https://antigravitystudio.in/pillar-tour.html",
+  "provider": {
+    "@type": "Organization",
+    "name": "Anti Gravity Studio",
+    "url": "https://antigravitystudio.in"
+  },
+  "areaServed": ["Uttarakhand", "Rajasthan", "Himachal Pradesh", "Delhi", "India"],
+  "knowsAbout": ["Heritage Trails", "Mountain Expeditions", "Cultural Tours", "Wildlife Safari", "Travel Documentary"]
+}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+  // Load real Measurement ID from server config
+  fetch('/api/ga4-id').then(r=>r.json()).then(d=>{
+    if(d.id && d.id !== 'G-XXXXXXXXXX') {
+      gtag('config', d.id);
+      document.querySelectorAll('script[src*="gtag/js"]').forEach(s=>{
+        s.src = s.src.replace('G-XXXXXXXXXX', d.id);
+      });
+    }
+  }).catch(()=>{});
+</script>
+</head>
+<body data-pillar="tour" class="tour-theme">
+
+<nav class="site-nav" id="site-nav">
+  <a href="index.html" class="nav-logo" style="color:var(--tour-accent);">TC<span style="color:var(--tour-primary)">.</span></a>
+  <ul class="nav-links" id="nav-menu">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#tours">Tours</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="gallery.html?filter=tour">Full Gallery</a></li>
+    <li><a href="#enquire">Book a Tour</a></li>
+    <li><a href="pillar-radha.html" style="color:var(--radha-primary)">Radha →</a></li>
+    <li><a href="pillar-veronica.html" style="color:var(--corp-secondary)">Veronica →</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="#enquire" class="btn btn-tour" style="padding:0.6rem 1.25rem;font-size:0.85rem;">Book a Tour</a>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+<a href="review-hub.html">Review Us</a>
+</nav>
+
+<!-- HERO -->
+<section class="tour-hero" id="hero">
+<div id="hero-3d" style="position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.45"></div>
+  <div class="tour-hero-bg"></div>
+  <div class="tour-particles" id="tourParticles"></div>
+  <div class="container tour-hero-content">
+    <div class="animate-fade-up">
+      <span class="tag tag-tour">⚡ AI-Curated Heritage Trails · @TheTrailCurator</span>
+    </div>
+    <h1 class="animate-fade-up delay-1" style="font-size:clamp(3rem,8vw,7rem);font-weight:900;line-height:1.0;margin:1rem 0;">
+      Every Path Tells<br/><span class="gradient-text-tour">A Story.</span>
+    </h1>
+    <p class="animate-fade-up delay-2" style="font-family:var(--font-elegant);font-style:italic;font-size:clamp(1.1rem,2vw,1.4rem);color:rgba(255,255,255,0.65);max-width:580px;margin-bottom:2.5rem;line-height:1.7;">
+      Immersive heritage expeditions, luxury mountain trails, and high-end cultural deep-dives — meticulously curated to transform travel into a lifelong conversation with the soul of the earth.
+    </p>
+    <div class="flex gap-2 animate-fade-up delay-3" style="flex-wrap:wrap;">
+      <a href="#tours" class="btn btn-tour magnetic-btn">Explore Tours</a>
+      <a href="#gallery" class="btn btn-ghost magnetic-btn">View Gallery</a>
+    </div>
+  </div>
+  <div class="tour-destination-pill animate-fade-up delay-4">
+    <span>📍 Pan-India &amp; International</span>
+  </div>
+</section>
+
+<!-- ── AUTO-CYCLING VIDEO REEL ─────────────────────────────────────── -->
+<section class="section" id="videos" style="padding:0;background:#000;position:relative;overflow:hidden;">
+  <!-- Video container -->
+  <div style="position:relative;width:100%;padding-bottom:56.25%;max-height:80vh;overflow:hidden;">
+    <div id="vreel-tour" style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;"></div>
+    <!-- Overlay gradient -->
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.8) 100%);z-index:2;pointer-events:none;"></div>
+    <!-- Labels -->
+    <div style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+      <div style="font-size:0.7rem;letter-spacing:3px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:0.5rem;">Trail Curator — In Action</div>
+      <div id="vreel-title-tour" style="font-size:1rem;color:#fff;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,0.8);max-width:400px;"></div>
+    </div>
+    <!-- Dot indicators -->
+    <div id="vreel-dots-tour" style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:0.4rem;"></div>
+    <!-- Prev/Next controls -->
+    <button onclick="vreelPrev('tour')" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">‹</button>
+    <button onclick="vreelNext('tour')" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">›</button>
+  </div>
+  <!-- Thumbnail strip -->
+  <div id="vreel-strip-tour" style="display:flex;gap:0.5rem;padding:0.75rem 1rem;background:#111;overflow-x:auto;scrollbar-width:none;"></div>
+</section>
+
+<script>
+(function(){
+  var videos_tour = ["FCGjyfjQ_VI", "7--X_RxyMK8"];
+  var titles_tour = ["FCGjyfjQ_VI", "7--X_RxyMK8"];
+  var cur_tour = 0;
+  var timer_tour = null;
+
+  function initReel_tour(){
+    var strip = document.getElementById('vreel-strip-tour');
+    var dots  = document.getElementById('vreel-dots-tour');
+    videos_tour.forEach(function(id, i){
+      var thumb = document.createElement('img');
+      thumb.src = 'https://i.ytimg.com/vi/'+id+'/mqdefault.jpg';
+      thumb.style.cssText = 'width:100px;height:56px;object-fit:cover;border-radius:0.4rem;cursor:pointer;opacity:'+(i===0?'1':'0.5')+';flex-shrink:0;transition:opacity .3s;border:2px solid '+(i===0?'"#F2A541"':'transparent');
+      thumb.onclick = function(){ playReel_tour(i); };
+      thumb.id = 'vreel-th-tour-'+i;
+      strip.appendChild(thumb);
+      var dot = document.createElement('div');
+      dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:'+(i===0?'"#F2A541"':'rgba(255,255,255,0.3)')+';cursor:pointer;transition:all .3s;';
+      dot.onclick = function(){ playReel_tour(i); };
+      dot.id = 'vreel-dot-tour-'+i;
+      dots.appendChild(dot);
+    });
+    playReel_tour(0);
+  }
+
+  function playReel_tour(idx){
+    if(timer_tour) clearTimeout(timer_tour);
+    cur_tour = idx;
+    var id = videos_tour[idx];
+    var container = document.getElementById('vreel-tour');
+    container.innerHTML = '<iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/'+id+'?autoplay=1&mute=1&rel=0&modestbranding=1&controls=0&showinfo=0&loop=1&playlist='+id+'" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
+    // Update title
+    var titleEl = document.getElementById('vreel-title-tour');
+    if(titleEl) titleEl.textContent = ''; // titles fetched dynamically
+    // Update dots/thumbs
+    videos_tour.forEach(function(_, i){
+      var th  = document.getElementById('vreel-th-tour-'+i);
+      var dot = document.getElementById('vreel-dot-tour-'+i);
+      if(th)  { th.style.opacity  = i===idx?'1':'0.5'; th.style.border='2px solid '+(i===idx?'"#F2A541"':'transparent'); }
+      if(dot) dot.style.background = i===idx?'"#F2A541"':'rgba(255,255,255,0.3)';
+    });
+    // Auto-advance after 45s
+    timer_tour = setTimeout(function(){
+      playReel_tour((idx+1) % videos_tour.length);
+    }, 45000);
+  }
+
+  window.vreelNext = window.vreelNext || function(){};
+  window.vreelPrev = window.vreelPrev || function(){};
+
+  // Override for this pillar
+  var _origNext = window.vreelNext;
+  window.vreelNext = function(p){
+    if(p==='tour') playReel_tour((cur_tour+1) % videos_tour.length);
+    else _origNext(p);
+  };
+  var _origPrev = window.vreelPrev;
+  window.vreelPrev = function(p){
+    if(p==='tour') playReel_tour((cur_tour-1+videos_tour.length) % videos_tour.length);
+    else _origPrev(p);
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initReel_tour);
+  else initReel_tour();
+})();
+</script>
+
+
+<!-- TICKER -->
+<div class="ticker-wrapper" style="background:rgba(242,165,65,0.04);border-color:rgba(242,165,65,0.1);">
+  <div class="ticker-track">
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Rajasthan Heritage Walks</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Himachal Mountain Trails</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Kerala Backwaters</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Varanasi Ghats at Dawn</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Old Delhi Food Walks</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Spiti Valley Expeditions</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Rajasthan Heritage Walks</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Himachal Mountain Trails</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Kerala Backwaters</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--tour-primary)"></span>Varanasi Ghats at Dawn</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="tour-about-grid">
+      <div class="reveal">
+        <div class="section-label">The Trail Curator</div>
+        <h2 class="display-md" style="margin-bottom:1.5rem;">More Than a<br/><span class="gradient-text-tour">Tour Guide</span></h2>
+        <p style="color:rgba(255,255,255,0.7);line-height:1.9;margin-bottom:1.25rem;">
+          A storyteller who walks alongside you. Each tour is a curated narrative — weaving history, mythology, architecture, and lived experience into a journey that changes the way you see the world.
+        </p>
+        <p style="color:rgba(255,255,255,0.7);line-height:1.9;margin-bottom:2rem;">
+          Specialising in off-beaten destinations, hidden gems, and immersive cultural exchanges that no guidebook covers. Every trail has a voice — let's listen.
+        </p>
+        <div style="display:flex;gap:2rem;flex-wrap:wrap;">
+          <div><div style="font-family:var(--font-display);font-size:2rem;color:var(--tour-primary);font-weight:700;">100+</div><div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">Tours Curated</div></div>
+          <div><div style="font-family:var(--font-display);font-size:2rem;color:var(--tour-secondary);font-weight:700;">25+</div><div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">Destinations</div></div>
+          <div><div style="font-family:var(--font-display);font-size:2rem;color:var(--tour-accent);font-weight:700;">500+</div><div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">Travellers Guided</div></div>
+        </div>
+      </div>
+      <div class="tour-photo-mosaic reveal delay-2">
+        <div class="mosaic-item large"><img src="assets/media/tour-hero.png" alt="Mountain landscape" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);"/></div>
+        <div class="mosaic-item"><img src="assets/media/gallery-tour-1.png" alt="Rajasthan fort" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);"/></div>
+        <div class="mosaic-item"><img src="assets/media/tour-hero.png" alt="Adventure trail" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);object-position:center 70%;"/></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOURS -->
+<section class="section" id="tours" style="background:rgba(242,165,65,0.03);border-top:1px solid rgba(242,165,65,0.1);border-bottom:1px solid rgba(242,165,65,0.1);">
+  <div class="container">
+    <div class="text-center reveal" style="margin-bottom:3rem;">
+      <div class="section-label">Experiences</div>
+      <h2 class="display-md" style="margin-bottom:1rem;">Curated <span class="gradient-text-tour">Tour Packages</span></h2>
+      <div class="scarcity-badge">🔥 Only 1 group slot left for December 2026</div>
+    </div>
+    <div class="tour-cards-grid">
+      <div class="tour-card reveal">
+        <div class="tour-card-img tour-img-1"><div class="tour-card-badge">Heritage</div></div>
+        <div class="tour-card-body">
+          <h3>Rajasthan Heritage Circuit</h3>
+          <p>7-day curated journey through forts, havelis, and desert sunsets of Rajasthan. Stories behind every stone.</p>
+          <div class="tour-meta"><span>⏱️ 7 Days</span><span>👥 2–15 People</span><span>🌟 Signature</span></div>
+          <a href="#enquire" class="btn btn-tour" style="width:100%;justify-content:center;margin-top:1rem;">Enquire Now</a>
+        </div>
+      </div>
+      <div class="tour-card reveal delay-2">
+        <div class="tour-card-img tour-img-2"><div class="tour-card-badge">Mountain</div></div>
+        <div class="tour-card-body">
+          <h3>Spiti Valley Expedition</h3>
+          <p>12-day high-altitude adventure through Lahaul-Spiti. Monasteries, passes, and the sky that touches the earth.</p>
+          <div class="tour-meta"><span>⏱️ 12 Days</span><span>👥 4–10 People</span><span>🌟 Adventure</span></div>
+          <a href="#enquire" class="btn btn-tour" style="width:100%;justify-content:center;margin-top:1rem;">Enquire Now</a>
+        </div>
+      </div>
+      <div class="tour-card reveal delay-4">
+        <div class="tour-card-img tour-img-3"><div class="tour-card-badge">Cultural</div></div>
+        <div class="tour-card-body">
+          <h3>Varanasi at Dawn</h3>
+          <p>3-day immersive cultural experience in the eternal city. Ghats, aarti, silk weavers, and the philosophy of life.</p>
+          <div class="tour-meta"><span>⏱️ 3 Days</span><span>👥 2–8 People</span><span>🌟 Spiritual</span></div>
+          <a href="#enquire" class="btn btn-tour" style="width:100%;justify-content:center;margin-top:1rem;">Enquire Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center" style="margin-top:2.5rem;">
+      <p style="color:var(--text-muted);margin-bottom:1rem;">All tours are fully customisable. No two journeys are the same.</p>
+      <a href="#enquire" class="btn btn-ghost">Request Custom Tour</a>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="section" id="gallery">
+  <div class="container">
+    <div class="flex justify-between items-center reveal" style="margin-bottom:2rem;">
+      <div>
+        <div class="section-label">Visual Journeys</div>
+        <h2 class="display-md">From the <span class="gradient-text-tour">Trails</span></h2>
+      </div>
+      <a href="https://www.instagram.com/thetrailcurator/" target="_blank" class="btn btn-ghost">Instagram →</a>
+    </div>
+    <div class="gallery-grid" id="tourGallery">
+      <div class="gallery-item" style="background-image:url('/assets/media/gallery/photos/IMG_20181018_165753.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG_20181018_165753.jpg" alt="Trail 2018" loading="lazy" style="opacity:0;"/></div>
+      <div class="gallery-item" style="grid-row:span 2"><img src="assets/media/tour-hero.png" alt="Mountain vista" loading="lazy"/></div>
+      <div class="gallery-item"><img src="assets/media/gallery-tour-1.png" alt="Cultural walk" loading="lazy" style="object-position:center 30%;"/></div>
+      <div class="gallery-item"><img src="assets/media/tour-hero.png" alt="Desert sunset" loading="lazy" style="object-position:center 70%;"/></div>
+      <div class="gallery-item"><img src="assets/media/gallery-tour-1.png" alt="Temple visit" loading="lazy" style="object-position:left center;"/></div>
+      <div class="gallery-item"><img src="assets/media/tour-hero.png" alt="River landscape" loading="lazy" style="object-position:right center;"/></div>
+    </div>
+    <div style="text-align:center;margin-top:2rem;">
+      <a href="gallery.html?filter=tour" class="btn btn-ghost">View Full Trail Gallery →</a>
+    </div>
+  </div>
+</section>
+
+<!-- LOCAL VIDEO REEL — Trail Real Moments -->
+<section class="section" id="trail-local-videos" style="background:linear-gradient(180deg,rgba(242,165,65,0.06),rgba(10,10,15,0));padding:4rem 0 2rem;">
+  <div class="container">
+    <div class="reveal text-center" style="margin-bottom:2rem;">
+      <div class="section-label">On the Trail</div>
+      <h2 class="display-sm">Real <span class="gradient-text-tour">Expeditions</span></h2>
+      <p style="color:var(--text-muted);margin-top:0.75rem;">Footage captured in the wild — raw, unfiltered, extraordinary.</p>
+    </div>
+    <div style="position:relative;max-width:900px;margin:0 auto 1.5rem;border-radius:1rem;overflow:hidden;background:#000;box-shadow:0 0 60px rgba(242,165,65,0.15);">
+      <video id="trail-local-vid" autoplay loop muted playsinline style="width:100%;max-height:70vh;object-fit:cover;display:block;"
+        src="/assets/media/gallery/videos/VID20250220124953.mp4"></video>
+      <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+        <div id="trail-vid-label" style="font-size:0.8rem;letter-spacing:2px;color:rgba(255,255,255,0.7);text-transform:uppercase;background:rgba(0,0,0,0.5);padding:0.35rem 1rem;border-radius:2rem;">Trail Walk · Feb 2025</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto;" id="trail-vid-strip"></div>
+  </div>
+</section>
+<script>
+(function(){
+  var clips = [
+    { src:'/assets/media/gallery/videos/VID20250220124953.mp4', label:'Trail Walk · Feb 2025' },
+    { src:'/assets/media/gallery/videos/VID20250220123919~2.mp4', label:'Heritage Trail · Feb 2025' }
+  ];
+  var strip = document.getElementById('trail-vid-strip');
+  var mainVid = document.getElementById('trail-local-vid');
+  var label = document.getElementById('trail-vid-label');
+  clips.forEach(function(clip, i){
+    var thumb = document.createElement('div');
+    thumb.style.cssText = 'width:120px;height:68px;border-radius:0.5rem;overflow:hidden;cursor:pointer;border:2px solid '+(i===0?'var(--tour-primary)':'transparent')+';flex-shrink:0;transition:all .3s;position:relative;background:#111;';
+    thumb.id = 'tvth-'+i;
+    var tv = document.createElement('video');
+    tv.src = clip.src; tv.muted = true; tv.preload = 'metadata';
+    tv.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+    tv.onmouseenter = function(){ tv.play(); };
+    tv.onmouseleave = function(){ tv.pause(); };
+    thumb.appendChild(tv);
+    thumb.onclick = function(){
+      mainVid.src = clip.src; mainVid.play();
+      if(label) label.textContent = clip.label;
+      clips.forEach(function(_,j){ var t=document.getElementById('tvth-'+j); if(t) t.style.border='2px solid '+(j===i?'var(--tour-primary)':'transparent'); });
+    };
+    strip.appendChild(thumb);
+  });
+})();
+</script>
+
+<!-- TESTIMONIAL CAROUSEL -->
+<section class="section testimonial-section" style="background:var(--tour-surface);">
+  <div class="container text-center reveal" style="margin-bottom:3rem;">
+    <div class="section-label">Traveller Stories</div>
+    <h2 class="display-md">Journeys of <span class="gradient-text-tour">A Lifetime</span></h2>
+  </div>
+  <div class="testimonial-track" id="tourTestimonials">
+    <div class="testimonial-slide">
+      <div class="testimonial-card">
+        <div class="testimonial-text">"I thought I knew Rajasthan until I walked through the hidden havelis with this curator. The stories brought the stones to life in a way no guidebook ever could."</div>
+        <div class="testimonial-author">Michael T.</div>
+        <div class="testimonial-role">Heritage Circuit, 2025</div>
+      </div>
+    </div>
+    <div class="testimonial-slide">
+      <div class="testimonial-card">
+        <div class="testimonial-text">"A deeply moving and perfectly organized expedition through Spiti. It wasn't just a tour; it was a soulful journey that changed my perspective on the world."</div>
+        <div class="testimonial-author">The Sharma Family</div>
+        <div class="testimonial-role">Mountain Trail Expedition</div>
+      </div>
+    </div>
+    <div class="testimonial-slide">
+      <div class="testimonial-card">
+        <div class="testimonial-text">"Waking up at dawn to witness Varanasi through their eyes was the highlight of our India trip. Absolutely mesmerizing and deeply respectful of the culture."</div>
+        <div class="testimonial-author">Elena & Marcus</div>
+        <div class="testimonial-role">Varanasi Cultural Walk</div>
+      </div>
+    </div>
+  </div>
+  <div class="testimonial-controls">
+    <button class="tc-btn tc-prev">←</button>
+    <button class="tc-btn tc-next">→</button>
+  </div>
+</section>
+
+
+
+<!-- CROSS-PILLAR -->
+<section class="section" style="background:rgba(232,135,30,0.04);border-top:1px solid rgba(232,135,30,0.1);">
+  <div class="container text-center reveal">
+    <p style="font-family:var(--font-elegant);font-style:italic;font-size:1.2rem;color:var(--text-muted);margin-bottom:1rem;">Celebrate on the road?</p>
+    <h2 class="display-md" style="margin-bottom:0.75rem;">Combine with <span class="gradient-text-radha">Radha's Events</span></h2>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">Destination sangeet, wedding-tour packages, and cultural celebration travel.</p>
+    <div class="flex gap-2 justify-center" style="flex-wrap:wrap;">
+      <a href="booking.html?pillar=tour" class="btn" style="background:var(--tour-primary,#F2A541);color:#000;margin-bottom:0.75rem;">⚡ Book a Tour</a>
+      <a href="pillar-radha.html" class="btn btn-radha">Radha — Events →</a>
+      <a href="pillar-veronica.html" class="btn btn-ghost">Veronica — Corporate →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ENQUIRY -->
+<section class="section" id="enquire">
+  <div class="container">
+    <div class="enquiry-wrap">
+      <div class="reveal">
+        <div class="section-label">Plan Your Journey</div>
+        <h2 class="display-md" style="margin-bottom:1rem;">Every Trail<br/><span class="gradient-text-tour">Begins Here</span></h2>
+        <p style="color:var(--text-muted);margin-bottom:2rem;">Tell us your dream destination and we'll curate a journey that exceeds every expectation.</p>
+        <div id="tourQRBlock" style="padding:1.5rem;background:rgba(242,165,65,0.05);border:1px solid rgba(242,165,65,0.2);border-radius:var(--radius-md);margin-bottom:1.5rem;">
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;">Pay token to confirm:</p>
+          <div id="tourQRContainer" style="width:160px;height:160px;background:rgba(255,255,255,0.04);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.8rem;">QR via Admin</div>
+        </div>
+        <a href="https://wa.me/918192901515" target="_blank" class="btn btn-tour">WhatsApp Us</a>
+      </div>
+      <div class="reveal delay-2">
+        <form id="tourEnquiryForm" class="enquiry-form-wrap" style="border-color:rgba(242,165,65,0.2);">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Name</label><input type="text" name="name" class="form-input" required placeholder="Your name"/></div>
+            <div class="form-group"><label class="form-label">Phone</label><input type="tel" name="phone" class="form-input" required placeholder="+91 XXXXX"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email</label><input type="email" name="email" class="form-input" required placeholder="email@example.com"/></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Tour Type</label>
+              <select name="eventType" class="form-select" required>
+                <option value="" disabled selected>Select</option>
+                <option>Heritage Walk</option>
+                <option>Mountain Trail</option>
+                <option>Cultural Immersion</option>
+                <option>Spiritual Journey</option>
+                <option>Custom / Private</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Preferred Dates</label><input type="date" name="eventDate" class="form-input"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Group Size</label>
+            <select name="budget" class="form-select">
+              <option value="" disabled selected>Group size</option>
+              <option>Solo</option><option>2 People</option><option>3–5 People</option>
+              <option>6–10 People</option><option>10+ People</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Dream Destination / Message</label><textarea name="message" class="form-textarea" placeholder="Tell us your dream destination or what kind of experience you're seeking…"></textarea></div>
+          <button type="submit" class="btn btn-tour" style="width:100%;justify-content:center;">🧭 Match Trail via Geographical AI Engine</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOOGLE REVIEWS WIDGET -->
+<style>
+/* Reviews section styles */
+.reviews-section {
+  padding: 6rem 6%;
+  background: var(--navy-mid, #070f20);
+}
+
+.reviews-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.reviews-label {
+  font-size: 0.69rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold, #c9a84c);
+  margin-bottom: 0.9rem;
+}
+
+.reviews-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.9rem, 3.8vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--ivory, #f8f5ee);
+}
+
+.reviews-overall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: rgba(248, 245, 238, 0.62);
+}
+
+.reviews-stars-big {
+  color: var(--gold, #c9a84c);
+  font-size: 1.3rem;
+  letter-spacing: 0.15rem;
+}
+
+.reviews-rating-num {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold, #c9a84c);
+  margin-right: 0.5rem;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.4rem;
+  margin-top: 2.5rem;
+}
+
+.review-card {
+  background: rgba(3, 8, 18, 0.65);
+  border: 1px solid rgba(201, 168, 76, 0.11);
+  border-radius: 4px;
+  padding: 1.8rem;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.review-card:hover {
+  border-color: rgba(201, 168, 76, 0.38);
+  transform: translateY(-2px);
+}
+
+.review-card::before {
+  content: '"';
+  font-family: 'Playfair Display', serif;
+  font-size: 4.5rem;
+  color: rgba(201, 168, 76, 0.13);
+  position: absolute;
+  top: 0.8rem;
+  left: 1.4rem;
+  line-height: 1;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.review-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(201, 168, 76, 0.28);
+}
+
+.review-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(201, 168, 76, 0.18);
+  border: 1px solid rgba(201, 168, 76, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  color: var(--gold, #c9a84c);
+  font-weight: 600;
+}
+
+.review-info {
+  flex: 1;
+}
+
+.review-author {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ivory, #f8f5ee);
+  margin-bottom: 0.2rem;
+}
+
+.review-stars {
+  color: var(--gold, #c9a84c);
+  font-size: 0.85rem;
+  letter-spacing: 0.1rem;
+}
+
+.review-date {
+  font-size: 0.72rem;
+  color: rgba(248, 245, 238, 0.4);
+  margin-top: 0.15rem;
+}
+
+.review-text {
+  font-size: 0.9rem;
+  line-height: 1.82;
+  color: rgba(248, 245, 238, 0.62);
+  position: relative;
+  z-index: 1;
+}
+
+.reviews-cta {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.reviews-cta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--ivory, #f8f5ee);
+  padding: 0.9rem 2rem;
+  border: 1px solid rgba(248, 245, 238, 0.28);
+  border-radius: 2px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.reviews-cta a:hover {
+  border-color: rgba(201, 168, 76, 0.5);
+  color: var(--gold, #c9a84c);
+  background: rgba(201, 168, 76, 0.05);
+}
+
+.reviews-loading {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(248, 245, 238, 0.4);
+  font-size: 0.9rem;
+}
+
+.reviews-error {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
+  padding: 1.2rem;
+  text-align: center;
+  color: #e74c3c;
+  font-size: 0.88rem;
+}
+</style>
+
+<section class="reviews-section" id="reviews">
+  <div class="reviews-header">
+    <p class="reviews-label">✦ Client Testimonials</p>
+    <h2 class="reviews-title">Verified Google Reviews</h2>
+    <div class="reviews-overall" id="reviews-overall">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <div id="reviews-container">
+    <div class="reviews-loading">
+      <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+      <p>Loading reviews from Google...</p>
+    </div>
+  </div>
+
+  <div class="reviews-cta" id="reviews-cta" style="display: none;">
+    <a href="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID" target="_blank" rel="noopener">
+      <i class="fas fa-star"></i> Leave us a Google Review
+    </a>
+  </div>
+</section>
+
+<script>
+async function loadGoogleReviews() {
+  try {
+    const response = await fetch('/api/google-reviews');
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load reviews');
+    }
+
+    const { reviews, overall_rating, total_ratings, business_name, place_id } = data;
+    
+    if (place_id) {
+      const ctaLink = document.querySelector('#reviews-cta a');
+      if (ctaLink) ctaLink.href = `https://search.google.com/local/writereview?placeid=${place_id}`;
+    }
+
+    const overallContainer = document.getElementById('reviews-overall');
+    if (overall_rating && total_ratings) {
+      const stars = '★'.repeat(Math.floor(overall_rating)) + 
+                    (overall_rating % 1 >= 0.5 ? '⯨' : '') + 
+                    '☆'.repeat(5 - Math.ceil(overall_rating));
+      
+      overallContainer.innerHTML = `
+        <span class="reviews-stars-big">${stars}</span>
+        <span>
+          <span class="reviews-rating-num">${overall_rating.toFixed(1)}</span>
+          based on ${total_ratings} reviews
+        </span>
+      `;
+    }
+
+    const container = document.getElementById('reviews-container');
+    
+    if (reviews.length === 0) {
+      container.innerHTML = '<div class="reviews-loading"><p>No reviews yet. Be the first to leave a review!</p></div>';
+      document.getElementById('reviews-cta').style.display = 'block';
+      return;
+    }
+
+    const reviewsHTML = reviews.map(review => {
+      const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+      const date = new Date(review.time * 1000).toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'short' 
+      });
+      
+      const initials = review.author_name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+
+      const avatarHTML = review.profile_photo_url 
+        ? `<img src="${review.profile_photo_url}" alt="${review.author_name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="review-avatar-fallback" style="display:none;">${initials}</div>`
+        : `<div class="review-avatar-fallback">${initials}</div>`;
+
+      return `
+        <div class="review-card">
+          <div class="review-header">
+            ${avatarHTML}
+            <div class="review-info">
+              <div class="review-author">${review.author_name}</div>
+              <div class="review-stars">${stars}</div>
+              <div class="review-date">${date}</div>
+            </div>
+          </div>
+          <p class="review-text">${review.text || 'Amazing experience!'}</p>
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `<div class="reviews-grid">${reviewsHTML}</div>`;
+    document.getElementById('reviews-cta').style.display = 'block';
+
+  } catch (error) {
+    console.error('Failed to load Google reviews:', error);
+    document.getElementById('reviews-container').innerHTML = `
+      <div class="reviews-error">
+        <p>Unable to load reviews at this time.</p>
+        <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">${error.message}</p>
+      </div>
+    `;
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadGoogleReviews);
+} else {
+  loadGoogleReviews();
+}
+</script>
+
+<footer class="site-footer">
+  <div class="container footer-bottom" style="padding-top:2rem;">
+    <span style="font-family:var(--font-display);font-size:1.2rem;color:var(--tour-accent);">TC<span style="color:var(--tour-primary)">.</span></span>
+    <span style="color:var(--text-muted);font-size:0.85rem;">© 2025 The Trail Curator. All rights reserved.</span>
+    <a href="https://instagram.com/TheTrailCurator" target="_blank" class="btn btn-ghost" style="padding:0.5rem 1rem;font-size:0.8rem;">Instagram</a>
+  </div>
+</footer>
+
+<a href="https://wa.me/918192901515" target="_blank" class="whatsapp-float">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/advanced.js"></script>
+
+
+<!-- VFX Suite -->
+<script src="assets/js/loader.js"></script>
+<script src="assets/js/cursor-fx.js"></script>
+<script src="assets/js/scroll-reveal.js"></script>
+<script src="assets/js/magnetic.js"></script>
+<script src="assets/js/ai-chat-widget.js"></script>
+
+
+<script>
+(function(){
+  var staticPhotos = [
+    '/assets/media/gallery/radha/radha-19.jpg','/assets/media/gallery/radha/radha-20.jpg',
+    '/assets/media/gallery/radha/radha-21.jpg','/assets/media/gallery/radha/radha-22.jpg',
+    '/assets/media/gallery/radha/radha-23.jpg','/assets/media/gallery/radha/radha-24.jpg',
+    '/assets/media/gallery/radha/radha-25.jpg','/assets/media/gallery/radha/radha-26.jpg',
+    '/assets/media/gallery/radha/radha-27.jpg','/assets/media/gallery-tour-1.png'
+  ];
+  function renderGallery(photos){
+    var g = document.getElementById('tourGallery');
+    if(!g) return;
+    g.innerHTML = photos.map(function(src){
+      return '<div class="gallery-item"><img src="'+src+'" alt="Tour Gallery" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:0.75rem;"/></div>';
+    }).join('');
+  }
+  if(typeof Media !== 'undefined'){
+    Media.getByPillar('Tour').then(function(m){
+      renderGallery(m.length ? m.map(function(x){return x.url;}) : staticPhotos);
+    }).catch(function(){ renderGallery(staticPhotos); });
+  } else { renderGallery(staticPhotos); }
+})();
+</script>
+
+
+<!-- STICKY BOOKING BAR -->
+<div class="sticky-booking-bar" id="stickyBookingBar">
+  <span class="sticky-bar-text">Plan your ultimate journey</span>
+  <a href="#enquire" class="btn btn-tour sticky-bar-btn magnetic-btn" style="padding:0.5rem 1.5rem;">Book A Tour</a>
+</div>
+
+
+
+<script>
+(function(){
+  try {
+    fetch('/api/analytics/view', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        page: location.pathname,
+        pillar: document.body.dataset.pillar || ''
+      }

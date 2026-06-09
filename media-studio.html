@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>📸 Media Studio — Anti Gravity</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#08080f;--card:#111118;--border:rgba(255,255,255,0.07);--r:#E8871E;--v:#7C3AED;--t:#10B981}
+body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:100vh;padding:1.5rem 1rem}
+h1{text-align:center;font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--r),var(--v),var(--t));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem}
+.sub{text-align:center;color:#444;font-size:.82rem;margin-bottom:1.5rem}
+/* TABS */
+.tabs{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.tab{padding:.5rem 1.2rem;border-radius:20px;border:1px solid var(--border);background:var(--card);color:#555;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.tab.active,.tab:hover{color:#fff;border-color:rgba(255,255,255,.2)}
+.tab[data-p=radha].active{background:var(--r);border-color:var(--r)}
+.tab[data-p=veronica].active{background:var(--v);border-color:var(--v)}
+.tab[data-p=trail].active{background:var(--t);border-color:var(--t)}
+.tab[data-p=reviews].active{background:#1d4ed8;border-color:#1d4ed8}
+/* PANELS */
+.panel{display:none;max-width:1200px;margin:0 auto}
+.panel.active{display:block}
+/* DROP ZONE */
+.drop-zone{border:2px dashed var(--border);border-radius:16px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem;background:var(--card)}
+.drop-zone.over,.drop-zone:hover{border-color:rgba(255,255,255,.25);background:#16161f}
+.drop-zone input{display:none}
+.dz-icon{font-size:2.5rem;margin-bottom:.5rem}
+.dz-text{color:#444;font-size:.85rem;line-height:1.6}
+.dz-btn{display:inline-block;margin-top:.8rem;padding:.45rem 1.4rem;border-radius:20px;font-size:.8rem;font-weight:700;cursor:pointer;border:none;color:#fff}
+.btn-r{background:var(--r)} .btn-v{background:var(--v)} .btn-t{background:var(--t)}
+/* GRID */
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.toolbar span{color:#444;font-size:.8rem}
+.clear-btn{background:none;border:1px solid #1e1e2a;color:#555;border-radius:8px;padding:.3rem .8rem;font-size:.75rem;cursor:pointer;transition:color .2s}
+.clear-btn:hover{color:#ef4444;border-color:#ef4444}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+.grid-cell{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;background:#111;cursor:pointer}
+.grid-cell img,.grid-cell video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.grid-cell:hover img,.grid-cell:hover video{transform:scale(1.05)}
+.grid-cell .del{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.75);border:none;color:#fff;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:none;align-items:center;justify-content:center}
+.grid-cell:hover .del{display:flex}
+.vid-badge{position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,.7);border-radius:4px;font-size:.65rem;padding:1px 5px;color:#fff}
+.empty-slot{aspect-ratio:1;border-radius:8px;background:#0d0d15;border:1px dashed #1a1a26}
+/* CLOUDINARY SETUP */
+.setup-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1rem}
+.setup-box h3{font-size:.9rem;font-weight:700;margin-bottom:.8rem;color:#aaa}
+.setup-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem}
+.setup-row input{background:#0a0a12;border:1px solid var(--border);color:#fff;border-radius:8px;padding:.5rem .8rem;font-size:.8rem;font-family:inherit;width:100%}
+.setup-row input:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.save-cfg{background:#222;border:1px solid var(--border);color:#fff;border-radius:8px;padding:.45rem 1.2rem;font-size:.8rem;cursor:pointer;transition:background .2s}
+.save-cfg:hover{background:#333}
+.cfg-status{font-size:.75rem;color:#10B981;margin-left:.7rem}
+/* REVIEWS */
+.reviews-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:700px){.reviews-grid{grid-template-columns:1fr}}
+.review-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem}
+.review-box h3{font-size:.9rem;font-weight:700;margin-bottom:.6rem;color:#aaa}
+.review-box p{font-size:.78rem;color:#555;line-height:1.6;margin-bottom:.8rem}
+.review-box input,.review-box textarea{width:100%;background:#0a0a12;border:1px solid var(--border);color:#fff;border-radius:8px;padding:.5rem .8rem;font-size:.8rem;font-family:inherit;margin-bottom:.5rem;resize:vertical}
+.review-box textarea{min-height:90px}
+.review-box input:focus,.review-box textarea:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.iframe-preview{width:100%;height:300px;border:none;border-radius:10px;margin-top:.5rem;background:#111}
+.apply-btn{background:#1d4ed8;border:none;color:#fff;border-radius:8px;padding:.45rem 1.2rem;font-size:.8rem;cursor:pointer;font-weight:600}
+.apply-btn:hover{background:#2563eb}
+/* LIGHTBOX */
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:999;align-items:center;justify-content:center}
+.lb.open{display:flex}
+.lb img,.lb video{max-width:92vw;max-height:90vh;border-radius:10px}
+.lb-close{position:fixed;top:1rem;right:1rem;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:1.2rem;width:40px;height:40px;border-radius:50%;cursor:pointer}
+</style>
+</head>
+<body>
+
+<h1>📸 Anti Gravity Media Studio</h1>
+<p class="sub">Dump photos & videos per pillar · Persists in browser · Hard refresh (Ctrl+Shift+R) if page looks wrong</p>
+
+<div class="tabs">
+  <button class="tab active" data-p="radha"    onclick="switchTab('radha')">🪔 Radha</button>
+  <button class="tab"        data-p="veronica" onclick="switchTab('veronica')">🎤 Veronica</button>
+  <button class="tab"        data-p="trail"    onclick="switchTab('trail')">🧭 Trail Curator</button>
+  <button class="tab"        data-p="reviews"  onclick="switchTab('reviews')">⭐ Google Reviews</button>
+</div>
+
+<!-- RADHA -->
+<div class="panel active" id="panel-radha">
+  <div class="drop-zone" id="dz-radha" ondragover="dov(event,'radha')" ondragleave="dol('radha')" ondrop="ddr(event,'radha')" onclick="document.getElementById('fi-radha').click()">
+    <input type="file" id="fi-radha" multiple accept="image/*,video/*" onchange="onSel(event,'radha')"/>
+    <div class="dz-icon">🪔</div>
+    <div class="dz-text">Drop Radha photos/videos here<br/>Sangeet · Weddings · Cultural Events</div>
+    <span class="dz-btn btn-r">+ Add Media</span>
+  </div>
+  <div class="toolbar"><span id="cnt-radha">0 files</span><button class="clear-btn" onclick="clearAll('radha')">Clear all</button></div>
+  <div class="grid" id="grid-radha"></div>
+</div>
+
+<!-- VERONICA -->
+<div class="panel" id="panel-veronica">
+  <div class="drop-zone" id="dz-veronica" ondragover="dov(event,'veronica')" ondragleave="dol('veronica')" ondrop="ddr(event,'veronica')" onclick="document.getElementById('fi-veronica').click()">
+    <input type="file" id="fi-veronica" multiple accept="image/*,video/*" onchange="onSel(event,'veronica')"/>
+    <div class="dz-icon">🎤</div>
+    <div class="dz-text">Drop Veronica photos/videos here<br/>Corporate · Conferences · Product Launches</div>
+    <span class="dz-btn btn-v">+ Add Media</span>
+  </div>
+  <div class="toolbar"><span id="cnt-veronica">0 files</span><button class="clear-btn" onclick="clearAll('veronica')">Clear all</button></div>
+  <div class="grid" id="grid-veronica"></div>
+</div>
+
+<!-- TRAIL -->
+<div class="panel" id="panel-trail">
+  <div class="drop-zone" id="dz-trail" ondragover="dov(event,'trail')" ondragleave="dol('trail')" ondrop="ddr(event,'trail')" onclick="document.getElementById('fi-trail').click()">
+    <input type="file" id="fi-trail" multiple accept="image/*,video/*" onchange="onSel(event,'trail')"/>
+    <div class="dz-icon">🧭</div>
+    <div class="dz-text">Drop Trail Curator photos/videos here<br/>Heritage Walks · Treks · Culture</div>
+    <span class="dz-btn btn-t">+ Add Media</span>
+  </div>
+  <div class="toolbar"><span id="cnt-trail">0 files</span><button class="clear-btn" onclick="clearAll('trail')">Clear all</button></div>
+  <div class="grid" id="grid-trail"></div>
+</div>
+
+<!-- REVIEWS -->
+<div class="panel" id="panel-reviews">
+  <div class="reviews-grid">
+    <div class="review-box">
+      <h3>🗺️ Embed Google Reviews (iframe)</h3>
+      <p>Go to Google Maps → find your business → Share → Embed a map → Copy HTML.<br/>Paste the <code>src="..."</code> URL below:</p>
+      <input type="text" id="gmaps-url" placeholder="Paste Google Maps embed src URL here..." oninput="previewMap()"/>
+      <button class="apply-btn" onclick="previewMap()">Preview</button>
+      <iframe class="iframe-preview" id="map-frame" src="" allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <div class="review-box">
+      <h3>⭐ Google Review Direct Link</h3>
+      <p>Share this link with clients so they can leave a Google review instantly. Paste your Place ID below:</p>
+      <input type="text" id="place-id" placeholder="e.g. ChIJ2eUgeAK6j4ARbn5u_wAGqWA" oninput="updateLinks()"/>
+      <p style="margin-top:.5rem;font-size:.75rem;color:#10B981" id="review-link-out">—</p>
+      <hr style="border-color:#1a1a2e;margin:.8rem 0"/>
+      <h3 style="margin-bottom:.6rem">📋 Recent Reviews (manual)</h3>
+      <p>Paste a review to display on site:</p>
+      <input type="text" id="rv-name" placeholder="Client name"/>
+      <input type="text" id="rv-stars" placeholder="Stars (1-5)" type="number" min="1" max="5"/>
+      <textarea id="rv-text" placeholder="Review text..."></textarea>
+      <button class="apply-btn" onclick="addReview()">Add Review</button>
+      <div id="review-list" style="margin-top:.8rem;display:flex;flex-direction:column;gap:.5rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="closeLb()">
+  <button class="lb-close">✕</button>
+  <img id="lb-img" src="" style="display:none"/>
+  <video id="lb-vid" controls style="display:none"></video>
+</div>
+
+<script>
+// ── IndexedDB ────────────────────────────────────────────────────────────────
+let db;
+const DB_NAME = 'ag_studio', DB_VER = 1;
+const req = indexedDB.open(DB_NAME, DB_VER);
+req.onupgradeneeded = e => {
+  const d = e.target.result;
+  ['radha','veronica','trail'].forEach(p => {
+    if (!d.objectStoreNames.contains(p)) d.createObjectStore(p, {keyPath:'id', autoIncrement:true});
+  });
+};
+req.onsuccess = e => { db = e.target.result; ['radha','veronica','trail'].forEach(loadGrid); };
+
+function store(profile, mode) { return db.transaction(profile, mode).objectStore(profile); }
+
+function saveFile(profile, file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const rec = { name: file.name, type: file.type, data: ev.target.result, ts: Date.now() };
+    const req = store(profile,'readwrite').add(rec);
+    req.onsuccess = () => loadGrid(profile);
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadGrid(profile) {
+  const req = store(profile,'readonly').getAll();
+  req.onsuccess = e => renderGrid(profile, e.target.result);
+}
+
+function deleteItem(profile, id) {
+  store(profile,'readwrite').delete(id);
+  loadGrid(profile);
+}
+
+function clearAll(profile) {
+  if (!confirm('Clear all media for this profile?')) return;
+  store(profile,'readwrite').clear();
+  loadGrid(profile);
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function renderGrid(profile, items) {
+  const g = document.getElementById('grid-'+profile);
+  g.innerHTML = '';
+  document.getElementById('cnt-'+profile).textContent = items.length + ' file' + (items.length!==1?'s':'');
+  items.forEach(item => {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    const isVid = item.type.startsWith('video/');
+    const el = document.createElement(isVid ? 'video' : 'img');
+    el.src = item.data;
+    if (isVid) { el.muted = true; el.loop = true; cell.addEventListener('mouseenter',()=>el.play()); cell.addEventListener('mouseleave',()=>el.pause()); }
+    el.onclick = () => openLb(item.data, isVid);
+    const del = document.createElement('button');
+    del.className = 'del'; del.textContent = '✕';
+    del.onclick = e => { e.stopPropagation(); deleteItem(profile, item.id); };
+    cell.appendChild(el);
+    cell.appendChild(del);
+    if (isVid) { const b = document.createElement('span'); b.className='vid-badge'; b.textContent='▶ video'; cell.appendChild(b); }
+    g.appendChild(cell);
+  });
+  // fill up to 9 empty slots
+  const empties = Math.max(0, 9 - items.length);
+  for (let i=0;i<empties;i++) { const e=document.createElement('div'); e.className='empty-slot'; g.appendChild(e); }
+}
+
+// ── File handling ─────────────────────────────────────────────────────────────
+function processFiles(files, profile) { Array.from(files).forEach(f => saveFile(profile, f)); }
+function onSel(e, p) { processFiles(e.target.files, p); e.target.value=''; }
+function dov(e, p) { e.preventDefault(); document.getElementById('dz-'+p).classList.add('over'); }
+function dol(p) { document.getElementById('dz-'+p).classList.remove('over'); }
+function ddr(e, p) { e.preventDefault(); dol(p); processFiles(e.dataTransfer.files, p); }
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(p) {
+  document.querySelectorAll('.panel').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('panel-'+p).classList.add('active');
+  document.querySelector('.tab[data-p='+p+']').classList.add('active');
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+function openLb(src, isVid) {
+  const img = document.getElementById('lb-img');
+  const vid = document.getElementById('lb-vid');
+  if (isVid) { vid.src=src; vid.style.display='block'; img.style.display='none'; }
+  else { img.src=src; img.style.display='block'; vid.style.display='none'; }
+  document.getElementById('lb').classList.add('open');
+}
+function closeLb() {
+  document.getElementById('lb').classList.remove('open');
+  document.getElementById('lb-vid').pause();
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLb(); });
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+function previewMap() {
+  const url = document.getElementById('gmaps-url').value.trim();
+  if (url) document.getElementById('map-frame').src = url;
+}
+function updateLinks() {
+  const pid = document.getElementById('place-id').value.trim();
+  if (!pid) return;
+  const link = `https://search.google.com/local/writereview?placeid=${pid}`;
+  document.getElementById('review-link-out').innerHTML =
+    `<a href="${link}" target="_blank" style="color:#10B981">⭐ Share this review link with clients →</a>`;
+}
+let reviews = JSON.parse(localStorage.getItem('ag_reviews')||'[]');
+function addReview() {
+  const n=document.getElementById('rv-name').value.trim();
+  const s=parseInt(document.getElementById('rv-stars').value)||5;
+  const t=document.getElementById('rv-text').value.trim();
+  if (!n||!t) return;
+  reviews.unshift({n,s,t,ts:Date.now()});
+  localStorage.setItem('ag_reviews',JSON.stringify(reviews));
+  renderReviews();
+  document.getElementById('rv-name').value='';
+  document.getElementById('rv-stars').value='';
+  document.getElementById('rv-text').value='';
+}
+function renderReviews() {
+  const el = document.getElementById('review-list');
+  el.innerHTML = reviews.slice(0,10).map(r=>`
+    <div style="background:#0d0d15;border:1px solid #1a1a26;border-radius:10px;padding:.8rem">
+      <div style="font-weight:700;font-size:.82rem">${r.n} <span style="color:#f59e0b">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</span></div>
+      <div style="color:#555;font-size:.78rem;margin-top:.3rem">${r.t}</div>
+    </div>`).join('');
+}
+renderReviews();
+</script>
+
+<script>
+(function(){
+  try {
+    fetch('/api/analytics/view', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        page: location.pathname,
+        pillar: document.body.dataset.pillar || ''
+      })
+    }).catch(()=>{});
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

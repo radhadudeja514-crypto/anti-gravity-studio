@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Google Reviews — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.review-card{padding:1rem;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);margin-bottom:0.75rem;transition:all 0.2s;}
+.review-card:hover{border-color:var(--border-light);}
+.review-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;}
+.review-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--surface);border:1px solid var(--border);}
+.review-name{font-weight:600;font-size:0.85rem;}
+.review-stars{color:#F4C97A;font-size:0.85rem;letter-spacing:1px;}
+.review-text{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
+.review-date{font-size:0.68rem;color:var(--text-muted);margin-top:0.4rem;}
+.stars-dist{display:flex;flex-direction:column;gap:0.35rem;}
+.star-row{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;}
+.star-row .label{min-width:60px;font-weight:600;color:var(--text-dim);}
+.star-bar{flex:1;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;}
+.star-bar-fill{height:100%;background:#F4C97A;border-radius:4px;transition:width 1s ease;}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>⭐ GOOGLE REVIEWS</h1><p>Monitor and manage your Google My Business reputation</p></div>
+    <div class="header-actions">
+      <button class="btn btn-cyan btn-sm" onclick="refreshReviews()">🔄 Refresh Cache</button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(244,201,122,0.1);color:#F4C97A;">⭐</div><div class="kpi-value" id="kAvg">—</div><div class="kpi-label">Average Rating</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:var(--green);">📝</div><div class="kpi-value" id="kTotal">0</div><div class="kpi-label">Total Reviews</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,0.1);color:var(--cyan);">🏆</div><div class="kpi-value" id="k5Star">0</div><div class="kpi-label">5-Star Reviews</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(157,78,221,0.1);color:var(--purple);">📈</div><div class="kpi-value" id="kTrend">—</div><div class="kpi-label">Trend</div></div>
+  </div>
+
+  <div class="grid-3-1">
+    <!-- Reviews List -->
+    <div class="glass-card">
+      <div class="card-header"><div class="card-title"><span class="icon">📝</span> ALL REVIEWS</div></div>
+      <div id="reviewList"><div class="shimmer" style="height:300px;"></div></div>
+    </div>
+
+    <!-- Rating Distribution -->
+    <div>
+      <div class="glass-card accent-orange">
+        <div class="card-header"><div class="card-title" style="color:var(--orange);"><span class="icon">📊</span> DISTRIBUTION</div></div>
+        <div class="stars-dist" id="starDist"></div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header"><div class="card-title"><span class="icon">🔗</span> QUICK LINKS</div></div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+          <a href="https://business.google.com" target="_blank" class="qa-card" style="padding:0.65rem;"><div class="qa-icon">🏢</div><div><strong style="font-size:0.78rem;">Google Business Profile</strong></div></a>
+          <a href="https://search.google.com/local/writereview" target="_blank" class="qa-card" style="padding:0.65rem;"><div class="qa-icon">✍️</div><div><strong style="font-size:0.78rem;">Get Review Link</strong></div></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadReviews(){
+  try{
+    const r=await fetch('/api/google-reviews');const reviews=await r.json();
+    if(!Array.isArray(reviews)||!reviews.length){
+      document.getElementById('reviewList').innerHTML='<div class="empty-state"><div class="empty-icon">⭐</div>No reviews loaded. Configure Google Places API key in Settings.</div>';
+      return;
+    }
+    renderKPIs(reviews);renderList(reviews);renderDist(reviews);
+  }catch(e){document.getElementById('reviewList').innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load reviews. Check API configuration.</div>';}
+}
+
+function renderKPIs(reviews){
+  const avg=(reviews.reduce((a,r)=>a+(r.rating||0),0)/reviews.length).toFixed(1);
+  const fiveStars=reviews.filter(r=>r.rating===5).length;
+  document.getElementById('kAvg').textContent=avg;
+  document.getElementById('kTotal').textContent=reviews.length;
+  document.getElementById('k5Star').textContent=fiveStars;
+  document.getElementById('kTrend').textContent=avg>=4.5?'🔥 Excellent':avg>=4?'✅ Good':'⚠️ Needs Work';
+}
+
+function renderList(reviews){
+  const el=document.getElementById('reviewList');
+  el.innerHTML=reviews.sort((a,b)=>(b.time||0)-(a.time||0)).map(r=>{
+    const stars='★'.repeat(r.rating||0)+'☆'.repeat(5-(r.rating||0));
+    const date=r.time?new Date(r.time*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'';
+    return`<div class="review-card">
+      <div class="review-header">
+        <img class="review-avatar" src="${r.profile_photo_url||''}" alt="" onerror="this.style.background='var(--surface)';this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>👤</text></svg>'"/>
+        <div><div class="review-name">${esc(r.author_name||'Anonymous')}</div><div class="review-stars">${stars}</div></div>
+      </div>
+      <div class="review-text">${esc(r.text||'No comment.')}</div>
+      <div class="review-date">${date}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDist(reviews){
+  const el=document.getElementById('starDist');
+  const total=reviews.length||1;
+  const counts={5:0,4:0,3:0,2:0,1:0};
+  reviews.forEach(r=>{counts[r.rating||5]=(counts[r.rating||5]||0)+1;});
+  el.innerHTML=[5,4,3,2,1].map(s=>{
+    const pct=(counts[s]/total)*100;
+    return`<div class="star-row"><span class="label">${s} ★</span><div class="star-bar"><div class="star-bar-fill" style="width:${pct}%;"></div></div><span style="min-width:30px;text-align:right;font-family:var(--font-display);font-size:0.72rem;font-weight:600;">${counts[s]}</span></div>`;
+  }).join('');
+}
+
+async function refreshReviews(){
+  try{await fetch('/api/google-reviews/refresh');showToast('Cache cleared! Reloading...','info');loadReviews();}catch(e){showToast('Failed','error');}
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+loadReviews();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

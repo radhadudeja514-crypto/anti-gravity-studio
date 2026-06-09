@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: anti-gravity-studio
+    env: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /opt/render/project/src/data/database.sqlite
+      - key: UPLOAD_DIR
+        value: /opt/render/project/src/data/uploads
+      - key: SESSION_SECRET
+        value: 23774d2af9a96f63439f3aff4613c98492903b97ba74c5f8bffbabbcf9cae171
+      - key: ADMIN_USER_PASSWORD
+        sync: false
+      - key: ADMIN_US

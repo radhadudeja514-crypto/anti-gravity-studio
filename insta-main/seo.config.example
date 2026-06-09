@@ -1,0 +1,15 @@
+# ── JSON-LD Schema — inject-seo.js ────────────────────────────────────────────
+# This is the structured-data snippet auto-injected into every HTML page.
+# Update the values below with your real details.
+
+SITE_NAME="Anti Gravity Studio"
+SITE_URL="https://yourdomain.com"
+BUSINESS_TYPE="LocalBusiness"
+PHONE="+91-XXXXXXXXXX"
+CITY="Your City"
+STATE="Your State"
+COUNTRY="IN"
+
+# Social profiles
+INSTAGRAM="https://instagram.com/youraccount"
+WHATSAPP="https://wa.me/91XXXXXXXXXX"

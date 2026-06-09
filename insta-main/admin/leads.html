@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Leads CRM — Anti-Gravity Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem}
+.pipe-col{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.75rem}
+.pipe-hdr{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;display:flex;justify-content:space-between;align-items:center}
+.pipe-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:.6rem;margin-bottom:.4rem;cursor:pointer;transition:border-color .15s;font-size:.75rem}
+.pipe-card:hover{border-color:rgba(0,249,255,.3)}
+.pipe-card .cn{font-weight:600;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pipe-card .cm{color:var(--text-muted);font-size:.62rem;display:flex;gap:.4rem;flex-wrap:wrap}
+.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(12px)}
+.modal-wrap.open{display:flex}
+.modal-box{background:#0d0d18;border:1px solid var(--glass-border);border-radius:16px;padding:2rem;width:min(560px,92vw);max-height:90vh;overflow-y:auto}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.di label{display:block;font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.3rem}
+.di p{font-size:.82rem}
+.wa{display:inline-flex;align-items:center;gap:.4rem;background:rgba(37,211,102,.1);color:#25d366;border:1px solid rgba(37,211,102,.25);padding:.35rem .8rem;border-radius:8px;font-size:.7rem;font-weight:600;text-decoration:none;transition:background .2s}
+.wa:hover{background:rgba(37,211,102,.2)}
+.notes-area{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:.75rem;color:var(--text);font-family:var(--font-body);font-size:.82rem;resize:vertical;min-height:80px;outline:none;transition:border-color .2s}
+.notes-area:focus{border-color:rgba(0,249,255,.4)}
+</style>
+</head>
+<body>
+<div class="mesh-bg"><div class="mesh-orb"></div><div class="mesh-orb"></div></div>
+<div class="scanlines"></div>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>🎯 Leads CRM</h1><p>All enquiries — Radha · Veronica · Tour</p></div>
+    <div class="header-actions">
+      <input class="search-input" id="searchInput" placeholder="Search name, email..." oninput="renderAll()"/>
+      <button class="btn btn-cyan" onclick="openAdd()">+ New Lead</button>
+      <button class="btn btn-ghost" onclick="location.href='/api/backup/leads'">📥 CSV Export</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.5rem">
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,.1);color:var(--cyan)">🎯</div><div class="kpi-value" id="kA">0</div><div class="kpi-label">Total</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(239,68,68,.1);color:var(--red)">🔥</div><div class="kpi-value" id="kH">0</div><div class="kpi-label">Hot</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(234,179,8,.1);color:var(--yellow)">♨️</div><div class="kpi-value" id="kW">0</div><div class="kpi-label">Warm</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,.1);color:var(--green)">✅</div><div class="kpi-value" id="kB">0</div><div class="kpi-label">Booked</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,135,30,.1);color:var(--orange)">💰</div><div class="kpi-value" id="kR">₹0</div><div class="kpi-label">Pipeline</div></div>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipe-col"><div class="pipe-hdr"><span style="color:var(--cyan)">NEW</span><span class="badge badge-cyan" id="cn0">0</span></div><div id="p0"></div></div>
+    <div class="pipe-col"><div class="pipe-hdr"><span style="color:var(--yellow)">WARM</span><span class="badge badge-yellow" id="cn1">0</span></div><div id="p1"></div></div>
+    <div class="pipe-col"><div class="pipe-hdr"><span style="color:var(--red)">HOT</span><span class="badge badge-red" id="cn2">0</span></div><div id="p2"></div></div>
+    <div class="pipe-col"><div class="pipe-hdr"><span style="color:var(--green)">BOOKED</span><span class="badge badge-green" id="cn3">0</span></div><div id="p3"></div></div>
+  </div>
+
+  <div class="glass-card">
+    <div class="toolbar">
+      <div class="card-title">📋 ALL LEADS</div>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="sf('all',this)">All</button>
+        <button class="filter-btn" onclick="sf('radha',this)">💍 Radha</button>
+        <button class="filter-btn" onclick="sf('corporate',this)">🎤 Corporate</button>
+        <button class="filter-btn" onclick="sf('tour',this)">🧭 Tour</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Client</th><th>Pillar</th><th>Event</th><th>Budget</th><th>Status</th><th>Added</th><th>Actions</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-wrap" id="detailM">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <h2 style="font-family:var(--font-display);font-size:.95rem;letter-spacing:.08em" id="dTitle">LEAD</h2>
+      <button onclick="closeD()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:.3rem .6rem;border-radius:6px;cursor:pointer;font-size:.72rem">✕ Close</button>
+    </div>
+    <div class="dg" id="dGrid"></div>
+    <div style="margin-bottom:1rem">
+      <label style="display:block;font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.4rem">Notes</label>
+      <textarea class="notes-area" id="dNotes" placeholder="Add follow-up notes, quote details, call summary..."></textarea>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+      <span style="font-size:.7rem;color:var(--text-muted)">Move to:</span>
+      <button class="btn btn-ghost btn-sm" onclick="setS('New')">🆕 New</button>
+      <button class="btn btn-ghost btn-sm" onclick="setS('Warm')">♨️ Warm</button>
+      <button class="btn btn-ghost btn-sm" onclick="setS('Hot')">🔥 Hot</button>
+      <button class="btn btn-success btn-sm" onclick="setS('Booked')">✅ Booked</button>
+      <button class="btn btn-danger btn-sm" onclick="setS('Lost')">❌ Lost</button>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <a id="waL" class="wa" href="#" target="_blank">💬 WhatsApp</a>
+      <button class="btn btn-cyan" onclick="saveD()">💾 Save</button>
+      <button class="btn btn-danger btn-sm" onclick="delD()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-wrap" id="addM">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <h2 style="font-family:var(--font-display);font-size:.95rem;letter-spacing:.08em">NEW LEAD</h2>
+      <button onclick="closeAdd()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:.3rem .6rem;border-radius:6px;cursor:pointer">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Name *</label><input type="text" id="aN" class="form-input" placeholder="Client name"/></div>
+      <div class="form-group"><label class="form-label">Phone</label><input type="tel" id="aP" class="form-input" placeholder="+91 98765 43210"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Email *</label><input type="email" id="aE" class="form-input" placeholder="email@example.com"/></div>
+      <div class="form-group"><label class="form-label">Pillar</label>
+        <select id="aPl" class="form-select"><option value="radha">💍 Radha</option><option value="corporate">🎤 Corporate</option><option value="tour">🧭 Tour</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Event Date</label><input type="date" id="aD" class="form-input"/></div>
+      <div class="form-group"><label class="form-label">Budget (₹)</label><input type="text" id="aB" class="form-input" placeholder="75000"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Message / Notes</label><textarea id="aM" class="form-textarea" placeholder="What are they looking for?"></textarea></div>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.25rem">
+      <button class="btn btn-ghost" onclick="closeAdd()">Cancel</button>
+      <button class="btn btn-cyan" onclick="addLead()">🎯 Add Lead</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let leads=[],filt='all',cur=null;
+const SC={New:'cyan',Warm:'yellow',Hot:'red',Booked:'green',Lost:'ghost'};
+const PIPES=[{s:'New',id:'p0',ci:'cn0'},{s:'Warm',id:'p1',ci:'cn1'},{s:'Hot',id:'p2',ci:'cn2'},{s:'Booked',id:'p3',ci:'cn3'}];
+
+async function load(){
+  const r=await fetch('/api/leads').catch(()=>({json:()=>[]}));
+  leads=await r.json().catch(()=>[]);
+  if(!Array.isArray(leads))leads=[];
+  renderAll();
+}
+
+function filtered(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  return leads.filter(l=>{
+    if(filt!=='all'&&(l.pillar||'').toLowerCase()!==filt)return false;
+    if(q&&!`${l.name}${l.email}${l.phone}${l.message||''}`.toLowerCase().includes(q))return false;
+    return true;
+  });
+}
+
+function renderAll(){
+  const rev=leads.reduce((s,l)=>s+(parseFloat((l.budget||'').replace(/[^0-9.]/g,''))||0),0);
+  document.getElementById('kA').textContent=leads.length;
+  document.getElementById('kH').textContent=leads.filter(l=>l.status==='Hot').length;
+  document.getElementById('kW').textContent=leads.filter(l=>l.status==='Warm').length;
+  document.getElementById('kB').textContent=leads.filter(l=>l.status==='Booked').length;
+  document.getElementById('kR').textContent='₹'+Math.round(rev/1000)+'K';
+
+  PIPES.forEach(({s,id,ci})=>{
+    const col=leads.filter(l=>(l.status||'New')===s);
+    document.getElementById(ci).textContent=col.length;
+    document.getElementById(id).innerHTML=col.slice(0,6).map(l=>`
+      <div class="pipe-card" onclick="openD(${l.id})">
+        <div class="cn">${e(l.name)}</div>
+        <div class="cm">
+          <span class="pillar-tag pillar-${(l.pillar||'').toLowerCase()}">${e(l.pillar||'')}</span>
+          ${l.budget?`<span>₹${e(l.budget)}</span>`:''}
+        </div>
+      </div>`).join('')+(col.length>6?`<div style="font-size:.6rem;color:var(--text-muted);text-align:center;padding:.3rem">+${col.length-6} more</div>`:'');
+  });
+
+  const list=filtered();
+  const tbody=document.getElementById('tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No leads yet</td></tr>';return;}
+  tbody.innerHTML=list.map(l=>{
+    const sc='badge-'+(SC[l.status||'New']||'ghost');
+    const ph=(l.phone||'').replace(/\D/g,'');
+    return`<tr>
+      <td><strong>${e(l.name)}</strong><br><small style="color:var(--text-dim)">${e(l.email||'')}</small></td>
+      <td><span class="pillar-tag pillar-${(l.pillar||'').toLowerCase()}">${e(l.pillar||'—')}</span></td>
+      <td style="font-size:.73rem">${l.eventDate||'—'}</td>
+      <td style="font-family:var(--font-display);font-size:.78rem;color:var(--cyan)">${l.budget?'₹'+e(l.budget):'—'}</td>
+      <td><span class="badge ${sc}">${e(l.status||'New')}</span></td>
+      <td style="font-size:.7rem;color:var(--text-dim)">${new Date(l.createdAt||Date.now()).toLocaleDateString('en-IN')}</td>
+      <td style="display:flex;gap:.3rem;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="openD(${l.id})">📋</button>
+        ${ph?`<a class="wa" href="https://wa.me/91${ph}?text=Hi+${encodeURIComponent(l.name)}!+This+is+Anti+Gravity+Studio." target="_blank" style="padding:.2rem .5rem;font-size:.6rem">💬</a>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function sf(f,el){filt=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderAll();}
+
+function openD(id){
+  cur=leads.find(l=>l.id===id);if(!cur)return;
+  document.getElementById('dTitle').textContent=cur.name.toUpperCase();
+  const ph=(cur.phone||'').replace(/\D/g,'');
+  document.getElementById('waL').href=ph?`https://wa.me/91${ph}?text=Hi+${encodeURIComponent(cur.name)}%2C+following+up+from+Anti+Gravity+Studio!`:'#';
+  document.getElementById('dNotes').value=cur.notes||'';
+  document.getElementById('dGrid').innerHTML=`
+    <div class="di"><label>Email</label><p>${e(cur.email||'—')}</p></div>
+    <div class="di"><label>Phone</label><p>${e(cur.phone||'—')}</p></div>
+    <div class="di"><label>Pillar</label><p><span class="pillar-tag pillar-${(cur.pillar||'').toLowerCase()}">${e(cur.pillar||'—')}</span></p></div>
+    <div class="di"><label>Event Date</label><p>${cur.eventDate||'—'}</p></div>
+    <div class="di"><label>Budget</label><p style="font-family:var(--font-display);color:var(--cyan)">${cur.budget?'₹'+cur.budget:'—'}</p></div>
+    <div class="di"><label>Status</label><p><span class="badge badge-${SC[cur.status||'New']||'ghost'}">${cur.status||'New'}</span></p></div>
+    <div class="di" style="grid-column:1/-1"><label>Message</label><p style="font-size:.8rem;color:var(--text-dim);line-height:1.6">${e(cur.message||'—')}</p></div>`;
+  document.getElementById('detailM').classList.add('open');
+}
+function closeD(){document.getElementById('detailM').classList.remove('open');cur=null;}
+
+async function setS(s){
+  if(!cur)return;
+  await fetch(`/api/leads/${cur.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s,notes:document.getElementById('dNotes').value})});
+  cur.status=s;load();toast('→ '+s,'success');
+}
+async function saveD(){
+  if(!cur)return;
+  await fetch(`/api/leads/${cur.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:cur.status||'New',notes:document.getElementById('dNotes').value})});
+  load();toast('Saved','success');
+}
+async function delD(){
+  if(!cur||!confirm('Delete this lead?'))return;
+  await fetch(`/api/leads/${cur.id}`,{method:'DELETE'});
+  closeD();load();toast('Deleted');
+}
+
+function openAdd(){document.getElementById('addM').classList.add('open');}
+function closeAdd(){document.getElementById('addM').classList.remove('open');}
+async function addLead(){
+  const name=document.getElementById('aN').value.trim(),email=document.getElementById('aE').value.trim();
+  if(!name||!email){alert('Name and email required');return;}
+  const r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone:document.getElementById('aP').value,pillar:document.getElementById('aPl').value,eventDate:document.getElementById('aD').value,budget:document.getElementById('aB').value,message:document.getElementById('aM').value})});
+  const d=await r.json();
+  if(d.id||d.success){closeAdd();load();toast('Lead added!','success');}
+  else toast(d.error||'Failed','error');
+}
+
+function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function toast(msg,t='info'){const el=document.createElement('div');const c=t==='success'?'rgba(34,197,94,.15)':t==='error'?'rgba(239,68,68,.15)':'rgba(0,249,255,.15)';const b=t==='success'?'rgba(34,197,94,.3)':t==='error'?'rgba(239,68,68,.3)':'rgba(0,249,255,.3)';el.style.cssText=`position:fixed;bottom:1.5rem;right:1.5rem;background:${c};border:1px solid ${b};color:#fff;padding:.75rem 1.25rem;border-radius:8px;font-size:.8rem;z-index:9999;backdrop-filter:blur(10px)`;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
+load();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

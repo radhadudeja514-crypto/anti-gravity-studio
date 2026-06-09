@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Marketing Agent — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.gen-output{
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:1.25rem;font-size:0.85rem;line-height:1.8;min-height:120px;white-space:pre-wrap;
+  color:var(--text);position:relative;
+}
+.gen-output .cursor{display:inline-block;width:2px;height:1em;background:var(--cyan);animation:blink 0.6s steps(1) infinite;vertical-align:text-bottom;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-bottom:1rem;}
+.type-btn{
+  padding:0.65rem 0.5rem;border-radius:var(--radius-xs);text-align:center;cursor:pointer;
+  background:var(--surface);border:1px solid var(--border);color:var(--text-dim);
+  font-size:0.75rem;font-weight:600;transition:all 0.2s;
+}
+.type-btn:hover{border-color:var(--border-light);}
+.type-btn.active{background:rgba(255,0,170,0.08);color:var(--magenta);border-color:rgba(255,0,170,0.3);}
+.type-btn .icon{display:block;font-size:1.3rem;margin-bottom:0.3rem;}
+.history-item{padding:0.75rem;border-radius:var(--radius-xs);background:var(--surface);border:1px solid var(--border);margin-bottom:0.5rem;font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
+.history-item:hover{background:var(--surface-hover);}
+.history-meta{font-size:0.65rem;color:var(--text-muted);margin-top:0.3rem;}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>📢 MARKETING AGENT</h1><p>AI-powered copywriting for every pillar</p></div>
+    <div class="header-actions"><a href="agent-hub.html" class="btn btn-ghost btn-sm">← Agent Hub</a></div>
+  </div>
+
+  <div class="grid-3-1">
+    <div>
+      <!-- Generator -->
+      <div class="glass-card accent-magenta">
+        <div class="card-header"><div class="card-title" style="color:var(--magenta);"><span class="icon">✨</span> GENERATE CONTENT</div></div>
+        <div class="form-group">
+          <label class="form-label">Pillar</label>
+          <select class="form-select" id="gPillar">
+            <option value="radha">🪔 Radha — Sangeet & Weddings</option>
+            <option value="veronica">🎤 Veronica — Corporate Events</option>
+            <option value="tour">🧭 Trail Curator — Heritage Tours</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Content Type</label>
+          <div class="type-grid">
+            <div class="type-btn active" onclick="setType('hook',this)"><span class="icon">🪝</span>Hook</div>
+            <div class="type-btn" onclick="setType('upsell',this)"><span class="icon">💎</span>Upsell</div>
+            <div class="type-btn" onclick="setType('cta',this)"><span class="icon">🎯</span>CTA</div>
+            <div class="type-btn" onclick="setType('full',this)"><span class="icon">📄</span>Full Post</div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="generate()">⚡ Generate Copy</button>
+      </div>
+
+      <!-- Output -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📝</span> GENERATED OUTPUT</div>
+          <div style="display:flex;gap:0.35rem;">
+            <button class="btn btn-ghost btn-sm" onclick="copyOutput()">📋 Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="generate()">🔄 New</button>
+          </div>
+        </div>
+        <div class="gen-output" id="output">
+          <span style="color:var(--text-muted);">Click "Generate Copy" to create marketing content for your selected pillar.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar: History & All Pillars -->
+    <div>
+      <div class="glass-card">
+        <div class="card-header"><div class="card-title"><span class="icon">📊</span> PILLAR STATS</div></div>
+        <div id="pillarStats"><div class="shimmer" style="height:100px;"></div></div>
+      </div>
+      <div class="glass-card">
+        <div class="card-header"><div class="card-title"><span class="icon">📜</span> RECENT</div></div>
+        <div id="history" style="max-height:300px;overflow-y:auto;">
+          <div class="empty-state" style="padding:1rem;"><div class="empty-icon">📝</div>No generations yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let contentType='hook', history=[];
+
+function setType(t,el){contentType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+
+async function generate(){
+  const pillar=document.getElementById('gPillar').value;
+  const out=document.getElementById('output');
+  out.innerHTML='<span class="cursor"></span> Generating...';
+  try{
+    const r=await fetch('/api/agent/marketing/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,type:contentType})});
+    const d=await r.json();
+    const text=d.content||d.text||JSON.stringify(d);
+    typewriter(out,text);
+    history.unshift({pillar,type:contentType,text:text.substring(0,80)+'...',time:new Date().toLocaleTimeString()});
+    renderHistory();
+  }catch(e){out.innerHTML='<span style="color:var(--red);">Error generating content. Check server.</span>';}
+}
+
+function typewriter(el,text){
+  el.innerHTML='';let i=0;
+  const iv=setInterval(()=>{
+    if(i>=text.length){clearInterval(iv);return;}
+    el.textContent+=text[i];i++;
+  },15);
+}
+
+function copyOutput(){
+  const t=document.getElementById('output').textContent;
+  navigator.clipboard.writeText(t).then(()=>showToast('Copied!','success')).catch(()=>showToast('Copy failed','error'));
+}
+
+function renderHistory(){
+  const el=document.getElementById('history');
+  if(!history.length)return;
+  el.innerHTML=history.slice(0,10).map(h=>`
+    <div class="history-item"><strong>${h.type.toUpperCase()}</strong> · ${h.pillar}<br/><span style="color:var(--text-dim);">${h.text}</span><div class="history-meta">${h.time}</div></div>
+  `).join('');
+}
+
+// Load pillar template stats
+fetch('/api/agent/marketing/all-pillars').then(r=>r.json()).then(d=>{
+  const pillars=d.pillars||[];
+  document.getElementById('pillarStats').innerHTML=pillars.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.8rem;">
+      <span>${p.emoji||'🎯'} ${p.name||p.id}</span>
+      <span class="badge badge-ghost">${p.hooks||0} hooks · ${p.upsells||0} upsells · ${p.ctas||0} CTAs</span>
+    </div>
+  `).join('');
+}).catch(()=>{document.getElementById('pillarStats').innerHTML='<div class="empty-state">Could not load</div>';});
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

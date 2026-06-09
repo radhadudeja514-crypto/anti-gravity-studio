@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Mission Control — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   ANTI-GRAVITY MISSION CONTROL — FUTURISTIC ADMIN DASHBOARD
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── RESET & BASE ───────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a0f;--surface:rgba(255,255,255,0.03);--surface-hover:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.07);--border-light:rgba(255,255,255,0.12);
+  --text:#f0f0f0;--text-dim:#888;--text-muted:#555;
+  --cyan:#00f9ff;--magenta:#ff00aa;--purple:#9d4edd;--orange:#e8871e;
+  --green:#22c55e;--yellow:#eab308;--red:#ef4444;--blue:#3b82f6;
+  --glass:rgba(13,13,20,0.75);--glass-border:rgba(255,255,255,0.08);
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-display:'Orbitron',monospace;
+  --radius:16px;--radius-sm:10px;--radius-xs:6px;
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--font-body);background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.15);}
+
+/* ── ANIMATED GRADIENT MESH BACKGROUND ──────────────────── */
+.mesh-bg{
+  position:fixed;inset:0;z-index:-1;overflow:hidden;
+}
+.mesh-bg::before,.mesh-bg::after{
+  content:'';position:absolute;border-radius:50%;filter:blur(120px);opacity:0.15;
+  animation:meshFloat 20s ease-in-out infinite;
+}
+.mesh-bg::before{
+  width:600px;height:600px;top:-200px;left:-100px;
+  background:radial-gradient(circle,var(--cyan),transparent 70%);
+}
+.mesh-bg::after{
+  width:500px;height:500px;bottom:-150px;right:-100px;
+  background:radial-gradient(circle,var(--magenta),transparent 70%);
+  animation-delay:-10s;animation-direction:reverse;
+}
+.mesh-orb{
+  position:absolute;border-radius:50%;filter:blur(100px);opacity:0.1;
+  animation:meshFloat 25s ease-in-out infinite;
+}
+.mesh-orb:nth-child(1){width:400px;height:400px;top:40%;left:30%;background:var(--purple);animation-delay:-5s;}
+.mesh-orb:nth-child(2){width:300px;height:300px;top:20%;right:20%;background:var(--orange);animation-delay:-15s;}
+.mesh-orb:nth-child(3){width:350px;height:350px;bottom:10%;left:50%;background:var(--cyan);animation-delay:-8s;opacity:0.06;}
+
+@keyframes meshFloat{
+  0%,100%{transform:translate(0,0) scale(1);}
+  25%{transform:translate(50px,-30px) scale(1.1);}
+  50%{transform:translate(-20px,40px) scale(0.95);}
+  75%{transform:translate(30px,20px) scale(1.05);}
+}
+
+/* ── SCAN LINE OVERLAY ──────────────────────────────────── */
+.scanlines{
+  position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.admin-layout{display:flex;min-height:100vh;position:relative;z-index:1;}
+
+/* ── SIDEBAR ────────────────────────────────────────────── */
+.sidebar{
+  width:260px;min-height:100vh;position:sticky;top:0;height:100vh;
+  background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-right:1px solid var(--glass-border);
+  display:flex;flex-direction:column;padding:1.25rem 0.75rem;
+  overflow-y:auto;flex-shrink:0;z-index:100;
+  transition:width 0.3s ease;
+}
+.sidebar-brand{
+  padding:0.5rem 0.75rem 1.5rem;display:flex;align-items:center;gap:0.6rem;
+}
+.brand-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+  box-shadow:0 0 20px rgba(0,249,255,0.2);
+}
+.brand-text{font-family:var(--font-display);font-size:0.85rem;font-weight:700;letter-spacing:0.08em;}
+.brand-text span{color:var(--cyan);}
+.brand-tag{font-size:0.55rem;color:var(--text-dim);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px;}
+
+.sidebar-section{margin-top:1rem;}
+.sidebar-section-label{
+  font-size:0.6rem;font-weight:700;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--text-muted);
+  padding:0 0.75rem;margin-bottom:0.5rem;
+}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;}
+.nav-link{
+  display:flex;align-items:center;gap:0.7rem;
+  padding:0.65rem 0.75rem;border-radius:var(--radius-sm);
+  color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:500;
+  text-decoration:none;transition:all 0.2s ease;position:relative;
+  border:1px solid transparent;
+}
+.nav-link:hover{background:var(--surface-hover);color:rgba(255,255,255,0.85);}
+.nav-link.active{
+  background:rgba(0,249,255,0.06);color:var(--cyan);font-weight:600;
+  border-color:rgba(0,249,255,0.15);
+  box-shadow:0 0 20px rgba(0,249,255,0.05);
+}
+.nav-link.active::before{
+  content:'';position:absolute;left:-0.75rem;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;border-radius:0 3px 3px 0;
+  background:var(--cyan);box-shadow:0 0 10px var(--cyan);
+}
+.nav-icon{font-size:1rem;width:22px;text-align:center;flex-shrink:0;}
+.nav-badge{
+  margin-left:auto;min-width:20px;height:20px;
+  background:linear-gradient(135deg,var(--magenta),var(--purple));
+  border-radius:10px;font-size:0.65rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;padding:0 6px;
+  box-shadow:0 0 10px rgba(255,0,170,0.3);
+}
+.nav-badge:empty{display:none;}
+
+.nav-link-ai{
+  margin-top:0.5rem;
+  background:linear-gradient(135deg,rgba(0,249,255,0.06),rgba(157,78,221,0.06));
+  border:1px solid rgba(0,249,255,0.12) !important;
+}
+.nav-link-ai .nav-icon{animation:aiPulse 2s ease-in-out infinite;}
+@keyframes aiPulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+.sidebar-footer{
+  margin-top:auto;border-top:1px solid var(--border);
+  padding-top:0.75rem;display:flex;flex-direction:column;gap:2px;
+}
+
+/* ── MAIN CONTENT ───────────────────────────────────────── */
+.main{flex:1;padding:1.5rem 2rem;overflow-y:auto;min-width:0;}
+
+/* ── COMMAND CENTER HEADER ──────────────────────────────── */
+.command-header{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:2rem;gap:1rem;flex-wrap:wrap;
+}
+.command-welcome h1{
+  font-family:var(--font-display);font-size:1.4rem;font-weight:700;
+  letter-spacing:0.03em;margin-bottom:0.35rem;
+  background:linear-gradient(135deg,#fff,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.command-welcome p{font-size:0.82rem;color:var(--text-dim);}
+
+.command-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.meta-clock{
+  font-family:var(--font-display);font-size:0.9rem;font-weight:600;
+  color:var(--cyan);letter-spacing:0.1em;
+  text-shadow:0 0 10px rgba(0,249,255,0.3);
+}
+.meta-date{font-size:0.75rem;color:var(--text-dim);margin-top:2px;text-align:right;}
+.health-badge{
+  display:flex;align-items:center;gap:0.4rem;
+  padding:0.4rem 0.85rem;border-radius:20px;font-size:0.72rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.08em;
+  border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:var(--green);
+  cursor:pointer;transition:all 0.2s ease;
+}
+.health-badge:hover{background:rgba(34,197,94,0.15);}
+.health-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);animation:healthPulse 2s ease-in-out infinite;
+}
+@keyframes healthPulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--green);}50%{opacity:0.4;box-shadow:0 0 4px var(--green);}}
+.health-badge.offline{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:var(--red);}
+.health-badge.offline .health-dot{background:var(--red);box-shadow:0 0 8px var(--red);}
+
+/* ── GLASS CARD ─────────────────────────────────────────── */
+.glass-card{
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);border-radius:var(--radius);
+  padding:1.25rem;transition:all 0.3s ease;position:relative;overflow:hidden;
+}
+.glass-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);
+}
+.glass-card:hover{border-color:var(--border-light);background:rgba(13,13,20,0.8);}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.card-title{font-family:var(--font-display);font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);}
+.card-title-icon{margin-right:0.5rem;}
+
+/* ── KPI CARDS ──────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+.kpi-card{
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);border-radius:var(--radius);
+  padding:1.25rem;position:relative;overflow:hidden;
+  transition:all 0.3s ease;cursor:default;
+}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  transition:opacity 0.3s ease;
+}
+.kpi-card:nth-child(1)::before{background:linear-gradient(90deg,var(--cyan),transparent);opacity:0.7;}
+.kpi-card:nth-child(2)::before{background:linear-gradient(90deg,var(--green),transparent);opacity:0.7;}
+.kpi-card:nth-child(3)::before{background:linear-gradient(90deg,var(--orange),transparent);opacity:0.7;}
+.kpi-card:nth-child(4)::before{background:linear-gradient(90deg,var(--purple),transparent);opacity:0.7;}
+.kpi-card:hover{border-color:var(--border-light);transform:translateY(-2px);}
+.kpi-card:hover::before{opacity:1;}
+
+.kpi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;}
+.kpi-icon{
+  width:40px;height:40px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+}
+.kpi-spark{width:60px;height:30px;}
+.kpi-spark polyline{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+.kpi-value{
+  font-family:var(--font-display);font-size:1.8rem;font-weight:700;
+  line-height:1;margin-bottom:0.3rem;
+}
+.kpi-label{font-size:0.72rem;color:var(--text-dim);font-weight:500;}
+.kpi-change{
+  display:inline-flex;align-items:center;gap:0.2rem;
+  font-size:0.68rem;font-weight:600;margin-top:0.4rem;
+  padding:0.15rem 0.5rem;border-radius:20px;
+}
+.kpi-change.up{background:rgba(34,197,94,0.1);color:var(--green);}
+.kpi-change.down{background:rgba(239,68,68,0.1);color:var(--red);}
+.kpi-change.neutral{background:rgba(255,255,255,0.05);color:var(--text-dim);}
+
+/* ── GRID LAYOUTS ───────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
+.grid-3-1{display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
+.grid-1-3{display:grid;grid-template-columns:1fr 2fr;gap:1.25rem;margin-bottom:1.25rem;}
+.full-width{margin-bottom:1.25rem;}
+
+/* ── AI INSIGHTS PANEL ──────────────────────────────────── */
+.ai-panel{
+  background:linear-gradient(135deg,rgba(0,249,255,0.03),rgba(157,78,221,0.03));
+  border:1px solid rgba(0,249,255,0.12);
+}
+.ai-panel .card-title{color:var(--cyan);}
+.ai-glow{
+  position:absolute;top:-50%;right:-50%;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(0,249,255,0.08),transparent 70%);
+  pointer-events:none;
+}
+.ai-insight-text{
+  font-size:0.88rem;line-height:1.7;color:rgba(255,255,255,0.85);
+  min-height:80px;padding:0.75rem;
+  background:rgba(0,0,0,0.2);border-radius:var(--radius-sm);
+  border:1px solid rgba(0,249,255,0.08);
+  margin-bottom:1rem;position:relative;
+}
+.ai-cursor{
+  display:inline-block;width:2px;height:1em;background:var(--cyan);
+  margin-left:2px;animation:blink 0.7s steps(1) infinite;vertical-align:text-bottom;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.ai-insight-meta{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+.ai-tag{
+  font-size:0.65rem;padding:0.2rem 0.6rem;border-radius:20px;font-weight:600;
+  letter-spacing:0.05em;text-transform:uppercase;
+}
+.ai-tag-revenue{background:rgba(232,135,30,0.12);color:var(--orange);border:1px solid rgba(232,135,30,0.2);}
+.ai-tag-leads{background:rgba(0,249,255,0.1);color:var(--cyan);border:1px solid rgba(0,249,255,0.2);}
+.ai-tag-content{background:rgba(157,78,221,0.1);color:var(--purple);border:1px solid rgba(157,78,221,0.2);}
+.ai-tag-urgent{background:rgba(255,0,170,0.1);color:var(--magenta);border:1px solid rgba(255,0,170,0.2);}
+
+.btn{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  padding:0.55rem 1.1rem;border-radius:var(--radius-xs);
+  font-family:var(--font-body);font-size:0.8rem;font-weight:600;
+  cursor:pointer;border:none;text-decoration:none;transition:all 0.2s ease;
+}
+.btn-cyan{background:rgba(0,249,255,0.1);color:var(--cyan);border:1px solid rgba(0,249,255,0.25);}
+.btn-cyan:hover{background:rgba(0,249,255,0.2);box-shadow:0 0 20px rgba(0,249,255,0.15);}
+.btn-magenta{background:rgba(255,0,170,0.1);color:var(--magenta);border:1px solid rgba(255,0,170,0.25);}
+.btn-magenta:hover{background:rgba(255,0,170,0.2);box-shadow:0 0 20px rgba(255,0,170,0.15);}
+.btn-purple{background:rgba(157,78,221,0.1);color:var(--purple);border:1px solid rgba(157,78,221,0.25);}
+.btn-purple:hover{background:rgba(157,78,221,0.2);}
+.btn-ghost{background:var(--surface);color:var(--text-dim);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--surface-hover);color:var(--text);}
+.btn-sm{padding:0.35rem 0.75rem;font-size:0.72rem;}
+.btn-primary{
+  background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;border:none;
+  box-shadow:0 0 20px rgba(0,249,255,0.2);
+}
+.btn-primary:hover{opacity:0.9;transform:translateY(-1px);box-shadow:0 4px 25px rgba(0,249,255,0.3);}
+.btn-danger{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-danger:hover{background:rgba(239,68,68,0.2);}
+.btn-success{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.btn-success:hover{background:rgba(34,197,94,0.2);}
+
+/* ── NOTIFICATIONS BAR ──────────────────────────────────── */
+.notif-bar{
+  display:flex;align-items:center;gap:0.75rem;
+  padding:0.75rem 1rem;border-radius:var(--radius-sm);
+  margin-bottom:1.25rem;font-size:0.82rem;
+  background:linear-gradient(135deg,rgba(255,0,170,0.06),rgba(157,78,221,0.06));
+  border:1px solid rgba(255,0,170,0.15);
+  animation:notifSlide 0.5s ease;
+}
+.notif-bar.info{
+  background:linear-gradient(135deg,rgba(0,249,255,0.06),rgba(59,130,246,0.06));
+  border-color:rgba(0,249,255,0.15);
+}
+@keyframes notifSlide{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+.notif-icon{font-size:1.1rem;flex-shrink:0;}
+.notif-text{flex:1;color:rgba(255,255,255,0.8);}
+.notif-close{
+  background:none;border:none;color:var(--text-muted);cursor:pointer;
+  font-size:1rem;padding:0.25rem;line-height:1;transition:color 0.2s;
+}
+.notif-close:hover{color:var(--text);}
+
+/* ── LEADS TABLE ────────────────────────────────────────── */
+.table-toolbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;}
+.search-input{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:0.55rem 1rem 0.55rem 2.2rem;
+  color:var(--text);font-family:var(--font-body);font-size:0.82rem;
+  outline:none;transition:all 0.2s;width:250px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:0.7rem center;
+}
+.search-input:focus{border-color:rgba(0,249,255,0.4);background-color:rgba(255,255,255,0.06);}
+.filter-group{display:flex;gap:0.4rem;}
+.filter-btn{
+  padding:0.4rem 0.8rem;border-radius:20px;font-size:0.7rem;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface);
+  color:var(--text-dim);transition:all 0.2s;text-transform:uppercase;letter-spacing:0.05em;
+}
+.filter-btn:hover,.filter-btn.active{background:rgba(0,249,255,0.1);color:var(--cyan);border-color:rgba(0,249,255,0.3);}
+
+.leads-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.leads-table th{
+  text-align:left;padding:0.65rem 0.85rem;font-size:0.65rem;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);
+  border-bottom:1px solid var(--border);
+}
+.leads-table td{padding:0.75rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+.leads-table tr{transition:all 0.15s ease;}
+.leads-table tbody tr:hover td{background:rgba(255,255,255,0.02);}
+
+.lead-name{font-weight:600;color:var(--text);margin-bottom:0.15rem;}
+.lead-detail{font-size:0.72rem;color:var(--text-dim);}
+
+.status-badge{
+  display:inline-flex;align-items:center;padding:0.2rem 0.6rem;
+  border-radius:20px;font-size:0.65rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.05em;
+}
+.status-new{background:rgba(0,249,255,0.1);color:var(--cyan);border:1px solid rgba(0,249,255,0.2);}
+.status-contacted{background:rgba(234,179,8,0.1);color:var(--yellow);border:1px solid rgba(234,179,8,0.2);}
+.status-converted{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.status-lost{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.status-quoted{background:rgba(157,78,221,0.1);color:var(--purple);border:1px solid rgba(157,78,221,0.2);}
+
+.score-bar{
+  width:50px;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;
+  overflow:hidden;display:inline-block;vertical-align:middle;margin-right:0.4rem;
+}
+.score-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+.score-label{font-size:0.72rem;font-weight:700;vertical-align:middle;}
+
+.pillar-tag{
+  font-size:0.65rem;font-weight:700;padding:0.15rem 0.55rem;
+  border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;
+}
+.pillar-radha{background:rgba(232,135,30,0.12);color:var(--orange);}
+.pillar-corporate,.pillar-veronica{background:rgba(192,192,192,0.08);color:#C0C0C0;}
+.pillar-tour{background:rgba(242,165,65,0.12);color:#F2A541;}
+.pillar-landing,.pillar-other{background:rgba(139,92,246,0.12);color:#8b5cf6;}
+
+.action-btns{display:flex;gap:0.3rem;}
+
+/* ── CONTENT CALENDAR ───────────────────────────────────── */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.cal-nav{display:flex;align-items:center;gap:0.75rem;}
+.cal-nav-btn{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xs);
+  color:var(--text-dim);padding:0.3rem 0.6rem;cursor:pointer;font-size:0.8rem;
+  transition:all 0.2s;
+}
+.cal-nav-btn:hover{background:var(--surface-hover);color:var(--text);}
+.cal-month{font-family:var(--font-display);font-size:0.8rem;font-weight:600;letter-spacing:0.05em;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-day-head{
+  text-align:center;font-size:0.6rem;font-weight:700;text-transform:uppercase;
+  color:var(--text-muted);padding:0.4rem;letter-spacing:0.1em;
+}
+.cal-cell{
+  min-height:70px;border-radius:var(--radius-xs);
+  background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.03);
+  padding:0.35rem;position:relative;transition:all 0.2s;cursor:pointer;
+}
+.cal-cell:hover{border-color:var(--border);background:var(--surface);}
+.cal-cell.today{border-color:rgba(0,249,255,0.3);background:rgba(0,249,255,0.04);}
+.cal-cell.other-month{opacity:0.3;}
+.cal-day-num{font-size:0.7rem;font-weight:600;color:var(--text-dim);margin-bottom:0.25rem;}
+.cal-cell.today .cal-day-num{color:var(--cyan);}
+.cal-event{
+  font-size:0.55rem;padding:0.12rem 0.35rem;border-radius:3px;
+  margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-weight:600;
+}
+.cal-event-radha{background:rgba(232,135,30,0.2);color:var(--orange);}
+.cal-event-veronica,.cal-event-corporate{background:rgba(192,192,192,0.12);color:#C0C0C0;}
+.cal-event-tour{background:rgba(242,165,65,0.15);color:#F2A541;}
+
+/* ── MARKETING AI ───────────────────────────────────────── */
+.marketing-controls{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.select-styled{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:var(--radius-xs);padding:0.45rem 0.8rem;
+  color:var(--text);font-family:var(--font-body);font-size:0.8rem;
+  outline:none;cursor:pointer;-webkit-appearance:none;
+}
+.select-styled:focus{border-color:rgba(0,249,255,0.4);}
+.select-styled option{background:#1a1a2e;}
+.marketing-output{
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:1rem;min-height:100px;
+  font-size:0.85rem;line-height:1.7;color:rgba(255,255,255,0.85);
+  position:relative;
+}
+.copy-btn{
+  position:absolute;top:0.5rem;right:0.5rem;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-xs);padding:0.3rem 0.6rem;
+  font-size:0.7rem;color:var(--text-dim);cursor:pointer;
+  transition:all 0.2s;
+}
+.copy-btn:hover{background:var(--surface-hover);color:var(--text);}
+
+/* ── MEDIA GALLERY ──────────────────────────────────────── */
+.media-filters{display:flex;gap:0.4rem;margin-bottom:1rem;}
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.75rem;}
+.media-item{
+  position:relative;border-radius:var(--radius-sm);overflow:hidden;
+  aspect-ratio:1;background:var(--surface);border:1px solid var(--border);
+  transition:all 0.3s;cursor:pointer;
+}
+.media-item:hover{border-color:var(--border-light);transform:scale(1.03);}
+.media-item img,.media-item video{width:100%;height:100%;object-fit:cover;}
+.media-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0.7);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;
+  opacity:0;transition:opacity 0.2s;
+}
+.media-item:hover .media-overlay{opacity:1;}
+.media-name{
+  position:absolute;bottom:0;left:0;right:0;padding:0.4rem;
+  background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);
+  font-size:0.6rem;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.media-pillar-dot{
+  position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;
+  border:1px solid rgba(0,0,0,0.3);
+}
+
+/* ── HEALTH MODAL ───────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  z-index:10000;display:none;align-items:center;justify-content:center;
+  animation:fadeIn 0.2s ease;
+}
+.modal-overlay.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{
+  background:var(--glass);backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:var(--radius);
+  padding:1.5rem;width:90%;max-width:550px;max-height:80vh;overflow-y:auto;
+  animation:modalSlide 0.3s ease;
+}
+@keyframes modalSlide{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.modal h2{
+  font-family:var(--font-display);font-size:0.9rem;font-weight:700;
+  letter-spacing:0.08em;margin-bottom:1rem;color:var(--cyan);
+}
+.health-grid{display:grid;gap:0.75rem;}
+.health-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:0.82rem;
+}
+.health-label{color:var(--text-dim);font-weight:500;}
+.health-value{font-weight:600;font-family:var(--font-display);font-size:0.78rem;letter-spacing:0.03em;}
+
+/* ── FOLLOW-UP SUGGESTIONS ──────────────────────────────── */
+.followup-card{
+  background:rgba(0,0,0,0.2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:0.85rem;margin-bottom:0.5rem;
+  transition:all 0.2s;
+}
+.followup-card:hover{border-color:var(--border-light);}
+.followup-subject{font-size:0.8rem;font-weight:600;margin-bottom:0.3rem;color:var(--cyan);}
+.followup-body{font-size:0.75rem;color:var(--text-dim);line-height:1.5;}
+.followup-meta{font-size:0.65rem;color:var(--text-muted);margin-top:0.4rem;}
+
+/* ── PREDICTED REVENUE CHART ────────────────────────────── */
+.chart-container{position:relative;padding:0.5rem 0;}
+.chart-svg{width:100%;height:180px;}
+.chart-svg text{fill:var(--text-dim);font-family:var(--font-body);font-size:10px;}
+.chart-line{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.chart-area{opacity:0.1;}
+.chart-dot{transition:all 0.2s;}
+.chart-grid line{stroke:rgba(255,255,255,0.04);stroke-width:1;}
+
+/* ── EMPTY STATE ────────────────────────────────────────── */
+.empty-state{
+  text-align:center;padding:2.5rem 1rem;color:var(--text-muted);font-size:0.85rem;
+}
+.empty-icon{font-size:2.5rem;margin-bottom:0.75rem;opacity:0.4;}
+
+/* ── LOADING SHIMMER ────────────────────────────────────── */
+.shimmer{
+  background:linear-gradient(90deg,rgba(255,255,255,0.02) 25%,rgba(255,255,255,0.06) 50%,rgba(255,255,255,0.02) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-xs);
+}
+@keyframes shimmer{from{background-position:200% 0;}to{background-position:-200% 0;}}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+.toast-container{position:fixed;top:1rem;right:1rem;z-index:99999;display:flex;flex-direction:column;gap:0.5rem;}
+.toast{
+  padding:0.7rem 1rem;border-radius:var(--radius-sm);font-size:0.8rem;font-weight:500;
+  backdrop-filter:blur(16px);border:1px solid var(--glass-border);
+  animation:toastIn 0.3s ease,toastOut 0.3s ease 3.7s forwards;
+  display:flex;align-items:center;gap:0.5rem;max-width:350px;
+}
+.toast-success{background:rgba(34,197,94,0.15);color:var(--green);border-color:rgba(34,197,94,0.3);}
+.toast-error{background:rgba(239,68,68,0.15);color:var(--red);border-color:rgba(239,68,68,0.3);}
+.toast-info{background:rgba(0,249,255,0.15);color:var(--cyan);border-color:rgba(0,249,255,0.3);}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+@keyframes toastOut{to{opacity:0;transform:translateX(30px);}}
+
+/* ── SECTION TABS ───────────────────────────────────────── */
+.section-tabs{display:flex;gap:0.3rem;margin-bottom:1rem;overflow-x:auto;padding-bottom:0.25rem;}
+.section-tab{
+  padding:0.5rem 1rem;border-radius:var(--radius-xs);font-size:0.75rem;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface);
+  color:var(--text-dim);transition:all 0.2s;white-space:nowrap;
+}
+.section-tab:hover{background:var(--surface-hover);color:var(--text);}
+.section-tab.active{background:rgba(0,249,255,0.08);color:var(--cyan);border-color:rgba(0,249,255,0.25);}
+.tab-content{display:none;}
+.tab-content.active{display:block;animation:fadeIn 0.3s ease;}
+
+/* ── UPLOAD AREA ────────────────────────────────────────── */
+.upload-zone-mini{
+  border:2px dashed rgba(255,255,255,0.08);border-radius:var(--radius-sm);
+  padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.3s;
+}
+.upload-zone-mini:hover{border-color:rgba(0,249,255,0.3);background:rgba(0,249,255,0.02);}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:1200px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .grid-2,.grid-3-1,.grid-1-3{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  .sidebar{width:60px;padding:1rem 0.4rem;}
+  .brand-text,.brand-tag,.nav-link span:not(.nav-icon),.nav-badge,.sidebar-section-label{display:none;}
+  .nav-link{justify-content:center;padding:0.6rem;}
+  .nav-link.active::before{left:-0.4rem;}
+  .main{padding:1rem;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .command-header{flex-direction:column;}
+  .table-toolbar{flex-direction:column;align-items:stretch;}
+  .search-input{width:100%;}
+  .cal-grid{font-size:0.6rem;}
+}
+@media(max-width:480px){
+  .kpi-grid{grid-template-columns:1fr;}
+}
+
+/* ── COUNTER ANIMATION ──────────────────────────────────── */
+.count-up{transition:all 0.5s ease;}
+</style>
+</head>
+<body>
+
+<!-- ANIMATED BACKGROUND -->
+<div class="pillar-quick-nav" style="display:flex;gap:0.5rem;padding:0.75rem 1rem;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(0,249,255,0.08);flex-wrap:wrap;"><span style="font-size:0.7rem;color:rgba(255,255,255,0.3);align-self:center;margin-right:0.5rem;">VIEW LIVE:</span><a href="../pillar-radha.html" target="_blank" style="text-decoration:none;padding:0.25rem 0.75rem;border-radius:999px;border:1px solid rgba(232,135,30,0.3);color:#e8871e;font-size:0.72rem;background:rgba(232,135,30,0.07);">&#127524; Radha</a><a href="../pillar-veronica.html" target="_blank" style="text-decoration:none;padding:0.25rem 0.75rem;border-radius:999px;border:1px solid rgba(192,192,192,0.2);color:#C0C0C0;font-size:0.72rem;">&#127908; Veronica</a><a href="../pillar-tour.html" target="_blank" style="text-decoration:none;padding:0.25rem 0.75rem;border-radius:999px;border:1px solid rgba(242,165,65,0.3);color:#F2A541;font-size:0.72rem;">&#129517; Tour</a><a href="../booking.html" target="_blank" style="text-decoration:none;padding:0.25rem 0.75rem;border-radius:999px;border:1px solid rgba(0,249,255,0.2);color:#00f9ff;font-size:0.72rem;">&#9889; Booking</a></div>
+<div class="mesh-bg">
+  <div class="mesh-orb"></div>
+  <div class="mesh-orb"></div>
+  <div class="mesh-orb"></div>
+</div>
+<div class="scanlines"></div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- HEALTH MODAL -->
+<div class="modal-overlay" id="healthModal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h2>⚡ SYSTEM HEALTH</h2>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('healthModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="health-grid" id="healthDetails">
+      <div class="shimmer" style="height:200px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-layout">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div class="brand-text">ANTI<span>.</span>GRAVITY</div>
+        <div class="brand-tag">Mission Control</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Command</div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-link active">
+          <span class="nav-icon">🛸</span> <span>Dashboard</span>
+        </a>
+        <a href="analytics.html" class="nav-link">
+          <span class="nav-icon">📊</span> <span>Analytics</span>
+        </a>
+        <a href="leads.html" class="nav-link">
+          <span class="nav-icon">🎯</span> <span>Leads</span>
+          <span class="nav-badge" id="navLeadBadge"></span>
+        </a>
+        <a href="schedule.html" class="nav-link">
+          <span class="nav-icon">📅</span> <span>Scheduler</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Assets</div>
+      <nav class="sidebar-nav">
+        <a href="media.html" class="nav-link">
+          <span class="nav-icon">🖼️</span> <span>Media</span>
+        </a>
+        <a href="gp-bookmarklet.html" class="nav-link">
+          <span class="nav-icon">📤</span> <span>GP Bulk Upload</span>
+        </a>
+        <a href="google-photos-import.html" class="nav-link">
+          <span class="nav-icon">📸</span> <span>Google Photos</span>
+        </a>
+        <a href="bifurcate.html" class="nav-link">
+          <span class="nav-icon">🤖</span> <span>AI Bifurcator</span>
+        </a>
+        <a href="payments.html" class="nav-link">
+          <span class="nav-icon">💳</span> <span>Payments</span>
+        </a>
+        <a href="config.html" class="nav-link">
+          <span class="nav-icon">⚙️</span> <span>Settings</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Intelligence</div>
+      <nav class="sidebar-nav">
+        <a href="agent-hub.html" class="nav-link nav-link-ai">
+          <span class="nav-icon">🤖</span> <span>AI Agent Hub</span>
+        </a>
+        <a href="agent-marketing.html" class="nav-link">
+          <span class="nav-icon">📢</span> <span>Marketing AI</span>
+        </a>
+        <a href="agent-instagram.html" class="nav-link">
+          <span class="nav-icon">📸</span> <span>Instagram AI</span>
+        </a>
+        <a href="agent-data.html" class="nav-link">
+          <span class="nav-icon">🧠</span> <span>Data Agent</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="../index.html" target="_blank" class="nav-link" style="font-size:0.75rem;opacity:0.5;">
+        <span class="nav-icon">🌐</span> <span>View Site</span>
+      </a>
+      <button onclick="logoutAdmin()" class="nav-link" style="background:none;border:none;cursor:pointer;color:inherit;width:100%;text-align:left;font-size:0.75rem;opacity:0.5;">
+        <span class="nav-icon">🚪</span> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main class="main">
+
+    <!-- COMMAND CENTER HEADER -->
+    <header class="command-header">
+      <div class="command-welcome">
+        <h1>COMMAND CENTER</h1>
+        <p>Welcome back, Commander. All systems nominal.</p>
+      </div>
+      <div class="command-meta">
+        <div>
+          <div class="meta-clock" id="liveClock">00:00:00</div>
+          <div class="meta-date" id="liveDate"></div>
+        </div>
+        <div class="health-badge" id="healthBadge" onclick="showHealthModal()">
+          <div class="health-dot"></div>
+          <span id="healthStatus">CHECKING...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SMART NOTIFICATIONS -->
+    <div id="notifContainer"></div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:rgba(0,249,255,0.1);color:var(--cyan);">🎯</div>
+          <svg class="kpi-spark" viewBox="0 0 60 30" id="sparkLeads">
+            <polyline points="" style="stroke:var(--cyan);"/>
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpiLeads" data-target="0">0</div>
+        <div class="kpi-label">Total Leads</div>
+        <div class="kpi-change neutral" id="kpiLeadsChange">— calculating</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:var(--green);">📈</div>
+          <svg class="kpi-spark" viewBox="0 0 60 30" id="sparkConversion">
+            <polyline points="" style="stroke:var(--green);"/>
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpiConversion" data-target="0">0%</div>
+        <div class="kpi-label">Conversion Rate</div>
+        <div class="kpi-change neutral" id="kpiConvChange">— calculating</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:rgba(232,135,30,0.1);color:var(--orange);">💰</div>
+          <svg class="kpi-spark" viewBox="0 0 60 30" id="sparkRevenue">
+            <polyline points="" style="stroke:var(--orange);"/>
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpiRevenue" data-target="0">₹0</div>
+        <div class="kpi-label">Revenue Estimate</div>
+        <div class="kpi-change neutral" id="kpiRevChange">— calculating</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon" style="background:rgba(157,78,221,0.1);color:var(--purple);">📅</div>
+          <svg class="kpi-spark" viewBox="0 0 60 30" id="sparkEvents">
+            <polyline points="" style="stroke:var(--purple);"/>
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpiEvents" data-target="0">0</div>
+        <div class="kpi-label">Scheduled Posts</div>
+        <div class="kpi-change neutral" id="kpiEvtChange">— calculating</div>
+      </div>
+    </div>
+
+    <!-- AI INSIGHTS + PREDICTED REVENUE -->
+    <div class="grid-3-1">
+      <!-- AI INSIGHTS PANEL -->
+      <div class="glass-card ai-panel">
+        <div class="ai-glow"></div>
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">🧠</span> AI INSIGHTS ENGINE</div>
+          <button class="btn btn-cyan btn-sm" onclick="generateInsight()">⚡ Generate Insight</button>
+        </div>
+        <div class="ai-insight-meta" id="aiTags">
+          <span class="ai-tag ai-tag-leads">LEAD ANALYSIS</span>
+          <span class="ai-tag ai-tag-revenue">REVENUE FORECAST</span>
+          <span class="ai-tag ai-tag-content">CONTENT INTEL</span>
+        </div>
+        <div class="ai-insight-text" id="aiInsightText">
+          <span id="aiTypedText">Initializing neural network...</span><span class="ai-cursor"></span>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="generateInsight('leads')">🎯 Lead Patterns</button>
+          <button class="btn btn-ghost btn-sm" onclick="generateInsight('revenue')">💰 Revenue Forecast</button>
+          <button class="btn btn-ghost btn-sm" onclick="generateInsight('content')">📸 Content Strategy</button>
+          <button class="btn btn-ghost btn-sm" onclick="generateInsight('followup')">📧 Follow-up Tips</button>
+        </div>
+      </div>
+
+      <!-- PREDICTED REVENUE -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">📊 REVENUE FORECAST</div>
+        </div>
+        <div class="chart-container">
+          <svg class="chart-svg" id="revenueChart" viewBox="0 0 260 180"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION TABS FOR MAIN PANELS -->
+    <div class="section-tabs">
+      <button class="section-tab active" data-tab="leads">🎯 Lead Management</button>
+      <button class="section-tab" data-tab="calendar">📅 Content Calendar</button>
+      <button class="section-tab" data-tab="marketing">📢 Marketing AI</button>
+      <button class="section-tab" data-tab="media">🖼️ Media Gallery</button>
+      <button class="section-tab" data-tab="followups">📧 Follow-up AI</button>
+    </div>
+
+    <!-- TAB: LEADS -->
+    <div class="tab-content active" id="tab-leads">
+      <div class="glass-card">
+        <div class="table-toolbar">
+          <input type="text" class="search-input" id="leadSearch" placeholder="Search leads by name, phone, pillar..."/>
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all" onclick="filterLeads('all',this)">All</button>
+            <button class="filter-btn" data-filter="New" onclick="filterLeads('New',this)">New</button>
+            <button class="filter-btn" data-filter="Contacted" onclick="filterLeads('Contacted',this)">Contacted</button>
+            <button class="filter-btn" data-filter="Converted" onclick="filterLeads('Converted',this)">Converted</button>
+            <button class="filter-btn" data-filter="Lost" onclick="filterLeads('Lost',this)">Lost</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="leads-table">
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Pillar</th>
+                <th>Budget</th>
+                <th>AI Score</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody">
+              <tr><td colspan="7" class="empty-state"><div class="empty-icon">🎯</div>Loading leads...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CALENDAR -->
+    <div class="tab-content" id="tab-calendar">
+      <div class="glass-card">
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">◀</button>
+            <span class="cal-month" id="calMonthLabel">May 2026</span>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">▶</button>
+          </div>
+          <button class="btn btn-cyan btn-sm" onclick="window.location.href='schedule.html'">+ New Post</button>
+        </div>
+        <div class="cal-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+
+    <!-- TAB: MARKETING AI -->
+    <div class="tab-content" id="tab-marketing">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">📢</span> MARKETING COPY GENERATOR</div>
+        </div>
+        <div class="marketing-controls">
+          <select class="select-styled" id="marketingPillar">
+            <option value="radha">🪔 Radha — Weddings</option>
+            <option value="veronica">🎤 Veronica — Corporate</option>
+            <option value="tour">🧭 Tour — Heritage</option>
+          </select>
+          <button class="btn btn-cyan btn-sm" onclick="generateMarketing('hook')">🪝 Hook</button>
+          <button class="btn btn-magenta btn-sm" onclick="generateMarketing('upsell')">💎 Upsell</button>
+          <button class="btn btn-purple btn-sm" onclick="generateMarketing('cta')">⚡ CTA</button>
+          <button class="btn btn-primary btn-sm" onclick="generateMarketing('full')">🚀 Full Campaign</button>
+        </div>
+        <div class="marketing-output" id="marketingOutput">
+          <button class="copy-btn" onclick="copyMarketing()">📋 Copy</button>
+          <span style="color:var(--text-muted);">Select a pillar and click a button to generate marketing copy...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MEDIA -->
+    <div class="tab-content" id="tab-media">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">🖼️</span> MEDIA GALLERY</div>
+          <button class="btn btn-cyan btn-sm" onclick="window.location.href='media.html'">📤 Upload</button>
+        </div>
+        <div class="media-filters">
+          <button class="filter-btn active" data-mfilter="all" onclick="filterMedia('all',this)">All</button>
+          <button class="filter-btn" data-mfilter="radha" onclick="filterMedia('radha',this)">🪔 Radha</button>
+          <button class="filter-btn" data-mfilter="corporate" onclick="filterMedia('corporate',this)">🎤 Corp</button>
+          <button class="filter-btn" data-mfilter="tour" onclick="filterMedia('tour',this)">🧭 Tour</button>
+        </div>
+        <div class="media-grid" id="mediaGrid">
+          <div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🖼️</div>Loading media...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: FOLLOW-UPS -->
+    <div class="tab-content" id="tab-followups">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-title-icon">📧</span> AI FOLLOW-UP SUGGESTIONS</div>
+          <button class="btn btn-cyan btn-sm" onclick="generateFollowUps()">⚡ Refresh</button>
+        </div>
+        <div id="followUpList">
+          <div class="empty-state"><div class="empty-icon">📧</div>Click refresh to generate follow-up suggestions...</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   ANTI-GRAVITY MISSION CONTROL — JS ENGINE
+   ═══════════════════════════════════════════════════════════════ */
+
+// ── AUTH CHECK ─────────────────────────────────────────────
+async function checkAuth() {
+  try {
+    const r = await fetch('/api/admin/check');
+    const d = await r.json();
+    if (!d.authenticated) window.location.href = 'login.html';
+  } catch (e) { window.location.href = 'login.html'; }
+}
+checkAuth();
+
+function logoutAdmin() {
+  fetch('/api/admin/logout', { method: 'POST' }).then(() => {
+    window.location.href = 'login.html';
+  });
+}
+
+// ── GLOBAL STATE ───────────────────────────────────────────
+let allLeads = [];
+let allMedia = [];
+let allSchedule = [];
+let healthData = null;
+let currentFilter = 'all';
+let calendarDate = new Date();
+
+// ── LIVE CLOCK ─────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-IN', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  });
+  document.getElementById('liveDate').textContent = now.toLocaleDateString('en-IN', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── TOAST SYSTEM ───────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `${type === 'success' ? '✅' : type === 'error' ? '❌' : '💡'} ${msg}`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ── ANIMATED COUNTER ───────────────────────────────────────
+function animateCounter(el, target, prefix = '', suffix = '') {
+  const start = parseInt(el.textContent.replace(/[^\d]/g, '')) || 0;
+  const duration = 1200;
+  const startTime = performance.now();
+  function step(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(start + (target - start) * eased);
+    el.textContent = prefix + current.toLocaleString('en-IN') + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── SPARKLINE GENERATOR ────────────────────────────────────
+function generateSparkline(svgId, data, color) {
+  const svg = document.getElementById(svgId);
+  if (!svg || !data.length) return;
+  const polyline = svg.querySelector('polyline');
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const w = 60, h = 30, pad = 3;
+  const points = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1 || 1)) * (w - 2 * pad);
+    const y = h - pad - ((v - min) / range) * (h - 2 * pad);
+    return `${x},${y}`;
+  }).join(' ');
+  polyline.setAttribute('points', points);
+}
+
+// ── LEAD SCORING ALGORITHM ─────────────────────────────────
+function calculateLeadScore(lead) {
+  let score = 0;
+  // Budget score (0-30 pts)
+  const budgetMap = {
+    'Above ₹5L': 30, '₹2L – ₹5L': 25, '₹75,000 – ₹2,00,000': 18,
+    '₹25,000 – ₹75,000': 12, 'Under ₹25,000': 6
+  };
+  Object.entries(budgetMap).forEach(([k, v]) => {
+    if ((lead.budget || '').includes(k.replace(/₹/g, '₹'))) score += v;
+  });
+  if (lead.budget && score === 0) score += 8;
+
+  // Pillar demand (0-15 pts) — weighted by market demand
+  const pillarDemand = { radha: 15, sangeet: 15, corporate: 12, veronica: 12, tour: 10 };
+  const p = (lead.pillar || '').toLowerCase();
+  Object.entries(pillarDemand).forEach(([k, v]) => { if (p.includes(k)) score += v; });
+
+  // Recency (0-25 pts)
+  if (lead.timestamp) {
+    const days = (Date.now() - new Date(lead.timestamp).getTime()) / (1000 * 60 * 60 * 24);
+    if (days <= 1) score += 25;
+    else if (days <= 3) score += 20;
+    else if (days <= 7) score += 15;
+    else if (days <= 14) score += 10;
+    else if (days <= 30) score += 5;
+  }
+
+  // Completeness (0-20 pts)
+  if (lead.email) score += 5;
+  if (lead.phone) score += 5;
+  if (lead.eventDate) score += 5;
+  if (lead.message && lead.message.length > 20) score += 5;
+
+  // Event urgency (0-10 pts)
+  if (lead.eventDate) {
+    const daysToEvent = (new Date(lead.eventDate) - Date.now()) / (1000 * 60 * 60 * 24);
+    if (daysToEvent >= 0 && daysToEvent <= 14) score += 10;
+    else if (daysToEvent > 14 && daysToEvent <= 30) score += 7;
+    else if (daysToEvent > 30 && daysToEvent <= 60) score += 4;
+  }
+
+  return Math.min(Math.max(score, 0), 100);
+}
+
+function getScoreColor(score) {
+  if (score >= 70) return 'var(--green)';
+  if (score >= 40) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+// ── FETCH ALL DATA ─────────────────────────────────────────
+async function loadAllData() {
+  try {
+    const [leadsRes, healthRes, schedRes, mediaRes, analyticsRes] = await Promise.all([
+      fetch('/api/leads').then(r => r.json()).catch(() => []),
+      fetch('/api/agent/data/health').then(r => r.json()).catch(() => null),
+      fetch('/api/agent/instagram/scheduled').then(r => r.json()).catch(() => ({ posts: [] })),
+      fetch('/api/media').then(r => r.json()).catch(() => []),
+      fetch('/api/admin/analytics').then(r => r.json()).catch(() => ({})),
+    ]);
+
+    allLeads = Array.isArray(leadsRes) ? leadsRes : [];
+    healthData = healthRes;
+    allSchedule = schedRes.posts || [];
+    allMedia = Array.isArray(mediaRes) ? mediaRes : (mediaRes.media || []);
+
+    updateHealthBadge();
+    updateKPIs(analyticsRes);
+    renderLeadsTable();
+    renderCalendar();
+    renderMediaGallery();
+    generateSmartNotifications();
+    renderRevenueChart();
+    generateInsight();
+
+  } catch (err) {
+    console.error('Data load error:', err);
+    showToast('Failed to load dashboard data', 'error');
+  }
+}
+
+// ── HEALTH BADGE ───────────────────────────────────────────
+function updateHealthBadge() {
+  const badge = document.getElementById('healthBadge');
+  const label = document.getElementById('healthStatus');
+  if (healthData && healthData.success) {
+    badge.classList.remove('offline');
+    label.textContent = `ONLINE · ${healthData.health.server.uptime}`;
+  } else {
+    badge.classList.add('offline');
+    label.textContent = 'OFFLINE';
+  }
+}
+
+function showHealthModal() {
+  const modal = document.getElementById('healthModal');
+  const grid = document.getElementById('healthDetails');
+  modal.classList.add('active');
+
+  if (!healthData || !healthData.health) {
+    grid.innerHTML = '<div class="empty-state">Unable to fetch health data</div>';
+    return;
+  }
+  const h = healthData.health;
+  grid.innerHTML = `
+    <div class="health-row"><span class="health-label">Server Status</span><span class="health-value" style="color:var(--green);">● ${h.server.status.toUpperCase()}</span></div>
+    <div class="health-row"><span class="health-label">Uptime</span><span class="health-value">${h.server.uptime}</span></div>
+    <div class="health-row"><span class="health-label">Port</span><span class="health-value">${h.server.port}</span></div>
+    <div class="health-row"><span class="health-label">Node Version</span><span class="health-value">${h.server.nodeVersion}</span></div>
+    <div class="health-row"><span class="health-label">Database</span><span class="health-value" style="color:var(--green);">● ${(h.database.status || 'connected').toUpperCase()}</span></div>
+    <div class="health-row"><span class="health-label">Total Leads</span><span class="health-value">${h.leads.total}</span></div>
+    <div class="health-row"><span class="health-label">New Leads</span><span class="health-value" style="color:var(--cyan);">${h.leads.new}</span></div>
+    <div class="health-row"><span class="health-label">Media Items</span><span class="health-value">${h.media.total}</span></div>
+    <div class="health-row"><span class="health-label">Local Storage</span><span class="health-value">${h.media.localStorageMB} MB</span></div>
+    <div class="health-row"><span class="health-label">Scheduled Posts</span><span class="health-value">${h.schedule.total}</span></div>
+    <div class="health-row"><span class="health-label">Upcoming Posts</span><span class="health-value">${h.schedule.upcoming}</span></div>
+    <div class="health-row"><span class="health-label">Response Time</span><span class="health-value">${h.responseTimeMs} ms</span></div>
+    <div class="health-row"><span class="health-label">Timestamp</span><span class="health-value">${new Date(h.timestamp).toLocaleString('en-IN')}</span></div>
+  `;
+}
+
+// Close modal on background click
+document.getElementById('healthModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+// ── UPDATE KPIs ────────────────────────────────────────────
+function updateKPIs(analytics) {
+  const totalLeads = allLeads.length;
+  const convertedCount = allLeads.filter(l => (l.status || '').toLowerCase().includes('convert')).length;
+  const conversionRate = totalLeads ? Math.round((convertedCount / totalLeads) * 100) : 0;
+  const scheduledPosts = allSchedule.length;
+
+  // Revenue estimate
+  let revenue = 0;
+  const budgetMap = {
+    'Under ₹25,000': 15000, '₹25,000 – ₹75,000': 50000,
+    '₹75,000 – ₹2,00,000': 137500, '₹2L – ₹5L': 350000, 'Above ₹5L': 600000
+  };
+  allLeads.forEach(l => {
+    if (l.budget) {
+      Object.entries(budgetMap).forEach(([k, v]) => {
+        if (l.budget.includes(k)) revenue += v;
+      });
+    }
+  });
+
+  // Animate counters
+  animateCounter(document.getElementById('kpiLeads'), totalLeads);
+  document.getElementById('kpiConversion').textContent = conversionRate + '%';
+  animateCounter(document.getElementById('kpiRevenue'), revenue, '₹');
+  animateCounter(document.getElementById('kpiEvents'), scheduledPosts);
+
+  // Calculate week-over-week changes
+  const now = new Date();
+  const oneWeekAgo = new Date(now - 7 * 86400000);
+  const twoWeeksAgo = new Date(now - 14 * 86400000);
+  const thisWeek = allLeads.filter(l => new Date(l.timestamp) >= oneWeekAgo).length;
+  const lastWeek = allLeads.filter(l => {
+    const d = new Date(l.timestamp);
+    return d >= twoWeeksAgo && d < oneWeekAgo;
+  }).length;
+
+  const changeEl = document.getElementById('kpiLeadsChange');
+  if (lastWeek > 0) {
+    const pct = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+    changeEl.className = `kpi-change ${pct >= 0 ? 'up' : 'down'}`;
+    changeEl.textContent = `${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct)}% vs last week`;
+  } else {
+    changeEl.className = 'kpi-change neutral';
+    changeEl.textContent = `${thisWeek} this week`;
+  }
+
+  document.getElementById('kpiConvChange').textContent = `${convertedCount} converted`;
+  document.getElementById('kpiConvChange').className = 'kpi-change ' + (conversionRate > 20 ? 'up' : 'neutral');
+  document.getElementById('kpiRevChange').textContent = analytics.estimatedRevenue || `₹${revenue.toLocaleString('en-IN')}`;
+  document.getElementById('kpiRevChange').className = 'kpi-change up';
+  document.getElementById('kpiEvtChange').textContent = `${allSchedule.filter(s => new Date(s.date) >= now).length} upcoming`;
+  document.getElementById('kpiEvtChange').className = 'kpi-change neutral';
+
+  // Nav badge
+  const newCount = allLeads.filter(l => (l.status || '').startsWith('New')).length;
+  document.getElementById('navLeadBadge').textContent = newCount || '';
+
+  // Sparklines
+  generateSparkline('sparkLeads', generateTrendData(allLeads, 7), 'var(--cyan)');
+  generateSparkline('sparkConversion', [3, 5, 2, 8, 6, 9, conversionRate], 'var(--green)');
+  generateSparkline('sparkRevenue', generateTrendData(allLeads, 7, true), 'var(--orange)');
+  generateSparkline('sparkEvents', [1, 3, 2, 4, 2, 5, scheduledPosts], 'var(--purple)');
+}
+
+function generateTrendData(leads, days, isRevenue = false) {
+  const data = [];
+  const now = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const dayStart = new Date(now);
+    dayStart.setDate(dayStart.getDate() - i);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    const dayLeads = leads.filter(l => {
+      const d = new Date(l.timestamp);
+      return d >= dayStart && d < dayEnd;
+    });
+    data.push(isRevenue ? dayLeads.length * 50000 : dayLeads.length);
+  }
+  return data;
+}
+
+// ── SMART NOTIFICATIONS ────────────────────────────────────
+function generateSmartNotifications() {
+  const container = document.getElementById('notifContainer');
+  container.innerHTML = '';
+  const notifs = [];
+
+  // Uncontacted leads this week
+  const now = new Date();
+  const weekAgo = new Date(now - 7 * 86400000);
+  const uncontacted = allLeads.filter(l =>
+    (l.status || '').startsWith('New') && new Date(l.timestamp) >= weekAgo
+  );
+  if (uncontacted.length > 0) {
+    notifs.push({
+      icon: '🔔', type: '',
+      text: `You have <strong>${uncontacted.length} uncontacted lead${uncontacted.length > 1 ? 's' : ''}</strong> from this week. Follow up now to increase conversion!`
+    });
+  }
+
+  // High-ticket leads
+  const highTicket = allLeads.filter(l =>
+    l.budget && (l.budget.includes('5L') || l.budget.includes('2L')) &&
+    (l.status || '').startsWith('New')
+  );
+  if (highTicket.length > 0) {
+    notifs.push({
+      icon: '💰', type: '',
+      text: `<strong>${highTicket.length} high-ticket lead${highTicket.length > 1 ? 's' : ''}</strong> waiting for a callback. Potential revenue: ₹${(highTicket.length * 400000).toLocaleString('en-IN')}+`
+    });
+  }
+
+  // Upcoming events within 7 days
+  const upcomingEvents = allLeads.filter(l => {
+    if (!l.eventDate) return false;
+    const days = (new Date(l.eventDate) - now) / 86400000;
+    return days >= 0 && days <= 7;
+  });
+  if (upcomingEvents.length > 0) {
+    notifs.push({
+      icon: '🚨', type: '',
+      text: `<strong>${upcomingEvents.length} event${upcomingEvents.length > 1 ? 's' : ''}</strong> within the next 7 days! Ensure all preparations are confirmed.`
+    });
+  }
+
+  // No content scheduled this week
+  const thisWeekPosts = allSchedule.filter(s => {
+    const d = new Date(s.date);
+    return d >= now && d <= new Date(now.getTime() + 7 * 86400000);
+  });
+  if (thisWeekPosts.length === 0 && allSchedule.length > 0) {
+    notifs.push({
+      icon: '📅', type: 'info',
+      text: 'No content scheduled for this week. Head to the <a href="schedule.html" style="color:var(--cyan);">Scheduler</a> to plan posts.'
+    });
+  }
+
+  notifs.slice(0, 3).forEach(n => {
+    container.innerHTML += `
+      <div class="notif-bar ${n.type}">
+        <span class="notif-icon">${n.icon}</span>
+        <span class="notif-text">${n.text}</span>
+        <button class="notif-close" onclick="this.parentElement.remove()">✕</button>
+      </div>
+    `;
+  });
+}
+
+// ── AI INSIGHTS ENGINE ─────────────────────────────────────
+let insightQueue = [];
+let isTyping = false;
+
+function generateInsight(category) {
+  const insights = [];
+  const now = new Date();
+  const newLeads = allLeads.filter(l => (l.status || '').startsWith('New'));
+  const weekAgo = new Date(now - 7 * 86400000);
+  const thisWeekLeads = allLeads.filter(l => new Date(l.timestamp) >= weekAgo);
+
+  // Pillar analysis
+  const pillarCounts = { radha: 0, corporate: 0, tour: 0 };
+  allLeads.forEach(l => {
+    const p = (l.pillar || '').toLowerCase();
+    if (p.includes('radha') || p.includes('sangeet')) pillarCounts.radha++;
+    else if (p.includes('corporate') || p.includes('veronica')) pillarCounts.corporate++;
+    else if (p.includes('tour')) pillarCounts.tour++;
+  });
+
+  if (!category || category === 'leads') {
+    const topPillar = Object.entries(pillarCounts).sort((a, b) => b[1] - a[1])[0];
+    const weakPillar = Object.entries(pillarCounts).sort((a, b) => a[1] - b[1])[0];
+    if (allLeads.length > 0) {
+      insights.push(`🔥 LEAD ANALYSIS: ${topPillar[0].toUpperCase()} dominates with ${topPillar[1]} leads (${Math.round(topPillar[1]/allLeads.length*100)}% of total). ${weakPillar[0].toUpperCase()} needs attention with only ${weakPillar[1]} leads. Consider boosting content for ${weakPillar[0]} this week.`);
+      insights.push(`📊 This week brought ${thisWeekLeads.length} new leads. ${newLeads.length} are still uncontacted. Best follow-up window: 10 AM - 12 PM IST (based on typical lead submission patterns).`);
+    } else {
+      insights.push('🎯 No leads in the system yet. Launch your first Instagram campaign or share your contact form to start capturing leads. The AI scoring system is ready and waiting!');
+    }
+  }
+
+  if (!category || category === 'revenue') {
+    let totalPotential = 0;
+    const budgetMap = { 'Under ₹25,000': 15000, '₹25,000 – ₹75,000': 50000, '₹75,000 – ₹2,00,000': 137500, '₹2L – ₹5L': 350000, 'Above ₹5L': 600000 };
+    allLeads.forEach(l => {
+      if (l.budget) Object.entries(budgetMap).forEach(([k, v]) => { if (l.budget.includes(k)) totalPotential += v; });
+    });
+    const converted = allLeads.filter(l => (l.status || '').toLowerCase().includes('convert')).length;
+    const convRate = allLeads.length ? (converted / allLeads.length * 100).toFixed(1) : 0;
+    insights.push(`💰 REVENUE FORECAST: Pipeline value is ₹${totalPotential.toLocaleString('en-IN')}. At ${convRate}% conversion rate, projected revenue is ₹${Math.round(totalPotential * convRate / 100).toLocaleString('en-IN')}. Increasing conversion by 5% could add ₹${Math.round(totalPotential * 0.05).toLocaleString('en-IN')} to the bottom line.`);
+  }
+
+  if (!category || category === 'content') {
+    const upcomingPosts = allSchedule.filter(s => new Date(s.date) >= now).length;
+    insights.push(`📸 CONTENT INTEL: ${allSchedule.length} total posts scheduled, ${upcomingPosts} upcoming. ${allMedia.length} media assets available. Recommendation: Maintain a 5:3:2 content ratio (value:engagement:promotional) across all pillars for optimal reach.`);
+  }
+
+  if (!category || category === 'followup') {
+    const hotLeads = allLeads.filter(l => (l.status || '').startsWith('New') && l.eventDate).slice(0, 3);
+    if (hotLeads.length > 0) {
+      insights.push(`📧 FOLLOW-UP PRIORITY: ${hotLeads.length} leads have specific event dates and haven't been contacted. Lead "${hotLeads[0].name || 'Unknown'}" should be called first — they have an event on ${hotLeads[0].eventDate || 'TBD'}. Pro tip: Mention their specific event type in the first 10 seconds of the call.`);
+    } else if (newLeads.length > 0) {
+      insights.push(`📧 FOLLOW-UP NEEDED: ${newLeads.length} leads in "New" status. Start with the highest-scored leads first. Personalize each outreach by referencing their pillar interest and budget range. First contact within 1 hour increases conversion 7x.`);
+    } else {
+      insights.push('📧 All leads have been contacted! Great job. Focus on nurturing existing conversations and pushing for bookings. Consider sending a re-engagement message to leads that went quiet over 2 weeks ago.');
+    }
+  }
+
+  // Pick a random insight from generated ones
+  const chosen = insights[Math.floor(Math.random() * insights.length)] || 'All systems nominal. The AI engine is monitoring your business metrics in real-time.';
+  typewriterEffect(chosen);
+
+  // Update tags
+  const tagsEl = document.getElementById('aiTags');
+  const tagMap = {
+    leads: '<span class="ai-tag ai-tag-leads">LEAD ANALYSIS</span>',
+    revenue: '<span class="ai-tag ai-tag-revenue">REVENUE FORECAST</span>',
+    content: '<span class="ai-tag ai-tag-content">CONTENT INTEL</span>',
+    followup: '<span class="ai-tag ai-tag-urgent">FOLLOW-UP PRIORITY</span>',
+  };
+  if (category && tagMap[category]) {
+    tagsEl.innerHTML = tagMap[category];
+  } else {
+    tagsEl.innerHTML = Object.values(tagMap).join('');
+  }
+}
+
+function typewriterEffect(text) {
+  const el = document.getElementById('aiTypedText');
+  el.textContent = '';
+  isTyping = true;
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < text.length) {
+      el.textContent += text.charAt(i);
+      i++;
+    } else {
+      clearInterval(interval);
+      isTyping = false;
+    }
+  }, 18);
+}
+
+// ── LEADS TABLE ────────────────────────────────────────────
+function renderLeadsTable() {
+  const tbody = document.getElementById('leadsTableBody');
+  let leads = [...allLeads];
+
+  // Apply filter
+  if (currentFilter !== 'all') {
+    leads = leads.filter(l => (l.status || '').toLowerCase().includes(currentFilter.toLowerCase()));
+  }
+
+  // Apply search
+  const search = (document.getElementById('leadSearch').value || '').toLowerCase();
+  if (search) {
+    leads = leads.filter(l =>
+      (l.name || '').toLowerCase().includes(search) ||
+      (l.phone || '').toLowerCase().includes(search) ||
+      (l.pillar || '').toLowerCase().includes(search) ||
+      (l.email || '').toLowerCase().includes(search) ||
+      (l.eventType || '').toLowerCase().includes(search)
+    );
+  }
+
+  if (leads.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-icon">🎯</div>No leads found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = leads.slice(0, 50).map(lead => {
+    const score = calculateLeadScore(lead);
+    const scoreColor = getScoreColor(score);
+    const pillarClass = getPillarClass(lead.pillar);
+    const statusClass = getStatusClass(lead.status);
+    const statusLabel = getStatusLabel(lead.status);
+    const date = lead.timestamp ? new Date(lead.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
+
+    return `
+      <tr>
+        <td>
+          <div class="lead-name">${escapeHtml(lead.name || '—')}</div>
+          <div class="lead-detail">${escapeHtml(lead.phone || '')} ${lead.email ? '· ' + escapeHtml(lead.email) : ''}</div>
+        </td>
+        <td><span class="pillar-tag ${pillarClass}">${escapeHtml(lead.pillar || '—')}</span></td>
+        <td><span style="font-size:0.78rem;">${escapeHtml(lead.budget || '—')}</span></td>
+        <td>
+          <div class="score-bar"><div class="score-fill" style="width:${score}%;background:${scoreColor};"></div></div>
+          <span class="score-label" style="color:${scoreColor};">${score}</span>
+        </td>
+        <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+        <td><span style="font-size:0.78rem;color:var(--text-dim);">${date}</span></td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-ghost btn-sm" onclick="updateLeadStatus(${lead.id},'Contacted')" title="Mark Contacted">📞</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteLead(${lead.id})" title="Delete">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function getPillarClass(pillar) {
+  const p = (pillar || '').toLowerCase();
+  if (p.includes('radha') || p.includes('sangeet')) return 'pillar-radha';
+  if (p.includes('corporate') || p.includes('veronica')) return 'pillar-corporate';
+  if (p.includes('tour')) return 'pillar-tour';
+  return 'pillar-other';
+}
+
+function getStatusClass(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('new')) return 'status-new';
+  if (s.includes('contact')) return 'status-contacted';
+  if (s.includes('convert') || s.includes('book')) return 'status-converted';
+  if (s.includes('lost') || s.includes('closed')) return 'status-lost';
+  if (s.includes('quoted')) return 'status-quoted';
+  return 'status-new';
+}
+
+function getStatusLabel(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('new')) return 'NEW';
+  if (s.includes('contact')) return 'CONTACTED';
+  if (s.includes('convert')) return 'CONVERTED';
+  if (s.includes('book')) return 'BOOKED';
+  if (s.includes('lost')) return 'LOST';
+  if (s.includes('quoted')) return 'QUOTED';
+  return 'NEW';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function filterLeads(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderLeadsTable();
+}
+
+document.getElementById('leadSearch').addEventListener('input', () => renderLeadsTable());
+
+async function updateLeadStatus(id, status) {
+  try {
+    await fetch(`/api/leads/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    const lead = allLeads.find(l => l.id === id);
+    if (lead) lead.status = status;
+    renderLeadsTable();
+    showToast(`Lead marked as ${status}`, 'success');
+  } catch (e) {
+    showToast('Failed to update lead', 'error');
+  }
+}
+
+async function deleteLead(id) {
+  if (!confirm('Delete this lead permanently?')) return;
+  try {
+    await fetch(`/api/leads/${id}`, { method: 'DELETE' });
+    allLeads = allLeads.filter(l => l.id !== id);
+    renderLeadsTable();
+    showToast('Lead deleted', 'success');
+  } catch (e) {
+    showToast('Failed to delete lead', 'error');
+  }
+}
+
+// ── CONTENT CALENDAR ───────────────────────────────────────
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const today = new Date();
+
+  document.getElementById('calMonthLabel').textContent =
+    calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
+
+  let html = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+    .map(d => `<div class="cal-day-head">${d}</div>`).join('');
+
+  // Previous month days
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="cal-cell other-month"><div class="cal-day-num">${daysInPrev - i}</div></div>`;
+  }
+
+  // Current month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+    const dayEvents = allSchedule.filter(s => s.date === dateStr);
+
+    let eventsHtml = dayEvents.slice(0, 3).map(e => {
+      const cls = 'cal-event-' + (e.pillar || 'tour').toLowerCase();
+      return `<div class="cal-event ${cls}" title="${escapeHtml(e.topic || e.caption || '')}">${escapeHtml(e.topic || e.pillar || '•')}</div>`;
+    }).join('');
+    if (dayEvents.length > 3) eventsHtml += `<div class="cal-event" style="color:var(--text-muted);">+${dayEvents.length - 3} more</div>`;
+
+    html += `<div class="cal-cell ${isToday ? 'today' : ''}"><div class="cal-day-num">${d}</div>${eventsHtml}</div>`;
+  }
+
+  // Next month days
+  const totalCells = firstDay + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="cal-cell other-month"><div class="cal-day-num">${i}</div></div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function changeMonth(delta) {
+  calendarDate.setMonth(calendarDate.getMonth() + delta);
+  renderCalendar();
+}
+
+// ── MARKETING AI ───────────────────────────────────────────
+async function generateMarketing(type) {
+  const pillar = document.getElementById('marketingPillar').value;
+  const output = document.getElementById('marketingOutput');
+  output.innerHTML = '<button class="copy-btn" onclick="copyMarketing()">📋 Copy</button><span style="color:var(--cyan);">⚡ Generating...</span>';
+
+  try {
+    const res = await fetch('/api/agent/marketing/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pillar, type })
+    });
+    const data = await res.json();
+
+    if (type === 'full') {
+      output.innerHTML = `
+        <button class="copy-btn" onclick="copyMarketing()">📋 Copy</button>
+        <div style="margin-bottom:0.5rem;">
+          <span style="font-size:0.65rem;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;">${data.pillar || pillar}</span>
+          <span style="margin-left:0.5rem;font-size:0.65rem;color:var(--text-muted);">Tone: ${data.tone || ''}</span>
+        </div>
+        <div style="margin-bottom:0.75rem;">
+          <div style="font-size:0.65rem;color:var(--magenta);font-weight:700;margin-bottom:0.25rem;">🪝 HOOK</div>
+          <div>${escapeHtml(data.hook || '')}</div>
+        </div>
+        <div style="margin-bottom:0.75rem;">
+          <div style="font-size:0.65rem;color:var(--purple);font-weight:700;margin-bottom:0.25rem;">💎 UPSELL</div>
+          <div>${escapeHtml(data.upsell || '')}</div>
+        </div>
+        <div style="margin-bottom:0.75rem;">
+          <div style="font-size:0.65rem;color:var(--green);font-weight:700;margin-bottom:0.25rem;">⚡ CTA</div>
+          <div>${escapeHtml(data.cta || '')}</div>
+        </div>
+        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border);">
+          <div style="font-size:0.65rem;color:var(--orange);font-weight:700;margin-bottom:0.25rem;">📱 FULL CAPTION</div>
+          <div style="white-space:pre-wrap;">${escapeHtml(data.fullCaption || '')}</div>
+        </div>
+      `;
+    } else {
+      output.innerHTML = `
+        <button class="copy-btn" onclick="copyMarketing()">📋 Copy</button>
+        <div style="font-size:0.65rem;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">${(data.type || type).toUpperCase()}</div>
+        <div>${escapeHtml(data.text || '')}</div>
+      `;
+    }
+  } catch (e) {
+    output.innerHTML = '<button class="copy-btn" onclick="copyMarketing()">📋 Copy</button><span style="color:var(--red);">❌ Failed to generate content</span>';
+  }
+}
+
+function copyMarketing() {
+  const output = document.getElementById('marketingOutput');
+  const text = output.innerText.replace('📋 Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!', 'success'));
+}
+
+// ── MEDIA GALLERY ──────────────────────────────────────────
+let mediaFilter = 'all';
+
+function renderMediaGallery() {
+  const grid = document.getElementById('mediaGrid');
+  let items = [...allMedia];
+
+  if (mediaFilter !== 'all') {
+    items = items.filter(m => (m.pillar || '').toLowerCase().includes(mediaFilter));
+  }
+
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🖼️</div>No media found</div>';
+    return;
+  }
+
+  grid.innerHTML = items.slice(0, 30).map(item => {
+    const pillarColor = getPillarDotColor(item.pillar);
+    const isVideo = (item.type || '').includes('video');
+    return `
+      <div class="media-item">
+        ${isVideo
+          ? `<video src="${escapeHtml(item.url)}" muted></video>`
+          : `<img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.name || '')}" loading="lazy"/>`
+        }
+        <div class="media-pillar-dot" style="background:${pillarColor};"></div>
+        <div class="media-name">${escapeHtml(item.originalName || item.name || '—')}</div>
+        <div class="media-overlay">
+          <button class="btn btn-ghost btn-sm" onclick="window.open('${escapeHtml(item.url)}','_blank')">↗️ Open</button>
+          <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${escapeHtml(item.url)}').then(()=>showToast('URL copied!','success'))">📋 Copy</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getPillarDotColor(pillar) {
+  const p = (pillar || '').toLowerCase();
+  if (p.includes('radha') || p.includes('sangeet')) return 'var(--orange)';
+  if (p.includes('corporate') || p.includes('veronica')) return '#C0C0C0';
+  if (p.includes('tour')) return '#F2A541';
+  return 'var(--purple)';
+}
+
+function filterMedia(filter, el) {
+  mediaFilter = filter;
+  document.querySelectorAll('.filter-btn[data-mfilter]').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderMediaGallery();
+}
+
+// ── FOLLOW-UP AI ───────────────────────────────────────────
+function generateFollowUps() {
+  const container = document.getElementById('followUpList');
+  const newLeads = allLeads.filter(l => (l.status || '').startsWith('New')).slice(0, 5);
+
+  if (newLeads.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>All leads have been contacted! Great job.</div>';
+    return;
+  }
+
+  const templates = [
+    { subject: 'Quick follow-up about your {eventType}', body: 'Hi {name}, I noticed you inquired about our {pillar} services for your {eventType}. I\'d love to discuss how we can make your event unforgettable. Are you available for a quick 5-minute call today?' },
+    { subject: 'Exclusive availability for {eventDate}', body: 'Dear {name}, I\'m reaching out because we have limited slots for {eventDate}. Given your interest in {pillar}, I\'d recommend our premium package. Can I send you our detailed proposal?' },
+    { subject: 'Your {pillar} event consultation', body: 'Hello {name}! Thank you for your interest in Anti-Gravity\'s {pillar} services. Based on your {budget} budget, I have some exciting package options to share. When would be a good time to connect?' },
+  ];
+
+  container.innerHTML = newLeads.map(lead => {
+    const tpl = templates[Math.floor(Math.random() * templates.length)];
+    const subject = tpl.subject.replace(/{(\w+)}/g, (_, k) => lead[k] || 'your event');
+    const body = tpl.body.replace(/{(\w+)}/g, (_, k) => lead[k] || 'your event');
+    const score = calculateLeadScore(lead);
+
+    return `
+      <div class="followup-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+          <div class="followup-subject">📧 ${escapeHtml(subject)}</div>
+          <div style="display:flex;align-items:center;gap:0.3rem;">
+            <div class="score-bar" style="width:40px;"><div class="score-fill" style="width:${score}%;background:${getScoreColor(score)};"></div></div>
+            <span style="font-size:0.68rem;font-weight:700;color:${getScoreColor(score)};">${score}</span>
+          </div>
+        </div>
+        <div class="followup-body">${escapeHtml(body)}</div>
+        <div class="followup-meta">
+          For: ${escapeHtml(lead.name || '—')} · ${escapeHtml(lead.pillar || '—')} · ${escapeHtml(lead.phone || '—')}
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:0.65rem;" onclick="navigator.clipboard.writeText(\`${body.replace(/`/g,"'")}\`).then(()=>showToast('Copied!','success'))">📋 Copy</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── REVENUE FORECAST CHART ─────────────────────────────────
+function renderRevenueChart() {
+  const svg = document.getElementById('revenueChart');
+  const budgetMap = { 'Under ₹25,000': 15000, '₹25,000 – ₹75,000': 50000, '₹75,000 – ₹2,00,000': 137500, '₹2L – ₹5L': 350000, 'Above ₹5L': 600000 };
+
+  // Group leads by month for last 6 months
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthLeads = allLeads.filter(l => {
+      const ld = new Date(l.timestamp);
+      return ld.getMonth() === d.getMonth() && ld.getFullYear() === d.getFullYear();
+    });
+    let rev = 0;
+    monthLeads.forEach(l => {
+      if (l.budget) Object.entries(budgetMap).forEach(([k, v]) => { if (l.budget.includes(k)) rev += v; });
+    });
+    months.push({
+      label: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      value: rev,
+      leads: monthLeads.length
+    });
+  }
+
+  // Add 2 prediction months
+  const avgGrowth = months.length >= 2 ?
+    (months[months.length - 1].value - months[months.length - 2].value) : 0;
+  for (let i = 1; i <= 2; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    months.push({
+      label: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      value: Math.max(0, months[months.length - 1].value + avgGrowth * (0.8 + Math.random() * 0.4)),
+      predicted: true
+    });
+  }
+
+  const maxVal = Math.max(...months.map(m => m.value), 100000);
+  const padding = { top: 20, right: 15, bottom: 30, left: 45 };
+  const chartW = 260 - padding.left - padding.right;
+  const chartH = 180 - padding.top - padding.bottom;
+
+  let svgContent = '';
+
+  // Grid lines
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartH / 4) * i;
+    const val = Math.round((maxVal - (maxVal / 4) * i) / 1000);
+    svgContent += `<line x1="${padding.left}" y1="${y}" x2="${260 - padding.right}" y2="${y}" class="chart-grid" stroke="rgba(255,255,255,0.04)"/>`;
+    svgContent += `<text x="${padding.left - 5}" y="${y + 3}" text-anchor="end" font-size="8" fill="#555">${val}K</text>`;
+  }
+
+  // Points
+  const points = months.map((m, i) => {
+    const x = padding.left + (i / (months.length - 1)) * chartW;
+    const y = padding.top + chartH - (m.value / maxVal) * chartH;
+    return { x, y, ...m };
+  });
+
+  // Area fill
+  const areaPoints = points.map(p => `${p.x},${p.y}`).join(' ');
+  const areaPath = `M${points[0].x},${padding.top + chartH} ${points.map(p => `L${p.x},${p.y}`).join(' ')} L${points[points.length - 1].x},${padding.top + chartH} Z`;
+  svgContent += `<path d="${areaPath}" fill="url(#chartGrad)" class="chart-area"/>`;
+
+  // Gradient def
+  svgContent += `
+    <defs>
+      <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--cyan)" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+  `;
+
+  // Main line (solid for actual, dashed for predicted)
+  const actualPoints = points.filter(p => !p.predicted);
+  const predPoints = points.filter(p => p.predicted);
+
+  if (actualPoints.length > 1) {
+    svgContent += `<polyline points="${actualPoints.map(p => `${p.x},${p.y}`).join(' ')}" class="chart-line" stroke="var(--cyan)"/>`;
+  }
+  if (predPoints.length > 0 && actualPoints.length > 0) {
+    const bridgePoints = [actualPoints[actualPoints.length - 1], ...predPoints];
+    svgContent += `<polyline points="${bridgePoints.map(p => `${p.x},${p.y}`).join(' ')}" class="chart-line" stroke="var(--cyan)" stroke-dasharray="4 3" opacity="0.5"/>`;
+  }
+
+  // Dots and labels
+  points.forEach((p, i) => {
+    const dotColor = p.predicted ? 'var(--purple)' : 'var(--cyan)';
+    svgContent += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${dotColor}" class="chart-dot" stroke="var(--bg)" stroke-width="1.5"/>`;
+    svgContent += `<text x="${p.x}" y="${padding.top + chartH + 15}" text-anchor="middle" font-size="7.5" fill="${p.predicted ? '#9d4edd' : '#888'}">${p.label}${p.predicted ? '*' : ''}</text>`;
+  });
+
+  svg.innerHTML = svgContent;
+}
+
+// ── SECTION TABS ───────────────────────────────────────────
+document.querySelectorAll('.section-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── KEYBOARD SHORTCUTS ─────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('leadSearch').focus();
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('healthModal').classList.remove('active');
+  }
+});
+
+// ── INITIALIZE ─────────────────────────────────────────────
+loadAllData();
+
+// Auto-refresh every 60 seconds
+setInterval(loadAllData, 60000);
+</script>
+</body>
+</html>

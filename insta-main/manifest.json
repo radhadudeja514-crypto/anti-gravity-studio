@@ -1,0 +1,23 @@
+{
+  "name": "Anti Gravity Studio",
+  "short_name": "AG Studio",
+  "description": "Premium media for Weddings, Corporate Events & Tours — Three Pillars, One Vision.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070707",
+  "theme_color": "#E8871E",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/assets/media/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/media/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Book Now",       "url": "/booking.html",          "description": "Send an enquiry" },
+    { "name": "Weddings",       "url": "/pillar-radha.html",     "description": "Radha — Wedding & Sangeet" },
+    { "name": "Corporate",      "url": "/pillar-veronica.html",  "description": "Veronica — Corporate Events" },
+    { "name": "Tours",          "url": "/pillar-tour.html",      "description": "Trail Curator — Tours" }
+  ],
+  "categories": ["entertainment", "business", "lifestyle"],
+  "lang": "en-IN",
+  "dir": "ltr"
+}

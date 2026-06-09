@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Payments — Anti-Gravity Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.amount{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--green)}
+.method-upi{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.method-cash{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.method-bank{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)}
+.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.modal-wrap.open{display:flex}
+.modal-box{background:#0d0d18;border:1px solid var(--glass-border);border-radius:16px;padding:2rem;width:min(480px,92vw)}
+</style>
+</head>
+<body>
+<div class="mesh-bg"><div class="mesh-orb"></div><div class="mesh-orb"></div></div>
+<div class="scanlines"></div>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>💳 Payments</h1><p>Track all bookings and payments across pillars</p></div>
+    <div class="header-actions">
+      <button class="btn btn-cyan" onclick="openAdd()">+ Record Payment</button>
+      <button class="btn btn-ghost" onclick="location.href='/api/backup/leads'">📥 Export CSV</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,.1);color:var(--green)">💰</div><div class="kpi-value" id="kTotal">₹0</div><div class="kpi-label">Total Collected</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,.1);color:var(--cyan)">📋</div><div class="kpi-value" id="kCount">0</div><div class="kpi-label">Payments</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,135,30,.1);color:var(--orange)">⏳</div><div class="kpi-value" id="kPending">0</div><div class="kpi-label">Pending</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(157,78,221,.1);color:var(--purple)">⭐</div><div class="kpi-value" id="kAvg">₹0</div><div class="kpi-label">Avg Value</div></div>
+  </div>
+  <div class="glass-card">
+    <div class="toolbar">
+      <div class="card-title">📊 ALL PAYMENTS</div>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="sf('all',this)">All</button>
+        <button class="filter-btn" onclick="sf('Completed',this)">✅ Paid</button>
+        <button class="filter-btn" onclick="sf('Pending',this)">⏳ Pending</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Client</th><th>Pillar</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="modal-wrap" id="addModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="font-family:var(--font-display);font-size:1rem;letter-spacing:.08em">RECORD PAYMENT</h2>
+      <button onclick="closeAdd()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:.3rem .7rem;border-radius:6px;cursor:pointer">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Client Lead</label><select id="fLead" class="form-select"><option value="">Select lead...</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Amount (₹)</label><input type="number" id="fAmt" class="form-input" placeholder="25000"/></div>
+      <div class="form-group"><label class="form-label">Method</label><select id="fMethod" class="form-select"><option>UPI</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><input type="text" id="fNotes" class="form-input" placeholder="Token / advance / balance..."/></div>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.25rem">
+      <button class="btn btn-ghost" onclick="closeAdd()">Cancel</button>
+      <button class="btn btn-cyan" onclick="savePayment()">💳 Save</button>
+    </div>
+  </div>
+</div>
+<script>
+let payments=[],leads=[],filter='all';
+async function load(){
+  [payments,leads]=await Promise.all([fetch('/api/payments').then(r=>r.json()).catch(()=>[]),fetch('/api/leads').then(r=>r.json()).catch(()=>[])]);
+  if(!Array.isArray(payments))payments=[];if(!Array.isArray(leads))leads=[];
+  const paid=payments.filter(p=>p.status==='Completed');
+  const total=paid.reduce((s,p)=>s+(+p.amount||0),0);
+  document.getElementById('kTotal').textContent='₹'+total.toLocaleString('en-IN');
+  document.getElementById('kCount').textContent=payments.length;
+  document.getElementById('kPending').textContent=payments.filter(p=>p.status==='Pending').length;
+  document.getElementById('kAvg').textContent=paid.length?'₹'+Math.round(total/paid.length).toLocaleString('en-IN'):'₹0';
+  document.getElementById('fLead').innerHTML='<option value="">Select lead...</option>'+leads.map(l=>`<option value="${l.id}">${e(l.name)} — ${e(l.pillar||'')}</option>`).join('');
+  render();
+}
+function sf(f,el){filter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
+function render(){
+  const list=filter==='all'?payments:payments.filter(p=>p.status===filter);
+  const tbody=document.getElementById('tbody');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No payments yet</td></tr>';return;}
+  tbody.innerHTML=list.map(p=>{
+    const l=leads.find(x=>x.id==p.leadId);
+    const mc=p.method==='UPI'?'method-upi':p.method==='Cash'?'method-cash':'method-bank';
+    const sc=p.status==='Completed'?'badge-green':'badge-yellow';
+    return`<tr>
+      <td><strong>${e(l?.name||'Unknown')}</strong><br><small style="color:var(--text-dim)">${e(l?.email||'')}</small></td>
+      <td><span class="pillar-tag pillar-${(l?.pillar||'').toLowerCase()}">${e(l?.pillar||'—')}</span></td>
+      <td><span class="amount">₹${(+p.amount||0).toLocaleString('en-IN')}</span></td>
+      <td><span class="badge ${mc}" style="font-size:.6rem">${e(p.method||'—')}</span></td>
+      <td><span class="badge ${sc}">${e(p.status||'Pending')}</span></td>
+      <td style="font-size:.72rem;color:var(--text-dim)">${new Date(p.createdAt||Date.now()).toLocaleDateString('en-IN')}</td>
+      <td style="display:flex;gap:.35rem">
+        ${p.status!=='Completed'?`<button class="btn btn-success btn-sm" onclick="markPaid(${p.id})">✅ Paid</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="del(${p.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function openAdd(){document.getElementById('addModal').classList.add('open');}
+function closeAdd(){document.getElementById('addModal').classList.remove('open');}
+async function savePayment(){
+  const leadId=document.getElementById('fLead').value,amount=document.getElementById('fAmt').value,method=document.getElementById('fMethod').value,notes=document.getElementById('fNotes').value;
+  if(!leadId||!amount){alert('Select a lead and enter amount');return;}
+  await fetch('/api/payments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leadId,amount,method,notes})});
+  closeAdd();load();toast('Payment recorded!');
+}
+async function markPaid(id){await fetch(`/api/payments/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Completed'})});load();}
+async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/payments/${id}`,{method:'DELETE'});load();}
+function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function toast(msg){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:1.5rem;right:1.5rem;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#fff;padding:.75rem 1.25rem;border-radius:8px;font-size:.8rem;z-index:9999';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
+load();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

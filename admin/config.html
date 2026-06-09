@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Settings — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.config-section{margin-bottom:0.5rem;}
+.config-section h3{font-family:var(--font-display);font-size:0.72rem;letter-spacing:0.1em;color:var(--cyan);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(0,249,255,0.1);}
+.config-row{display:grid;grid-template-columns:200px 1fr 80px;gap:1rem;align-items:center;margin-bottom:0.75rem;}
+.config-key{font-size:0.75rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;}
+.config-val{font-size:0.82rem;}
+.server-log{
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:1rem;font-family:monospace;font-size:0.72rem;color:var(--green);
+  max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;
+  line-height:1.6;
+}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>⚙️ SYSTEM CONFIG</h1><p>Manage API keys, admin settings & view server logs</p></div>
+    <div class="header-actions">
+      <button class="btn btn-cyan btn-sm" onclick="loadData()">🔄 Reload</button>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Config Editor -->
+    <div>
+      <div class="glass-card accent-cyan">
+        <div class="config-section">
+          <h3>🔐 ADMIN AUTH</h3>
+          <div class="config-row">
+            <span class="config-key">Admin Password</span>
+            <input type="password" class="form-input" id="cfg_ADMIN_PASSWORD" placeholder="••••••••"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('ADMIN_PASSWORD')">Save</button>
+          </div>
+          <div class="config-row">
+            <span class="config-key">Admin Email</span>
+            <input type="email" class="form-input" id="cfg_ADMIN_EMAIL" placeholder="admin@example.com"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('ADMIN_EMAIL')">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="config-section">
+          <h3>☁️ CLOUDINARY</h3>
+          <div class="config-row">
+            <span class="config-key">Cloud Name</span>
+            <input type="text" class="form-input" id="cfg_CLOUDINARY_NAME" placeholder="your-cloud-name"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('CLOUDINARY_NAME')">Save</button>
+          </div>
+          <div class="config-row">
+            <span class="config-key">API Key</span>
+            <input type="text" class="form-input" id="cfg_CLOUDINARY_KEY" placeholder="123456789"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('CLOUDINARY_KEY')">Save</button>
+          </div>
+          <div class="config-row">
+            <span class="config-key">API Secret</span>
+            <input type="password" class="form-input" id="cfg_CLOUDINARY_SECRET" placeholder="••••••••"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('CLOUDINARY_SECRET')">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="config-section">
+          <h3>📍 GOOGLE</h3>
+          <div class="config-row">
+            <span class="config-key">Google Places Key</span>
+            <input type="text" class="form-input" id="cfg_GOOGLE_PLACES_KEY" placeholder="AIza..."/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('GOOGLE_PLACES_KEY')">Save</button>
+          </div>
+          <div class="config-row">
+            <span class="config-key">Google Place ID</span>
+            <input type="text" class="form-input" id="cfg_GOOGLE_PLACE_ID" placeholder="ChIJ..."/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('GOOGLE_PLACE_ID')">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="config-section">
+          <h3>💰 UPI PAYMENTS</h3>
+          <div class="config-row">
+            <span class="config-key">UPI ID</span>
+            <input type="text" class="form-input" id="cfg_UPI_ID" placeholder="name@upi"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('UPI_ID')">Save</button>
+          </div>
+          <div class="config-row">
+            <span class="config-key">UPI Name</span>
+            <input type="text" class="form-input" id="cfg_UPI_NAME" placeholder="Business Name"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('UPI_NAME')">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="config-section">
+          <h3>📞 CONTACT</h3>
+          <div class="config-row">
+            <span class="config-key">WhatsApp Number</span>
+            <input type="text" class="form-input" id="cfg_WHATSAPP" placeholder="918192901515"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('WHATSAPP')">Save</button>
+          </div>
+          <div class="config-row">
+            <span class="config-key">Email</span>
+            <input type="email" class="form-input" id="cfg_CONTACT_EMAIL" placeholder="contact@example.com"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('CONTACT_EMAIL')">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Logs & Status -->
+    <div>
+      <div class="glass-card accent-purple">
+        <div class="card-header"><div class="card-title" style="color:var(--purple);"><span class="icon">🖥️</span> SERVER HEALTH</div></div>
+        <div id="healthStatus"><div class="shimmer" style="height:120px;"></div></div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📜</span> SERVER LOGS</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadLogs()">🔄 Refresh</button>
+        </div>
+        <div class="server-log" id="serverLog">Loading server logs...</div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📜</span> ERROR LOGS</div>
+        </div>
+        <div class="server-log" id="errorLog" style="color:var(--red);">Loading error logs...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadData(){
+  try{
+    const cfg=await fetch('/api/config').then(r=>r.json()).catch(()=>({}));
+    Object.entries(cfg).forEach(([k,v])=>{const el=document.getElementById('cfg_'+k);if(el)el.value=v;});
+  }catch(e){}
+  loadHealth(); loadLogs();
+}
+
+async function saveKey(key){
+  const el=document.getElementById('cfg_'+key);if(!el)return;
+  try{
+    await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,value:el.value})});
+    showToast(`${key} saved!`,'success');
+  }catch(e){showToast('Save failed','error');}
+}
+
+async function loadHealth(){
+  try{
+    const h=await fetch('/api/agent/data/health').then(r=>r.json());
+    document.getElementById('healthStatus').innerHTML=`
+      <div style="display:grid;gap:0.5rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Server Status</span><span class="badge badge-green">ONLINE</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Uptime</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.uptime||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Memory</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.memory||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>DB Tables</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.tables||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Total Leads</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.leads||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Total Media</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.media||'—'}</span></div>
+      </div>
+    `;
+  }catch(e){document.getElementById('healthStatus').innerHTML='<div class="empty-state">Could not fetch health data</div>';}
+}
+
+async function loadLogs(){
+  try{
+    const d=await fetch('/api/admin/logs').then(r=>r.json());
+    document.getElementById('serverLog').textContent=d.stdout||'No logs available.';
+    document.getElementById('errorLog').textContent=d.stderr||'No errors.';
+  }catch(e){document.getElementById('serverLog').textContent='Failed to load logs.';}
+}
+
+loadData();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

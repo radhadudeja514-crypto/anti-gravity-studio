@@ -1,0 +1,242 @@
+/* Radha Pillar Styles */
+
+body.radha-theme { background: var(--radha-bg); }
+
+/* HERO */
+.radha-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding-top: 80px;
+}
+.radha-hero-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 70% 40%, rgba(232,135,30,0.25) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(42,157,143,0.2) 0%, transparent 50%),
+              linear-gradient(160deg, #1A0F02 0%, #0D0906 100%);
+  z-index: 0;
+}
+.radha-mandala {
+  position: absolute;
+  right: -10%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  border: 1px solid rgba(232,135,30,0.1);
+  box-shadow: inset 0 0 100px rgba(232,135,30,0.05), 0 0 100px rgba(232,135,30,0.05);
+  animation: spin 60s linear infinite;
+  z-index: 0;
+}
+.radha-mandala::before {
+  content:'';
+  position:absolute;
+  inset:40px;
+  border-radius:50%;
+  border:1px solid rgba(42,157,143,0.1);
+}
+.radha-mandala::after {
+  content:'';
+  position:absolute;
+  inset:80px;
+  border-radius:50%;
+  border:1px solid rgba(232,135,30,0.08);
+}
+
+.radha-hero-content { position:relative; z-index:1; padding: 3rem 0; }
+
+.radha-insta-badge {
+  position: absolute;
+  right: 3rem;
+  bottom: 3rem;
+  z-index: 2;
+}
+.insta-badge-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: rgba(26,15,2,0.85);
+  border: 1px solid rgba(232,135,30,0.3);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(20px);
+  text-decoration: none;
+  color: var(--text-light);
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+.insta-badge-inner:hover { border-color: rgba(232,135,30,0.6); transform: translateY(-2px); }
+
+/* SCHEDULE BAR */
+.radha-schedule-bar {
+  padding: 0.85rem 2rem;
+  background: rgba(232,135,30,0.06);
+  border-bottom: 1px solid rgba(232,135,30,0.12);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  overflow: hidden;
+}
+.schedule-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--radha-primary);
+  white-space: nowrap;
+}
+.schedule-items {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  align-items: center;
+}
+.schedule-items::-webkit-scrollbar { display: none; }
+.schedule-item { font-size: 0.85rem; color: rgba(255,255,255,0.6); white-space: nowrap; }
+.schedule-sep { color: rgba(232,135,30,0.4); }
+
+/* ABOUT */
+.radha-about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 5rem;
+  align-items: center;
+}
+.radha-photo-frame {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid rgba(232,135,30,0.2);
+}
+.radha-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: linear-gradient(160deg, rgba(232,135,30,0.06), rgba(42,157,143,0.04));
+  font-size: 4rem;
+}
+.radha-frame-decor {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: var(--radha-primary);
+  border-style: solid;
+  border-width: 0;
+}
+.radha-frame-decor.top-left { top: 16px; left: 16px; border-top-width: 2px; border-left-width: 2px; border-top-left-radius: 4px; }
+.radha-frame-decor.top-right { top: 16px; right: 16px; border-top-width: 2px; border-right-width: 2px; border-top-right-radius: 4px; }
+.radha-frame-decor.bottom-left { bottom: 16px; left: 16px; border-bottom-width: 2px; border-left-width: 2px; border-bottom-left-radius: 4px; }
+.radha-frame-decor.bottom-right { bottom: 16px; right: 16px; border-bottom-width: 2px; border-right-width: 2px; border-bottom-right-radius: 4px; }
+
+.radha-quote-card {
+  position: absolute;
+  bottom: -1.5rem;
+  right: -1.5rem;
+  background: rgba(26,15,2,0.95);
+  border: 1px solid rgba(232,135,30,0.3);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  max-width: 280px;
+  backdrop-filter: blur(20px);
+}
+.radha-quote-card p { font-size: 1rem; color: rgba(255,255,255,0.8); margin-bottom: 0.5rem; line-height: 1.5; }
+.radha-quote-card span { font-size: 0.75rem; color: var(--radha-primary); font-weight: 600; }
+
+.radha-traits { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.trait-chip {
+  padding: 0.4rem 1rem;
+  background: rgba(232,135,30,0.08);
+  border: 1px solid rgba(232,135,30,0.2);
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.75);
+  transition: all 0.3s ease;
+}
+.trait-chip:hover { background: rgba(232,135,30,0.15); color: #fff; }
+
+/* SERVICES */
+.radha-service-card {
+  padding: 2rem;
+  background: rgba(232,135,30,0.04);
+  border: 1px solid rgba(232,135,30,0.12);
+  border-radius: var(--radius-lg);
+  transition: all 0.4s var(--ease-out-expo);
+}
+.radha-service-card:hover {
+  background: rgba(232,135,30,0.08);
+  border-color: rgba(232,135,30,0.3);
+  transform: translateY(-4px);
+}
+.service-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+.radha-service-card h3 { font-family: var(--font-serif); font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--radha-accent); }
+.radha-service-card p { font-size: 0.9rem; color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 1rem; }
+.service-tag { font-size: 0.75rem; font-weight: 700; color: var(--radha-secondary); letter-spacing: 0.05em; }
+
+/* GALLERY placeholders */
+.gallery-item.radha-placeholder {
+  background: linear-gradient(135deg, rgba(232,135,30,0.06), rgba(42,157,143,0.04));
+  border: 1px dashed rgba(232,135,30,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  aspect-ratio: 4/5;
+  border-radius: var(--radius-md);
+}
+
+/* SCHEDULE GRID */
+.schedule-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+.schedule-card {
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  background: rgba(232,135,30,0.04);
+  border: 1px solid rgba(232,135,30,0.12);
+  text-align: center;
+  transition: all 0.4s ease;
+}
+.schedule-card:hover { transform: translateY(-4px); background: rgba(232,135,30,0.08); }
+.sched-day { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--radha-secondary); margin-bottom: 0.25rem; }
+.sched-time { font-family: var(--font-display); font-size: 1.5rem; color: var(--radha-primary); margin-bottom: 1rem; }
+.sched-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.sched-title { font-family: var(--font-serif); font-size: 1.1rem; margin-bottom: 0.75rem; }
+.sched-desc { font-size: 0.85rem; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+/* CROSS-PILLAR */
+.cross-pillar-bridge { background: rgba(139,92,246,0.04); border-top: 1px solid rgba(139,92,246,0.1); border-bottom: 1px solid rgba(139,92,246,0.1); }
+.btn-corp {
+  background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.btn-corp:hover { border-color: rgba(255,255,255,0.3); }
+.gradient-text-corp {
+  background: linear-gradient(135deg,#fff,#C0C0C0,#D4AF37);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.enquiry-wrap { display: grid; grid-template-columns: 1fr 1.4fr; gap: 5rem; align-items: start; }
+.enquiry-form-wrap { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 2.5rem; }
+.enquiry-form-wrap .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+@media(max-width:1024px){
+  .radha-about-grid { grid-template-columns: 1fr; gap:3rem; }
+  .radha-quote-card { right: 1rem; bottom: 1rem; }
+  .schedule-grid { grid-template-columns: 1fr 1fr; }
+  .enquiry-wrap { grid-template-columns: 1fr; gap:2rem; }
+  .schedule-card:last-child { grid-column: 1 / -1; }
+}
+@media(max-width:768px){
+  .schedule-grid { grid-template-columns: 1fr; }
+  .enquiry-form-wrap .form-row { grid-template-columns:1fr; }
+  .radha-insta-badge { display:none; }
+}

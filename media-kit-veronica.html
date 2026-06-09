@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Media Kit — Veronica | Anti-Gravity Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--cyan:#00f9ff;--dark:#08080f;--card:#111118;--text:#f0f0f0;--muted:#888}
+body{background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+.top-bar{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 2rem;border-bottom:1px solid rgba(0,249,255,0.2);background:rgba(8,8,15,0.95);position:sticky;top:0;z-index:100}
+.logo{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text)}
+.logo span{color:var(--cyan)}
+.btn-dl{background:linear-gradient(135deg,#00f9ff,#0066cc);color:#000;border:none;padding:0.6rem 1.4rem;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;transition:opacity 0.2s}
+.btn-dl:hover{opacity:0.85}
+.btn-back{color:var(--muted);text-decoration:none;font-size:0.85rem;margin-right:1rem}
+.btn-back:hover{color:var(--text)}
+#pdf-content{max-width:800px;margin:2rem auto;padding:0 1.5rem 4rem}
+.cover{background:linear-gradient(135deg,rgba(0,249,255,0.1),rgba(0,102,204,0.1));border:1px solid rgba(0,249,255,0.3);border-radius:16px;padding:3rem 2.5rem;margin-bottom:2rem;text-align:center}
+.cover-tag{display:inline-block;background:rgba(0,249,255,0.15);color:var(--cyan);padding:0.3rem 1rem;border-radius:20px;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.5rem}
+.cover h1{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,4rem);font-weight:900;line-height:1.1;margin-bottom:0.75rem}
+.cover h1 span{color:var(--cyan)}
+.cover .tagline{font-size:1.1rem;color:var(--muted);font-style:italic;margin-bottom:1.5rem}
+.cover .handle{font-size:0.9rem;color:rgba(0,249,255,0.8);letter-spacing:0.05em}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(0,249,255,0.4),transparent);margin:2rem 0}
+.section{margin-bottom:2rem}
+.section-title{font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--cyan);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(0,249,255,0.2)}
+.bio-text{font-size:1rem;line-height:1.8;color:rgba(240,240,240,0.85)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.stat-card{background:var(--card);border:1px solid rgba(0,249,255,0.2);border-radius:12px;padding:1.2rem;text-align:center}
+.stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--cyan)}
+.stat-label{font-size:0.75rem;color:var(--muted);margin-top:0.25rem;text-transform:uppercase;letter-spacing:0.05em}
+.services-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem}
+.service-item{background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:1rem 1.2rem;display:flex;align-items:center;gap:0.75rem}
+.service-icon{font-size:1.3rem}
+.service-name{font-size:0.9rem;font-weight:500}
+.service-price{font-size:0.8rem;color:var(--cyan);margin-top:0.2rem}
+.collab-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem}
+.collab-item{background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.9rem 1.1rem}
+.collab-item strong{display:block;font-size:0.85rem;margin-bottom:0.3rem}
+.collab-item span{font-size:0.8rem;color:var(--muted)}
+.contact-box{background:linear-gradient(135deg,rgba(0,249,255,0.1),rgba(0,102,204,0.08));border:1px solid rgba(0,249,255,0.25);border-radius:12px;padding:1.5rem 2rem;text-align:center}
+.contact-box p{font-size:0.9rem;color:var(--muted);margin-bottom:0.75rem}
+.contact-box a{color:var(--cyan);text-decoration:none;font-weight:500}
+.footer-note{text-align:center;font-size:0.75rem;color:var(--muted);margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.06)}
+@media print{
+  body{background:#fff;color:#111}
+  .top-bar{display:none}
+  #pdf-content{max-width:100%;margin:0;padding:1cm}
+  .cover{background:linear-gradient(135deg,#f0fffe,#f0f8ff);border-color:#00aacc}
+  .stat-card,.service-item,.collab-item{background:#f9f9f9;border-color:#ddd}
+  .contact-box{background:#f0fffe;border-color:#00aacc}
+  .cover h1 span,.section-title,.stat-num,.service-price,.contact-box a{color:#007799}
+  .bio-text,.service-name{color:#333}
+  .stat-label,.collab-item span,.contact-box p,.footer-note{color:#666}
+  .cover .handle,.cover .tagline{color:#888}
+}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <div style="display:flex;align-items:center">
+    <a href="media-kit.html" class="btn-back">← Back</a>
+    <div class="logo">Anti<span>.</span>Gravity Studio</div>
+  </div>
+  <button class="btn-dl" onclick="downloadPDF()">⬇ Download PDF</button>
+</div>
+
+<div id="pdf-content">
+  <div class="cover">
+    <div class="cover-tag">Official Media Kit 2026</div>
+    <h1><span>Veronica</span> Emcee</h1>
+    <div class="tagline">"The voice that defines the room."</div>
+    <div class="handle">@veronicaemcee · Corporate & Premium Events Anchor</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">About</div>
+    <p class="bio-text">
+      Veronica is a globally-neutral, premium anchor for Tech Summits, AGMs, Product Launches, and Corporate Galas.
+      With 12 years of professional experience across Fortune 500 events and international conferences, she brings
+      precision, warmth, and gravitas to every stage. Fluent in English and Hindi, Veronica has commanded rooms
+      from 50 to 5,000 attendees across India, UAE, and Singapore.
+    </p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-title">At a Glance</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">500+</div><div class="stat-label">Events Hosted</div></div>
+      <div class="stat-card"><div class="stat-num">12+</div><div class="stat-label">Years Experience</div></div>
+      <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">Countries</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Services & Packages</div>
+    <div class="services-grid">
+      <div class="service-item"><div class="service-icon">🎤</div><div><div class="service-name">Corporate Conference / AGM</div><div class="service-price">₹60,000 – ₹1,50,000</div></div></div>
+      <div class="service-item"><div class="service-icon">🚀</div><div><div class="service-name">Product Launch Event</div><div class="service-price">₹40,000 – ₹80,000</div></div></div>
+      <div class="service-item"><div class="service-icon">🏆</div><div><div class="service-name">Awards Ceremony</div><div class="service-price">₹50,000 – ₹1,00,000</div></div></div>
+      <div class="service-item"><div class="service-icon">🌐</div><div><div class="service-name">Virtual / Hybrid Events</div><div class="service-price">₹25,000 – ₹60,000</div></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Brand & Media Collaboration</div>
+    <div class="collab-grid">
+      <div class="collab-item"><strong>LinkedIn Video Feature</strong><span>₹10,000 – ₹25,000</span></div>
+      <div class="collab-item"><strong>Brand Ambassador</strong><span>Quarterly retainer available</span></div>
+      <div class="collab-item"><strong>Podcast / Panel Hosting</strong><span>₹15,000 per session</span></div>
+      <div class="collab-item"><strong>Corporate Training MC</strong><span>₹20,000 per day</span></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-title">Audience & Reach</div>
+    <div class="services-grid">
+      <div class="service-item"><div class="service-icon">📍</div><div><div class="service-name">Primary Markets</div><div class="service-price">Pan-India · UAE · Singapore</div></div></div>
+      <div class="service-item"><div class="service-icon">👥</div><div><div class="service-name">Core Audience</div><div class="service-price">C-Suite & Professionals 30–55</div></div></div>
+    </div>
+  </div>
+
+  <div class="contact-box">
+    <p>Elevate your next corporate event.</p>
+    <a href="https://antigravitystudio.in/booking.html">Book Veronica → antigravitystudio.in/booking</a>
+  </div>
+
+  <div class="footer-note">
+    Anti-Gravity Studio · Media Kit 2026 · All rates subject to event scope & travel. GST applicable.
+  </div>
+</div>
+
+<script>
+function downloadPDF() {
+  const btn = document.querySelector('.btn-dl');
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+  html2pdf().set({
+    margin: [10,10,10,10],
+    filename: 'Veronica-Emcee-Media-Kit-2026.pdf',
+    image: { type: 'jpeg', quality: 0.97 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#08080f' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(document.getElementById('pdf-content')).save().then(() => {
+    btn.textContent = '⬇ Download PDF';
+    btn.disabled = false;
+  });
+}
+</script>
+</body>
+</html>

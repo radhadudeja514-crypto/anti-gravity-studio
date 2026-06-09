@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Instagram Profiles — Gig Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #fafafa; display: flex; justify-content: center; padding: 2rem; min-height: 100vh; }
+  
+  .phone-frame {
+    width: 375px; height: 812px;
+    background: #fff;
+    border: 12px solid #111;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.1);
+  }
+  
+  .ig-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.25rem 0.5rem;
+    border-bottom: 1px solid #efefef;
+    font-weight: 700; font-size: 1.1rem;
+  }
+  
+  .ig-profile-top { padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1.5rem; }
+  .ig-avatar {
+    width: 86px; height: 86px; border-radius: 50%;
+    background: #eee; border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #e1306c; /* IG gradient ring */
+    display: flex; align-items: center; justify-content: center; font-size: 2rem;
+  }
+  .ig-stats { flex: 1; display: flex; justify-content: space-around; text-align: center; }
+  .ig-stat-num { font-weight: 700; font-size: 1.1rem; }
+  .ig-stat-lbl { font-size: 0.8rem; color: #666; }
+  
+  .ig-bio { padding: 0 1.25rem 1rem; font-size: 0.9rem; line-height: 1.4; }
+  .ig-name { font-weight: 700; margin-bottom: 0.2rem; }
+  .ig-category { color: #888; font-size: 0.8rem; margin-bottom: 0.4rem; }
+  .ig-link { color: #00376b; font-weight: 600; text-decoration: none; }
+  
+  .ig-actions { padding: 0 1.25rem 1rem; display: flex; gap: 0.5rem; }
+  .ig-btn { flex: 1; padding: 0.4rem 0; text-align: center; background: #efefef; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+  .ig-btn-primary { background: #0095f6; color: #fff; }
+  
+  .ig-highlights { padding: 0 0.5rem 1rem; display: flex; gap: 1rem; overflow-x: auto; scrollbar-width: none; }
+  .ig-highlights::-webkit-scrollbar { display: none; }
+  .ig-hl-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; width: 64px; flex-shrink: 0; }
+  .ig-hl { width: 60px; height: 60px; border-radius: 50%; background: #fafafa; border: 1px solid #ddd; padding: 3px; }
+  .ig-hl-inner { width: 100%; height: 100%; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+  .ig-hl-text { font-size: 0.7rem; }
+  
+  .ig-tabs { display: flex; border-top: 1px solid #efefef; }
+  .ig-tab { flex: 1; padding: 0.75rem 0; text-align: center; font-size: 1.2rem; color: #aaa; border-bottom: 1px solid transparent; }
+  .ig-tab.active { color: #000; border-bottom: 1px solid #000; }
+  
+  .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .ig-post { aspect-ratio: 1; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 2rem; position: relative; cursor: pointer; }
+  .ig-post:hover::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.1); }
+  
+  .controls { position: fixed; top: 2rem; left: 2rem; background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 280px; }
+  .control-btn { display: block; width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; background: #fafafa; border: 1px solid #ddd; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: left; }
+  .control-btn.active { background: #000; color: #fff; border-color: #000; }
+  .upload-zone{border:2px dashed #ddd;border-radius:10px;padding:1rem;text-align:center;cursor:pointer;margin-top:1rem;transition:all .2s;font-size:.8rem;color:#888;}
+  .upload-zone:hover,.upload-zone.over{border-color:#555;background:#f5f5f5;}
+  .upload-zone input{display:none;}
+  .upload-count{font-size:.72rem;color:#999;text-align:center;margin-top:.4rem;}
+  .clear-link{font-size:.72rem;color:#e74c3c;cursor:pointer;display:block;text-align:center;margin-top:.3rem;}
+  .reviews-panel{display:none;margin-top:1rem;}
+  .reviews-panel input,.reviews-panel textarea{width:100%;border:1px solid #ddd;border-radius:6px;padding:.4rem .6rem;font-size:.78rem;margin-bottom:.4rem;font-family:inherit;resize:vertical;}
+  .reviews-panel textarea{min-height:70px;}
+  .rv-item{background:#f9f9f9;border-radius:8px;padding:.6rem;margin-bottom:.4rem;font-size:.75rem;line-height:1.4;}
+  .rv-stars{color:#f59e0b;}
+  .reviews-panel .apply-btn{width:100%;padding:.4rem;background:#4285f4;color:#fff;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;margin-bottom:.5rem;}
+  .reviews-panel label{font-size:.75rem;color:#555;font-weight:600;display:block;margin-bottom:.2rem;}
+  .lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;align-items:center;justify-content:center;}
+  .lb.open{display:flex;}
+  .lb img,.lb video{max-width:92vw;max-height:90vh;border-radius:10px;}
+  .lb-x{position:fixed;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.2rem;width:38px;height:38px;border-radius:50%;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h3 style="margin-bottom:1rem;font-size:1.1rem;">Select Profile</h3>
+  <button class="control-btn active" onclick="switchProfile('radha')">🪔 Radha (The Bhakt)</button>
+  <button class="control-btn" onclick="switchProfile('corporate')">🎤 Veronica (Corporate)</button>
+  <button class="control-btn" onclick="switchProfile('tour')">🧭 The Trail Curator</button>
+  <button class="control-btn" onclick="switchProfile('reviews')" style="margin-top:.5rem;border-top:1px solid #eee;padding-top:.75rem">⭐ Google Reviews</button>
+
+  <div id="upload-ui" style="margin-top:1rem">
+    <div class="upload-zone" id="drop-zone" ondragover="dov(event)" ondragleave="dol()" ondrop="ddr(event)" onclick="document.getElementById('file-in').click()">
+      <input type="file" id="file-in" multiple accept="image/*,video/*" onchange="onSel(event)"/>
+      📸 Drop photos here or click
+    </div>
+    <div class="upload-count" id="ucount">0 photos</div>
+    <span class="clear-link" onclick="clearCurrent()">✕ Clear this profile</span>
+  </div>
+
+  <div class="reviews-panel" id="reviews-panel">
+    <label>Google Maps Embed URL</label>
+    <input type="text" id="gmaps-url" placeholder="Paste embed src=\"...\" URL"/>
+    <button class="apply-btn" onclick="applyMap()">Show Map</button>
+    <hr style="margin:.5rem 0;border-color:#eee"/>
+    <label>Add Client Review</label>
+    <input type="text" id="rv-name" placeholder="Client name"/>
+    <input type="number" id="rv-stars" placeholder="Stars (1-5)" min="1" max="5"/>
+    <textarea id="rv-text" placeholder="Review text..."></textarea>
+    <button class="apply-btn" onclick="addReview()">Add Review</button>
+    <div id="rv-list"></div>
+  </div>
+</div>
+
+<div class="phone-frame">
+  <!-- Profile Content -->
+  <div id="profile-radha" class="profile-view">
+    <div class="ig-header">
+      <span>🔒 radhadudega</span>
+      <span>≡</span>
+    </div>
+    <div class="ig-profile-top">
+      <div class="ig-avatar" style="box-shadow: 0 0 0 2px #E8871E;">🪔</div>
+      <div class="ig-stats">
+        <div><div class="ig-stat-num">482</div><div class="ig-stat-lbl">posts</div></div>
+        <div><div class="ig-stat-num">12.4K</div><div class="ig-stat-lbl">followers</div></div>
+        <div><div class="ig-stat-num">150</div><div class="ig-stat-lbl">following</div></div>
+      </div>
+    </div>
+    <div class="ig-bio">
+      <div class="ig-name">Radha Dudega</div>
+      <div class="ig-category">Artist</div>
+      <div>"जहाँ भाव है, वहाँ उत्सव है।"<br/>Sangeet Host · Spiritual Events · Cultural Anchor<br/>Pan-India & International 🌍</div>
+      <a href="/pillar-radha.html" class="ig-link">bookradha.com</a>
+    </div>
+    <div class="ig-actions">
+      <div class="ig-btn ig-btn-primary">Follow</div>
+      <div class="ig-btn">Message</div>
+      <div class="ig-btn">Email</div>
+    </div>
+    <div class="ig-highlights">
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">💃</div></div><div class="ig-hl-text">Sangeet</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🌸</div></div><div class="ig-hl-text">Family</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🙏</div></div><div class="ig-hl-text">Spiritual</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🛫</div></div><div class="ig-hl-text">Travels</div></div>
+    </div>
+    <div class="ig-tabs">
+      <div class="ig-tab active">▦</div>
+      <div class="ig-tab">▶</div>
+      <div class="ig-tab">▤</div>
+    </div>
+    <div class="ig-grid" id="ig-grid-radha"></div>
+  </div>
+
+  <div id="profile-corporate" class="profile-view" style="display:none;">
+    <div class="ig-header">
+      <span>🔒 veronica_corporate</span>
+      <span>≡</span>
+    </div>
+    <div class="ig-profile-top">
+      <div class="ig-avatar" style="box-shadow: 0 0 0 2px #333;">🎤</div>
+      <div class="ig-stats">
+        <div><div class="ig-stat-num">312</div><div class="ig-stat-lbl">posts</div></div>
+        <div><div class="ig-stat-num">28.9K</div><div class="ig-stat-lbl">followers</div></div>
+        <div><div class="ig-stat-num">80</div><div class="ig-stat-lbl">following</div></div>
+      </div>
+    </div>
+    <div class="ig-bio">
+      <div class="ig-name">Veronica</div>
+      <div class="ig-category">Public Figure</div>
+      <div>Corporate MC · Tech Summits · Conferences<br/>Sharp. Authoritative. Unforgettable.<br/>Mumbai | Dubai | London</div>
+      <a href="/pillar-veronica.html" class="ig-link">bookveronica.com</a>
+    </div>
+    <div class="ig-actions">
+      <div class="ig-btn ig-btn-primary">Follow</div>
+      <div class="ig-btn">Message</div>
+      <div class="ig-btn">Contact</div>
+    </div>
+    <div class="ig-highlights">
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🏢</div></div><div class="ig-hl-text">Summits</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🏆</div></div><div class="ig-hl-text">Awards</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🚀</div></div><div class="ig-hl-text">Launches</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🎙️</div></div><div class="ig-hl-text">Tips</div></div>
+    </div>
+    <div class="ig-tabs">
+      <div class="ig-tab active">▦</div>
+      <div class="ig-tab">▶</div>
+      <div class="ig-tab">▤</div>
+    </div>
+    <div class="ig-grid" id="ig-grid-corporate"></div>
+  </div>
+
+  <div id="profile-tour" class="profile-view" style="display:none;">
+    <div class="ig-header">
+      <span>🔒 thetrailcurator</span>
+      <span>≡</span>
+    </div>
+    <div class="ig-profile-top">
+      <div class="ig-avatar" style="box-shadow: 0 0 0 2px #F2A541;">🧭</div>
+      <div class="ig-stats">
+        <div><div class="ig-stat-num">560</div><div class="ig-stat-lbl">posts</div></div>
+        <div><div class="ig-stat-num">45.2K</div><div class="ig-stat-lbl">followers</div></div>
+        <div><div class="ig-stat-num">200</div><div class="ig-stat-lbl">following</div></div>
+      </div>
+    </div>
+    <div class="ig-bio">
+      <div class="ig-name">The Trail Curator</div>
+      <div class="ig-category">Travel Company</div>
+      <div>Every path tells a story. 🌿<br/>Heritage Walks · Mountain Trails · Culture<br/>Curating journeys that change perspectives.</div>
+      <a href="/pillar-tour.html" class="ig-link">trailcurator.com</a>
+    </div>
+    <div class="ig-actions">
+      <div class="ig-btn ig-btn-primary">Follow</div>
+      <div class="ig-btn">Message</div>
+      <div class="ig-btn">Book</div>
+    </div>
+    <div class="ig-highlights">
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🏜️</div></div><div class="ig-hl-text">Rajasthan</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🏔️</div></div><div class="ig-hl-text">Spiti</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🌊</div></div><div class="ig-hl-text">Kerala</div></div>
+      <div class="ig-hl-wrap"><div class="ig-hl"><div class="ig-hl-inner">🕌</div></div><div class="ig-hl-text">Heritage</div></div>
+    </div>
+    <div class="ig-tabs">
+      <div class="ig-tab active">▦</div>
+      <div class="ig-tab">▶</div>
+      <div class="ig-tab">▤</div>
+    </div>
+    <div class="ig-grid" id="ig-grid-tour"></div>
+  </div>
+</div>
+
+<!-- Reviews panel (outside phone frame) -->
+<div id="reviews-map-wrap" style="display:none;margin-top:1.5rem;max-width:500px;margin-left:320px">
+  <iframe id="gmap-frame" src="" style="width:100%;height:320px;border:none;border-radius:12px" allowfullscreen loading="lazy"></iframe>
+</div>
+
+<!-- Lightbox -->
+<div class="lb" id="lb" onclick="closeLb()">
+  <button class="lb-x">✕</button>
+  <img id="lb-img" src="" style="display:none"/>
+  <video id="lb-vid" controls style="display:none"></video>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentProfile = 'radha';
+
+// ── IndexedDB ─────────────────────────────────────────────────────────────────
+let db;
+const req = indexedDB.open('ag_insta', 1);
+req.onupgradeneeded = e => {
+  const d = e.target.result;
+  ['radha','corporate','tour'].forEach(p => {
+    if (!d.objectStoreNames.contains(p)) d.createObjectStore(p, {keyPath:'id', autoIncrement:true});
+  });
+};
+req.onsuccess = e => { db = e.target.result; ['radha','corporate','tour'].forEach(renderGrid); };
+
+function txStore(p, mode) { return db.transaction(p, mode).objectStore(p); }
+
+function saveFile(p, file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    txStore(p,'readwrite').add({name:file.name, type:file.type, data:ev.target.result});
+    setTimeout(() => { renderGrid(p); if(p===currentProfile) updateCount(p); }, 200);
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderGrid(p) {
+  if (!db) return;
+  txStore(p,'readonly').getAll().onsuccess = e => {
+    const items = e.target.result;
+    const grid = document.getElementById('ig-grid-'+p);
+    if (!grid) return;
+    grid.innerHTML = '';
+    const EMOJIS = {radha:['🪔','📸','🎥','💃','✨','👨‍👩‍👧‍👦','🌸','🙏','🛫'], corporate:['💼','🎤','🏢','📊','🤝','🏆','🚀','📸','🌐'], tour:['🏔️','🌅','🌿','🕌','📸','🐪','🥘','🛤️','🗺️']};
+    const emojis = EMOJIS[p] || [];
+    for (let i=0;i<9;i++) {
+      const cell = document.createElement('div');
+      cell.className = 'ig-post';
+      if (items[i]) {
+        const isVid = items[i].type && items[i].type.startsWith('video/');
+        const el = document.createElement(isVid?'video':'img');
+        el.src = items[i].data;
+        el.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        if (isVid) { el.muted=true; el.loop=true; cell.addEventListener('mouseenter',()=>el.play()); cell.addEventListener('mouseleave',()=>el.pause()); }
+        el.onclick = () => openLb(items[i].data, isVid);
+        cell.style.padding = '0';
+        cell.appendChild(el);
+      } else {
+        cell.textContent = emojis[i] || '📷';
+        cell.style.cssText = 'background:#f0f0f0;font-size:1.8rem;';
+      }
+      grid.appendChild(cell);
+    }
+    if (p === currentProfile) updateCount(p);
+  };
+}
+
+function updateCount(p) {
+  if (!db) return;
+  txStore(p,'readonly').count().onsuccess = e => {
+    const n = e.target.result;
+    document.getElementById('ucount').textContent = n + (n===1?' photo':' photos');
+  };
+}
+
+function clearCurrent() {
+  if (!confirm('Clear all photos from this profile?')) return;
+  txStore(currentProfile,'readwrite').clear().onsuccess = () => { renderGrid(currentProfile); updateCount(currentProfile); };
+}
+
+// ── File handling ──────────────────────────────────────────────────────────────
+function processFiles(files) { Array.from(files).forEach(f => saveFile(currentProfile, f)); }
+function onSel(e) { processFiles(e.target.files); e.target.value=''; }
+function dov(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('over'); }
+function dol() { document.getElementById('drop-zone').classList.remove('over'); }
+function ddr(e) { e.preventDefault(); dol(); processFiles(e.dataTransfer.files); }
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchProfile(profile) {
+  document.querySelectorAll('.profile-view').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.control-btn').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+  const isReviews = profile === 'reviews';
+  document.getElementById('upload-ui').style.display = isReviews ? 'none' : 'block';
+  document.getElementById('reviews-panel').style.display = isReviews ? 'block' : 'none';
+  if (!isReviews) {
+    currentProfile = profile;
+    document.querySelector('.phone-frame').style.display = 'block';
+    document.getElementById('reviews-map-wrap').style.display = 'none';
+    document.getElementById('profile-' + profile).style.display = 'block';
+    updateCount(profile);
+  } else {
+    document.querySelector('.phone-frame').style.display = 'none';
+    document.getElementById('reviews-map-wrap').style.display = 'block';
+    renderReviews();
+  }
+}
+
+// ── Lightbox ───────────────────────────────────────────────────────────────────
+function openLb(src, isVid) {
+  const img = document.getElementById('lb-img'), vid = document.getElementById('lb-vid');
+  if (isVid) { vid.src=src; vid.style.display='block'; img.style.display='none'; }
+  else { img.src=src; img.style.display='block'; vid.style.display='none'; }
+  document.getElementById('lb').classList.add('open');
+}
+function closeLb() { document.getElementById('lb').classList.remove('open'); document.getElementById('lb-vid').pause(); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLb(); });
+
+// ── Google Reviews ────────────────────────────────────────────────────────────
+function applyMap() {
+  const url = document.getElementById('gmaps-url').value.trim();
+  if (url) document.getElementById('gmap-frame').src = url;
+}
+let reviews = JSON.parse(localStorage.getItem('ag_reviews')||'[]');
+function addReview() {
+  const n=document.getElementById('rv-name').value.trim();
+  const s=parseInt(document.getElementById('rv-stars').value)||5;
+  const t=document.getElementById('rv-text').value.trim();
+  if (!n||!t) return;
+  reviews.unshift({n,s,t});
+  localStorage.setItem('ag_reviews', JSON.stringify(reviews));
+  renderReviews();
+  document.getElementById('rv-name').value='';
+  document.getElementById('rv-stars').value='';
+  document.getElementById('rv-text').value='';
+}
+function renderReviews() {
+  document.getElementById('rv-list').innerHTML = reviews.slice(0,8).map(r =>
+    `<div class="rv-item"><strong>${r.n}</strong> <span class="rv-stars">${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</span><br/>${r.t}</div>`
+  ).join('');
+}
+</script>
+
+</body>
+</html>

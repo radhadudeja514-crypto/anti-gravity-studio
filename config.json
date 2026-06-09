@@ -1,0 +1,12 @@
+{
+  "gmb_api_key": "YOUR_GMB_API_KEY",
+  "gmb_account_id": "YOUR_GMB_ACCOUNT_ID",
+  "google_photos_client_id": "YOUR_GOOGLE_PHOTOS_CLIENT_ID",
+  "google_photos_client_secret": "YOUR_GOOGLE_PHOTOS_CLIENT_SECRET",
+  "google_photos_redirect_uri": "http://localhost:3005/api/google-photos/callback",
+  "gemini_key": "YOUR_GEMINI_API_KEY",
+  "clipdrop_key": "YOUR_CLIPDROP_API_KEY",
+  "cloudinary_name": "YOUR_CLOUDINARY_CLOUD_NAME",
+  "cloudinary_key": "YOUR_CLOUDINARY_API_KEY",
+  "cloudinary_secret": "YOUR_CLOUDINARY_API_SECRET"
+}

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Scheduler — Anti-Gravity Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:.75rem}
+.cal-hdr{font-size:.6rem;font-weight:700;text-align:center;padding:.4rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.cal-day{min-height:72px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.4rem;font-size:.68rem;cursor:pointer;transition:all .15s}
+.cal-day:hover{border-color:rgba(0,249,255,.3)}
+.cal-day.today{border-color:rgba(0,249,255,.5);background:rgba(0,249,255,.05)}
+.cal-day.has-post{border-color:rgba(232,135,30,.3)}
+.cal-num{font-size:.75rem;font-weight:600;margin-bottom:.25rem;color:var(--text-dim)}
+.pill{font-size:.52rem;padding:.1rem .4rem;border-radius:8px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(232,135,30,.15);color:var(--orange);display:block}
+.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.modal-wrap.open{display:flex}
+.modal-box{background:#0d0d18;border:1px solid var(--glass-border);border-radius:16px;padding:2rem;width:min(500px,92vw);max-height:90vh;overflow-y:auto}
+</style>
+</head>
+<body>
+<div class="mesh-bg"><div class="mesh-orb"></div><div class="mesh-orb"></div></div>
+<div class="scanlines"></div>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>📅 Scheduler</h1><p>Plan social posts across all pillars</p></div>
+    <div class="header-actions">
+      <button class="btn btn-cyan" onclick="openAdd()">+ Schedule Post</button>
+      <button class="btn btn-ghost" id="prevBtn">← Prev</button>
+      <span id="mLabel" style="font-family:var(--font-display);font-size:.78rem;letter-spacing:.08em;padding:.4rem .75rem;color:var(--cyan)"></span>
+      <button class="btn btn-ghost" id="nextBtn">Next →</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem">
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,.1);color:var(--cyan)">📅</div><div class="kpi-value" id="kT">0</div><div class="kpi-label">Total Scheduled</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,135,30,.1);color:var(--orange)">📸</div><div class="kpi-value" id="kW">0</div><div class="kpi-label">This Week</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,.1);color:var(--green)">✅</div><div class="kpi-value" id="kP">0</div><div class="kpi-label">Posted</div></div>
+  </div>
+  <div class="glass-card"><div id="cal" class="cal"></div></div>
+  <div class="glass-card" style="margin-top:1rem">
+    <div class="card-header"><div class="card-title">📋 ALL POSTS</div></div>
+    <table class="data-table"><thead><tr><th>Title</th><th>Pillar</th><th>Platform</th><th>Date</th><th>Time</th><th>Status</th><th></th></tr></thead>
+    <tbody id="listBody"></tbody></table>
+  </div>
+</div>
+<div class="modal-wrap" id="modal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="font-family:var(--font-display);font-size:1rem;letter-spacing:.08em">SCHEDULE POST</h2>
+      <button onclick="closeAdd()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:.3rem .7rem;border-radius:6px;cursor:pointer">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Title</label><input type="text" id="fTitle" class="form-input" placeholder="Post title..."/></div>
+    <div class="form-group"><label class="form-label">Caption</label><textarea id="fContent" class="form-textarea" placeholder="Write your caption..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Pillar</label>
+        <select id="fPillar" class="form-select"><option value="radha">💍 Radha</option><option value="corporate">🎤 Corporate</option>
+<option value="veronica">🎤 Veronica</option><option value="tour">🧭 Tour</option><option value="main">🌐 Main</option></select></div>
+      <div class="form-group"><label class="form-label">Platform</label>
+        <select id="fPlatform" class="form-select"><option>instagram</option><option>facebook</option><option>whatsapp</option><option>twitter</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Date</label><input type="date" id="fDate" class="form-input"/></div>
+      <div class="form-group"><label class="form-label">Time</label><input type="time" id="fTime" class="form-input" value="19:00"/></div>
+    </div>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.25rem">
+      <button class="btn btn-ghost" onclick="closeAdd()">Cancel</button>
+      <button class="btn btn-cyan" onclick="save()">📅 Schedule</button>
+    </div>
+  </div>
+</div>
+<script>
+let posts=[],Y=new Date().getFullYear(),M=new Date().getMonth();
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+async function load(){
+  const r=await fetch('/api/schedule').catch(()=>({json:()=>[]}));
+  posts=await r.json().catch(()=>[]);if(!Array.isArray(posts))posts=[];
+  const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay());
+  const we=new Date(ws);we.setDate(ws.getDate()+7);
+  document.getElementById('kT').textContent=posts.length;
+  document.getElementById('kW').textContent=posts.filter(p=>{const d=new Date(p.date);return d>=ws&&d<=we;}).length;
+  document.getElementById('kP').textContent=posts.filter(p=>p.status==='Posted').length;
+  renderCal();renderList();
+}
+
+function renderCal(){
+  const cal=document.getElementById('cal');
+  document.getElementById('mLabel').textContent=MONTHS[M]+' '+Y;
+  const first=new Date(Y,M,1),last=new Date(Y,M+1,0).getDate(),today=new Date();
+  cal.innerHTML='';
+  DAYS.forEach(d=>{const h=document.createElement('div');h.className='cal-hdr';h.textContent=d;cal.appendChild(h);});
+  for(let i=0;i<first.getDay();i++){cal.appendChild(document.createElement('div'));}
+  for(let d=1;d<=last;d++){
+    const ds=`${Y}-${String(M+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dp=posts.filter(p=>p.date===ds);
+    const isT=today.getFullYear()===Y&&today.getMonth()===M&&today.getDate()===d;
+    const cell=document.createElement('div');
+    cell.className='cal-day'+(isT?' today':'')+(dp.length?' has-post':'');
+    cell.innerHTML=`<div class="cal-num">${d}</div>`+dp.slice(0,2).map(p=>`<span class="pill">▶ ${e(p.title||'Post')}</span>`).join('')+(dp.length>2?`<span class="pill">+${dp.length-2}</span>`:'');
+    cell.onclick=()=>{document.getElementById('fDate').value=ds;openAdd();};
+    cal.appendChild(cell);
+  }
+}
+
+function renderList(){
+  const tbody=document.getElementById('listBody');
+  if(!posts.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No posts scheduled yet — click a day to add one</td></tr>';return;}
+  tbody.innerHTML=[...posts].sort((a,b)=>a.date>b.date?1:-1).map(p=>{
+    const sc=p.status==='Posted'?'badge-green':'badge-cyan';
+    return`<tr>
+      <td><strong>${e(p.title||'Untitled')}</strong></td>
+      <td><span class="pillar-tag pillar-${(p.pillar||'').toLowerCase()}">${e(p.pillar||'—')}</span></td>
+      <td style="text-transform:capitalize;font-size:.75rem">${e(p.platform||'instagram')}</td>
+      <td style="font-size:.75rem">${p.date||'—'}</td>
+      <td style="font-size:.75rem">${p.time||'—'}</td>
+      <td><span class="badge ${sc}">${e(p.status||'Scheduled')}</span></td>
+      <td style="display:flex;gap:.3rem">
+        ${p.status!=='Posted'?`<button class="btn btn-success btn-sm" onclick="markPosted(${p.id})">✅</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="del(${p.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('prevBtn').onclick=()=>{M--;if(M<0){M=11;Y--;}renderCal();};
+document.getElementById('nextBtn').onclick=()=>{M++;if(M>11){M=0;Y++;}renderCal();};
+function openAdd(){document.getElementById('modal').classList.add('open');}
+function closeAdd(){document.getElementById('modal').classList.remove('open');}
+async function save(){
+  const title=document.getElementById('fTitle').value.trim(),date=document.getElementById('fDate').value;
+  if(!title||!date){alert('Title and date required');return;}
+  await fetch('/api/schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    title,content:document.getElementById('fContent').value,
+    pillar:document.getElementById('fPillar').value,
+    platform:document.getElementById('fPlatform').value,
+    date,time:document.getElementById('fTime').value
+  })});
+  closeAdd();load();
+}
+async function markPosted(id){await fetch(`/api/schedule/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Posted'})});load();}
+async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/schedule/${id}`,{method:'DELETE'});load();}
+function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
+load();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

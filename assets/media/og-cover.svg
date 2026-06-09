@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+      <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#0a0a0f"/><stop offset="100%" style="stop-color:#1a1a2e"/>
+      </linearGradient></defs>
+      <rect width="1200" height="630" fill="url(#g)"/>
+      <text x="600" y="240" text-anchor="middle" font-family="serif" font-size="120" font-weight="bold" fill="#e8871e">ANTI GRAVITY</text>
+      <text x="600" y="360" text-anchor="middle" font-family="serif" font-size="80" fill="#ffffff">STUDIO</text>
+      <text x="600" y="450" text-anchor="middle" font-family="sans-serif" font-size="36" fill="#00f9ff">Weddings · Corporate · Tours</text>
+    </svg>

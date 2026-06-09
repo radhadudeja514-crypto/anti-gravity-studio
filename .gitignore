@@ -1,0 +1,27 @@
+node_modules/
+.env
+database.sqlite
+database.sqlite-journal
+uploads/
+*.log
+broadcast.log
+.DS_Store
+Thumbs.db
+*.bak
+
+# Large binary files - host on cloud storage, not git
+assets/media/gallery/videos/
+qdrant_storage/
+*.mp4
+*.MP4
+*.mov
+*.MOV
+
+# Generated PDFs with embedded media
+AntiGravityStudio-MediaKit-2026.pdf
+
+# Dev/push helper scripts
+push.bat
+get-token.bat
+github-push.ps1
+git-init-push.ps1

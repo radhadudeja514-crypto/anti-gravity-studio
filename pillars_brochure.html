@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Pillars Brochure — Gig Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #eee; color: #111; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+  
+  .print-controls { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 2rem; width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; }
+  .btn-print { background: #000; color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 1rem; }
+  .btn-print:hover { opacity: 0.8; }
+  
+  .a4-page { width: 210mm; min-height: 297mm; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 2rem; position: relative; overflow: hidden; }
+  
+  .page-inner { padding: 40mm 20mm 20mm; height: 100%; display: flex; flex-direction: column; }
+  .page-header { margin-bottom: 20mm; border-bottom: 2px solid #000; padding-bottom: 5mm; }
+  .title { font-family: 'Cinzel', serif; font-size: 3rem; line-height: 1; margin-bottom: 10mm; }
+  .subtitle { font-size: 1.2rem; color: #555; max-width: 80%; line-height: 1.6; }
+  
+  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15mm; flex: 1; }
+  .feature-box { padding: 8mm; background: #f9f9f9; border-left: 4px solid #000; margin-bottom: 10mm; }
+  .feature-title { font-weight: 700; font-size: 1.2rem; margin-bottom: 5mm; }
+  .feature-text { font-size: 0.95rem; line-height: 1.6; color: #444; }
+  
+  .contact-footer { margin-top: auto; padding-top: 10mm; border-top: 1px solid #ddd; display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; }
+  
+  /* Thematic Overrides */
+  .radha .title { color: #E8871E; }
+  .radha .feature-box { border-color: #E8871E; }
+  .radha .page-header { border-color: #E8871E; }
+  
+  .corporate .title { color: #111; }
+  .corporate .feature-box { background: #111; color: #fff; border-color: #C0C0C0; }
+  .corporate .feature-text { color: #ccc; }
+  
+  .tour .title { color: #F2A541; }
+  .tour .feature-box { border-color: #3D6B4F; }
+  .tour .page-header { border-color: #3D6B4F; }
+
+  @media print {
+    body { background: none; padding: 0; }
+    .print-controls { display: none; }
+    .a4-page { box-shadow: none; margin: 0; page-break-after: always; min-height: auto; height: 297mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <div>
+    <h2 style="margin-bottom:0.25rem;">Download Brochures</h2>
+    <p style="font-size:0.9rem;color:#666;">Click print and select "Save as PDF" to generate the brochures.</p>
+  </div>
+  <button class="btn-print" onclick="window.print()">🖨️ Save as PDF</button>
+</div>
+
+<!-- PAGE 1: RADHA -->
+<div class="a4-page radha">
+  <div class="page-inner">
+    <div class="page-header">
+      <h1 class="title">Radha Dudega</h1>
+      <p class="subtitle">The Bhakt. Infusing Sangeets, weddings, and family gatherings with spiritual warmth, poetic storytelling, and authentic joy.</p>
+    </div>
+    
+    <div class="content-grid">
+      <div>
+        <div class="feature-box">
+          <div class="feature-title">Sangeet Hosting</div>
+          <div class="feature-text">Transforming the standard Sangeet into a deeply emotional family celebration. I bring families together not just to dance, but to feel the heartbeat of the occasion.</div>
+        </div>
+        <div class="feature-box">
+          <div class="feature-title">Spiritual & Cultural Events</div>
+          <div class="feature-text">Hosting milestones, spiritual gatherings, and intimate festivals with a profound respect for tradition, woven with Shlokas and Shuddh Hindi.</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:1.5rem;color:#E8871E;margin-bottom:10mm;">Why Choose Radha?</div>
+        <ul style="list-style:none;margin-bottom:10mm;">
+          <li style="margin-bottom:5mm;font-size:1rem;">✨ <strong>Authentic Voice:</strong> Grounded, wise, and calm.</li>
+          <li style="margin-bottom:5mm;font-size:1rem;">✨ <strong>Bilingual Excellence:</strong> Seamless flow between elegant English and Shuddh Hindi.</li>
+          <li style="margin-bottom:5mm;font-size:1rem;">✨ <strong>Family Focus:</strong> Ensuring the eldest grandparents and the youngest children feel deeply involved.</li>
+        </ul>
+        <div style="padding:10mm;background:#fff8f0;text-align:center;font-style:italic;color:#E8871E;">
+          "जहाँ भाव है, वहाँ उत्सव है।"
+        </div>
+      </div>
+    </div>
+    
+    <div class="contact-footer">
+      <span>🌐 bookradha.com</span>
+      <span>📱 +91 81929 01515</span>
+      <span>✉️ radhadudega514@gmail.com</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: VERONICA -->
+<div class="a4-page corporate">
+  <div class="page-inner">
+    <div class="page-header" style="border-color:#C0C0C0;">
+      <h1 class="title">Veronica</h1>
+      <p class="subtitle">The Corporate Boss. Sharp, globally-neutral, and dynamic. Commanding the stage at international tech summits, product launches, and CEO conferences.</p>
+    </div>
+    
+    <div class="content-grid">
+      <div>
+        <div class="feature-box">
+          <div class="feature-title">Tech Summits & Conferences</div>
+          <div class="feature-text">Guiding complex, multi-day tech summits with precision. Ensuring panel discussions are insightful, schedules are met, and audiences remain engaged.</div>
+        </div>
+        <div class="feature-box">
+          <div class="feature-title">Award Galas & Product Launches</div>
+          <div class="feature-text">Delivering high-voltage energy for product unveils and black-tie award ceremonies. The aesthetic is power, sleekness, and uncompromised excellence.</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:1.5rem;margin-bottom:10mm;">The Executive Advantage</div>
+        <ul style="list-style:none;margin-bottom:10mm;">
+          <li style="margin-bottom:5mm;font-size:1rem;">⚡ <strong>Commanding Presence:</strong> High-voltage, authoritative, sharp.</li>
+          <li style="margin-bottom:5mm;font-size:1rem;">⚡ <strong>Global Standard:</strong> Crisp, globally-neutral English tailored for MNCs and global broadcasts.</li>
+          <li style="margin-bottom:5mm;font-size:1rem;">⚡ <strong>Crisis Management:</strong> Flawless on-stage adaptation to live event changes.</li>
+        </ul>
+        <div style="padding:10mm;background:#f5f5f5;text-align:center;font-weight:700;">
+          "The stage doesn't make you powerful. Your presence does."
+        </div>
+      </div>
+    </div>
+    
+    <div class="contact-footer">
+      <span>🌐 bookveronica.com</span>
+      <span>📱 +91 81929 01515</span>
+      <span>✉️ radhadudega514@gmail.com</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: TOUR -->
+<div class="a4-page tour">
+  <div class="page-inner">
+    <div class="page-header">
+      <h1 class="title">The Trail Curator</h1>
+      <p class="subtitle">Immersive heritage tours, mountain trails, and cultural walks. Every path tells a story when you walk with a curator who understands the soul of a place.</p>
+    </div>
+    
+    <div class="content-grid">
+      <div>
+        <div class="feature-box">
+          <div class="feature-title">Heritage Walks</div>
+          <div class="feature-text">Curated journeys through the forts and havelis of Rajasthan. Going beyond the guidebooks to discover the lived history, architecture, and hidden mythology.</div>
+        </div>
+        <div class="feature-box">
+          <div class="feature-title">Mountain Expeditions</div>
+          <div class="feature-text">High-altitude adventures in Spiti and Himachal. Connecting travelers not just with the landscape, but with the isolated cultures that call the mountains home.</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:1.5rem;color:#3D6B4F;margin-bottom:10mm;">The Curator's Approach</div>
+        <ul style="list-style:none;margin-bottom:10mm;">
+          <li style="margin-bottom:5mm;font-size:1rem;">🧭 <strong>Storytelling:</strong> Transforming historical facts into compelling, emotional narratives.</li>
+          <li style="margin-bottom:5mm;font-size:1rem;">🧭 <strong>Off-Beaten Paths:</strong> Access to hidden gems and authentic local interactions.</li>
+          <li style="margin-bottom:5mm;font-size:1rem;">🧭 <strong>Custom Experiences:</strong> Tailoring every trail to the group's specific interests and pace.</li>
+        </ul>
+        <div style="padding:10mm;background:#f0f7f3;text-align:center;font-style:italic;color:#3D6B4F;">
+          "Not tourism. A conversation with a place."
+        </div>
+      </div>
+    </div>
+    
+    <div class="contact-footer">
+      <span>🌐 trailcurator.com</span>
+      <span>📱 +91 81929 01515</span>
+      <span>✉️ radhadudega514@gmail.com</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

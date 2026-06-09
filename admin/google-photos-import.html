@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Google Photos Import — Anti Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+/* ── page chrome ── */
+.back{font-size:.8rem;color:var(--text-muted);display:inline-block;margin-bottom:1.5rem;}
+.back:hover{color:var(--cyan);}
+h1{font-family:var(--font-display);font-size:1.3rem;color:var(--cyan);letter-spacing:2px;}
+.subtitle{font-size:.8rem;color:var(--text-muted);letter-spacing:1px;margin-bottom:2rem;}
+
+/* ── auth banner ── */
+.auth-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);padding:2.5rem;text-align:center;max-width:540px;margin:0 auto 2rem;}
+.auth-card h2{font-family:var(--font-display);font-size:1rem;color:var(--cyan);margin-bottom:.75rem;}
+.auth-card p{font-size:.85rem;color:var(--text-dim);line-height:1.6;margin-bottom:1.5rem;}
+.google-btn{display:inline-flex;align-items:center;gap:.75rem;background:#fff;color:#333;
+  font-weight:600;font-size:.9rem;padding:.75rem 1.5rem;border-radius:999px;border:none;
+  cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.google-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.5);}
+.google-logo{width:20px;height:20px;}
+
+/* ── credentials setup ── */
+.setup-steps{background:rgba(0,249,255,.04);border:1px solid rgba(0,249,255,.15);
+  border-radius:var(--radius-sm);padding:1.25rem;text-align:left;margin-top:1.5rem;font-size:.82rem;color:var(--text-dim);}
+.setup-steps b{color:var(--cyan);}
+.setup-steps ol{margin:.5rem 0 0 1.2rem;line-height:1.9;}
+.client-input{display:flex;gap:.5rem;margin-top:.75rem;}
+.client-input input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border-light);
+  border-radius:var(--radius-xs);padding:.5rem .75rem;color:var(--text);font-size:.82rem;outline:none;}
+.client-input input:focus{border-color:var(--cyan);}
+.btn-sm{padding:.45rem 1rem;border:none;border-radius:999px;font-family:var(--font-display);
+  font-size:.65rem;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.btn-cyan{background:var(--cyan);color:#000;font-weight:700;}
+.btn-cyan:hover{opacity:.85;}
+.btn-ghost{background:rgba(255,255,255,.07);border:1px solid var(--border-light);color:var(--text);}
+.btn-ghost:hover{background:rgba(255,255,255,.12);}
+.btn-magenta{background:var(--magenta);color:#fff;font-weight:700;}
+.btn-magenta:hover{opacity:.85;}
+
+/* ── status bar ── */
+.status-bar{font-size:.82rem;color:var(--text-dim);min-height:1.4rem;margin-bottom:1rem;padding:.4rem .75rem;
+  background:var(--surface);border-radius:var(--radius-xs);border:1px solid var(--border);}
+
+/* ── category grid (the hashtags) ── */
+.section-title{font-family:var(--font-display);font-size:.8rem;letter-spacing:1px;
+  color:var(--text);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin-bottom:2rem;}
+.cat-chip{display:flex;flex-direction:column;gap:.25rem;padding:.7rem .9rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  cursor:pointer;transition:all .25s;user-select:none;}
+.cat-chip:hover{background:var(--surface-hover);border-color:var(--border-light);}
+.cat-chip.selected{border-color:var(--cyan);background:rgba(0,249,255,.08);}
+.cat-chip.selected.radha{border-color:var(--magenta);background:rgba(255,0,170,.08);}
+.cat-chip.selected.tour{border-color:#ffd700;background:rgba(255,215,0,.08);}
+.cat-chip .cat-icon{font-size:1.3rem;}
+.cat-chip .cat-name{font-size:.72rem;font-weight:600;color:var(--text);}
+.cat-chip .cat-pillar{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.cat-chip .cat-count{font-size:.65rem;font-weight:700;color:var(--cyan);margin-top:.1rem;}
+
+/* ── album list ── */
+.album-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.75rem;margin-bottom:2rem;}
+.album-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  overflow:hidden;cursor:pointer;transition:all .25s;}
+.album-card:hover{border-color:var(--border-light);transform:translateY(-2px);}
+.album-card.selected{border-color:var(--cyan);}
+.album-thumb{width:100%;height:100px;object-fit:cover;background:rgba(255,255,255,.04);display:block;}
+.album-info{padding:.6rem .75rem;}
+.album-name{font-size:.78rem;font-weight:600;margin-bottom:.2rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.album-meta{font-size:.65rem;color:var(--text-muted);}
+.album-pillar-badge{display:inline-block;padding:.1rem .45rem;border-radius:999px;
+  font-size:.6rem;font-weight:700;margin-top:.3rem;}
+.badge-radha{background:rgba(255,0,170,.15);color:var(--magenta);border:1px solid rgba(255,0,170,.3);}
+.badge-veronica{background:rgba(0,249,255,.1);color:var(--cyan);border:1px solid rgba(0,249,255,.2);}
+.badge-tour{background:rgba(255,215,0,.1);color:#ffd700;border:1px solid rgba(255,215,0,.2);}
+
+/* ── photo grid ── */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem;margin-bottom:2rem;}
+.photo-item{position:relative;border-radius:var(--radius-sm);overflow:hidden;
+  aspect-ratio:1;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+.photo-item:hover{border-color:var(--border-light);}
+.photo-item.selected{border-color:var(--cyan);}
+.photo-item.selected.radha{border-color:var(--magenta);}
+.photo-item.selected.tour{border-color:#ffd700;}
+.photo-item img,.photo-item video{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-item video{background:#000;}
+.photo-overlay{position:absolute;bottom:0;left:0;right:0;padding:.4rem .5rem;
+  background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:.6rem;color:#fff;}
+.photo-check{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;
+  background:var(--cyan);color:#000;display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:700;opacity:0;transition:opacity .2s;}
+.photo-item.selected .photo-check{opacity:1;}
+.photo-pillar-dot{position:absolute;top:6px;left:6px;width:8px;height:8px;border-radius:50%;}
+.video-badge{position:absolute;top:6px;right:6px;background:rgba(255,107,53,.9);
+  color:#fff;font-size:.55rem;font-weight:700;padding:.1rem .35rem;border-radius:999px;}
+
+/* ── import bar ── */
+.import-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,.95);
+  border-top:1px solid var(--border-light);padding:1rem 2rem;
+  display:flex;align-items:center;gap:1rem;flex-wrap:wrap;z-index:100;
+  backdrop-filter:blur(12px);}
+.import-bar.hidden{display:none;}
+.import-count{font-family:var(--font-display);font-size:.9rem;color:var(--cyan);}
+.import-breakdown{font-size:.75rem;color:var(--text-muted);}
+.progress-wrap{flex:1;background:rgba(255,255,255,.06);border-radius:999px;height:5px;min-width:120px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--magenta));
+  border-radius:999px;width:0;transition:width .3s;}
+
+/* ── controls row ── */
+.controls{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center;}
+.select-all-btn{font-size:.72rem;color:var(--cyan);cursor:pointer;text-decoration:underline;background:none;border:none;}
+
+/* ── empty / loading ── */
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.1);
+  border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:.5rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:3rem;color:var(--text-muted);font-size:.85rem;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:1rem;text-align:center;}
+.kpi-num{font-family:var(--font-display);font-size:1.6rem;font-weight:700;}
+.kpi-lbl{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:.25rem;}
+
+@media(max-width:600px){
+  .kpi-row{grid-template-columns:1fr 1fr;}
+  .import-bar{flex-direction:column;text-align:center;}
+}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page" style="padding:2rem;max-width:1300px;margin:0 auto;">
+
+<a href="dashboard.html" class="back">← Dashboard</a>
+<h1>📸 GOOGLE PHOTOS IMPORT</h1>
+<p class="subtitle">CATEGORY SEARCH · AI HASHTAGS · BULK IMPORT TO PILLAR GALLERIES</p>
+
+<!-- ── AUTH SECTION ─────────────────────────────────────── -->
+<div id="auth-section">
+  <div class="auth-card">
+    <h2>🔐 CONNECT GOOGLE PHOTOS</h2>
+    <p>
+      Google Photos has <strong style="color:var(--cyan)">AI-powered content categories</strong> —
+      the hidden hashtag system that automatically tags every photo as Wedding, Travel, Performance,
+      People, etc. Connect once and pull all your Sangeet/Haldi/Corporate/Trail photos by category.
+    </p>
+
+    <div class="client-input">
+      <input type="text" id="client-id-input" placeholder="Paste your Google OAuth Client ID…" />
+      <button class="btn-sm btn-cyan" onclick="saveClientId()">Save</button>
+    </div>
+
+    <div class="setup-steps">
+      <b>One-time setup (2 minutes):</b>
+      <ol>
+        <li>Go to <b>console.cloud.google.com</b> → New Project → "Anti Gravity"</li>
+        <li>Enable <b>Photos Library API</b></li>
+        <li>OAuth consent → External → add scope <b>photoslibrary.readonly</b></li>
+        <li>Credentials → OAuth 2.0 Client → Web → add redirect URI:<br>
+          <code style="color:var(--cyan);font-size:.75rem;" id="redirect-uri-display"></code></li>
+        <li>Copy the Client ID → paste above → Save → Connect</li>
+      </ol>
+      <div style="margin-top:.75rem;text-align:center;">
+        <button class="btn-sm btn-cyan" id="connect-btn" onclick="connectGoogle()" style="opacity:.4;cursor:not-allowed;" disabled>
+          Connect Google Photos
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP (shown after auth) ──────────────────────── -->
+<div id="app-section" style="display:none;">
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-num" id="kpi-total" style="color:var(--cyan)">0</div><div class="kpi-lbl">Photos Found</div></div>
+    <div class="kpi"><div class="kpi-num" id="kpi-radha" style="color:var(--magenta)">0</div><div class="kpi-lbl">💍 Radha</div></div>
+    <div class="kpi"><div class="kpi-num" id="kpi-veronica" style="color:var(--cyan)">0</div><div class="kpi-lbl">🏢 Veronica</div></div>
+    <div class="kpi"><div class="kpi-num" id="kpi-tour" style="color:#ffd700">0</div><div class="kpi-lbl">🌍 Tour</div></div>
+  </div>
+
+  <div class="status-bar" id="status">Ready. Select categories or albums below to load photos.</div>
+
+  <!-- ── CATEGORY HASHTAGS ── -->
+  <div class="section-title">🏷 AI CONTENT CATEGORIES — Google's Hidden Hashtags</div>
+  <div class="cat-grid" id="cat-grid"></div>
+
+  <!-- ── ALBUMS ── -->
+  <div class="section-title">📁 YOUR ALBUMS — Auto-Assigned to Pillars</div>
+  <div id="albums-wrap">
+    <div class="empty"><span class="spinner"></span> Loading albums…</div>
+  </div>
+
+  <!-- ── PHOTO RESULTS ── -->
+  <div id="photos-section" style="display:none;">
+    <div class="section-title">🖼 FOUND PHOTOS</div>
+    <div class="controls">
+      <button class="btn-sm btn-ghost" onclick="selectAll()">Select All</button>
+      <button class="btn-sm btn-ghost" onclick="selectNone()">Deselect All</button>
+      <button class="btn-sm btn-ghost" onclick="selectByPillar('radha')">💍 All Radha</button>
+      <button class="btn-sm btn-ghost" onclick="selectByPillar('veronica')">🏢 All Veronica</button>
+      <button class="btn-sm btn-ghost" onclick="selectByPillar('tour')">🌍 All Tour</button>
+      <span id="sel-count" style="font-size:.78rem;color:var(--text-muted);margin-left:auto;"></span>
+    </div>
+    <div class="photo-grid" id="photo-grid"></div>
+    <div id="load-more-wrap" style="text-align:center;display:none;">
+      <button class="btn-sm btn-ghost" onclick="loadMorePhotos()">Load More</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── IMPORT BAR ── -->
+<div class="import-bar hidden" id="import-bar">
+  <div>
+    <div class="import-count" id="import-count">0 selected</div>
+    <div class="import-breakdown" id="import-breakdown"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="import-progress"></div></div>
+  <button class="btn-sm btn-magenta" id="import-btn" onclick="importSelected()">⬇ Import to Gallery</button>
+  <button class="btn-sm btn-ghost" onclick="selectNone()">Clear</button>
+</div>
+
+</div><!-- /admin-page -->
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────
+const SCOPES = 'https://www.googleapis.com/auth/photoslibrary.readonly';
+const REDIRECT = location.origin + location.pathname;
+let CLIENT_ID = localStorage.getItem('gp_client_id') || '';
+let ACCESS_TOKEN = null;
+
+// ── AI CONTENT CATEGORIES → Pillar map ──────────────────────────────────
+// These are the REAL Google Photos Library API content categories
+const CATEGORIES = [
+  // Radha pillar
+  { id:'WEDDINGS',     icon:'💍', name:'Weddings',      pillar:'radha',    label:'💍 Radha' },
+  { id:'BIRTHDAYS',    icon:'🎂', name:'Birthdays',     pillar:'radha',    label:'💍 Radha' },
+  { id:'PERFORMANCES', icon:'🎤', name:'Performances',  pillar:'radha',    label:'💍 Radha' },
+  { id:'HOLIDAYS',     icon:'🪔', name:'Festivals',     pillar:'radha',    label:'💍 Radha' },
+  { id:'FASHION',      icon:'👗', name:'Fashion',       pillar:'radha',    label:'💍 Radha' },
+  { id:'FOOD',         icon:'🍽', name:'Food & Feasts', pillar:'radha',    label:'💍 Radha' },
+  // Veronica pillar
+  { id:'ARTS',         icon:'🎬', name:'Arts & Events', pillar:'veronica', label:'🏢 Veronica' },
+  { id:'CITYSCAPES',   icon:'🏙', name:'Cityscapes',   pillar:'veronica', label:'🏢 Veronica' },
+  { id:'PEOPLE',       icon:'👥', name:'People',        pillar:'veronica', label:'🏢 Veronica' },
+  { id:'SELFIES',      icon:'🤳', name:'Selfies',       pillar:'veronica', label:'🏢 Veronica' },
+  // Tour pillar
+  { id:'TRAVEL',       icon:'🌍', name:'Travel',        pillar:'tour',     label:'🌍 Tour' },
+  { id:'LANDMARKS',    icon:'🏛', name:'Landmarks',    pillar:'tour',     label:'🌍 Tour' },
+  { id:'GARDENS',      icon:'🌿', name:'Nature',        pillar:'tour',     label:'🌍 Tour' },
+  { id:'SPORT',        icon:'🧗', name:'Adventure',     pillar:'tour',     label:'🌍 Tour' },
+  { id:'ANIMALS',      icon:'🐘', name:'Wildlife',      pillar:'tour',     label:'🌍 Tour' },
+  { id:'NIGHT',        icon:'🌃', name:'Nightscapes',   pillar:'tour',     label:'🌍 Tour' },
+];
+
+// Album name → pillar heuristics
+const ALBUM_KEYWORDS = {
+  radha:    ['sangeet','haldi','wedding','bride','groom','phera','mehndi','mehendi','family','puja','bhakti','birthday','anniversary','tilak','barat','diwali','holi','navratri','garba','radha'],
+  veronica: ['corporate','conference','launch','summit','gala','awards','event','brand','product','fashion','ramp','hotel','seminar','veronica','emcee'],
+  tour:     ['trail','trek','travel','tour','mountain','corbett','rishikesh','delhi','jaipur','heritage','hike','camp','nature','outdoor','hills','trip'],
+};
+
+let selectedItems = new Set();
+let allPhotos     = [];
+let nextPageToken = null;
+let currentSearch = null;
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+document.getElementById('redirect-uri-display').textContent = REDIRECT;
+
+if (CLIENT_ID) {
+  document.getElementById('client-id-input').value = CLIENT_ID;
+  document.getElementById('connect-btn').disabled = false;
+  document.getElementById('connect-btn').style.opacity = '1';
+  document.getElementById('connect-btn').style.cursor = 'pointer';
+}
+
+// Check if we already have a token in the URL hash (OAuth callback)
+(function checkCallback() {
+  const hash = new URLSearchParams(location.hash.replace('#',''));
+  const token = hash.get('access_token');
+  if (token) {
+    ACCESS_TOKEN = token;
+    history.replaceState(null, '', location.pathname); // clean URL
+    onAuthenticated();
+  }
+})();
+
+// ── AUTH ─────────────────────────────────────────────────────────────────
+function saveClientId() {
+  const val = document.getElementById('client-id-input').value.trim();
+  if (!val) return;
+  CLIENT_ID = val;
+  localStorage.setItem('gp_client_id', val);
+  document.getElementById('connect-btn').disabled = false;
+  document.getElementById('connect-btn').style.opacity = '1';
+  document.getElementById('connect-btn').style.cursor = 'pointer';
+  setStatus('Client ID saved. Click "Connect Google Photos" to authorize.');
+}
+
+function connectGoogle() {
+  if (!CLIENT_ID) { alert('Paste your Google OAuth Client ID first.'); return; }
+  const params = new URLSearchParams({
+    client_id:     CLIENT_ID,
+    redirect_uri:  REDIRECT,
+    response_type: 'token',
+    scope:         SCOPES,
+    prompt:        'consent',
+  });
+  location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
+
+async function onAuthenticated() {
+  document.getElementById('auth-section').style.display = 'none';
+  document.getElementById('app-section').style.display  = 'block';
+  renderCategories();
+  await loadAlbums();
+  setStatus('✅ Connected! Select categories or albums to load photos.');
+}
+
+// ── CATEGORIES (hashtag grid) ─────────────────────────────────────────────
+function renderCategories() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = `cat-chip`;
+    div.id = `cat-${cat.id}`;
+    div.innerHTML = `
+      <span class="cat-icon">${cat.icon}</span>
+      <span class="cat-name">${cat.name}</span>
+      <span class="cat-pillar">${cat.label}</span>
+      <span class="cat-count" id="cnt-${cat.id}">click to load</span>`;
+    div.onclick = () => toggleCategory(cat);
+    grid.appendChild(div);
+  });
+}
+
+const activeCats = new Set();
+
+async function toggleCategory(cat) {
+  const el = document.getElementById(`cat-${cat.id}`);
+  if (activeCats.has(cat.id)) {
+    activeCats.delete(cat.id);
+    el.classList.remove('selected','radha','veronica','tour');
+  } else {
+    activeCats.add(cat.id);
+    el.classList.add('selected', cat.pillar);
+  }
+  await searchByCategories();
+}
+
+async function searchByCategories() {
+  if (!activeCats.size) {
+    document.getElementById('photos-section').style.display = 'none';
+    return;
+  }
+  const cats = CATEGORIES.filter(c => activeCats.has(c.id));
+  currentSearch = { type: 'categories', cats };
+  nextPageToken = null;
+  allPhotos = [];
+  document.getElementById('photo-grid').innerHTML = '';
+  document.getElementById('photos-section').style.display = 'block';
+  setStatus(`🔍 Searching Google Photos for: ${cats.map(c=>c.name).join(', ')}…`);
+  await loadPhotoPage();
+}
+
+// ── ALBUMS ───────────────────────────────────────────────────────────────
+async function loadAlbums() {
+  const wrap = document.getElementById('albums-wrap');
+  try {
+    const res = await gp('GET', 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50');
+    const albums = res.albums || [];
+    if (!albums.length) {
+      wrap.innerHTML = '<div class="empty">No albums found in your Google Photos.</div>';
+      return;
+    }
+    const grid = document.createElement('div');
+    grid.className = 'album-list';
+    albums.forEach(album => {
+      const pillar = detectPillar(album.title);
+      const card = document.createElement('div');
+      card.className = 'album-card';
+      card.innerHTML = `
+        ${album.coverPhotoBaseUrl ? `<img class="album-thumb" src="${album.coverPhotoBaseUrl}=w180-h100-c" loading="lazy"/>` : `<div class="album-thumb"></div>`}
+        <div class="album-info">
+          <div class="album-name" title="${album.title}">${album.title}</div>
+          <div class="album-meta">${album.mediaItemsCount || '?'} items</div>
+          <span class="album-pillar-badge badge-${pillar}">
+            ${{radha:'💍 Radha',veronica:'🏢 Veronica',tour:'🌍 Tour'}[pillar]}
+          </span>
+        </div>`;
+      card.onclick = () => loadAlbumPhotos(album, pillar);
+      grid.appendChild(card);
+    });
+    wrap.innerHTML = '';
+    wrap.appendChild(grid);
+  } catch(e) {
+    wrap.innerHTML = `<div class="empty">Error loading albums: ${e.message}</div>`;
+  }
+}
+
+function detectPillar(name) {
+  const n = (name||'').toLowerCase();
+  for (const [pillar, words] of Object.entries(ALBUM_KEYWORDS)) {
+    if (words.some(w => n.includes(w))) return pillar;
+  }
+  return 'radha'; // default
+}
+
+async function loadAlbumPhotos(album, pillar) {
+  currentSearch = { type: 'album', albumId: album.id, pillar };
+  nextPageToken = null;
+  allPhotos = [];
+  document.getElementById('photo-grid').innerHTML = '';
+  document.getElementById('photos-section').style.display = 'block';
+  setStatus(`📁 Loading album: "${album.title}"…`);
+  await loadPhotoPage();
+}
+
+// ── PHOTO LOADING ─────────────────────────────────────────────────────────
+async function loadPhotoPage() {
+  if (!currentSearch) return;
+
+  let body = { pageSize: 50 };
+  if (nextPageToken) body.pageToken = nextPageToken;
+
+  if (currentSearch.type === 'categories') {
+    body.filters = {
+      contentFilter: {
+        includedContentCategories: [...activeCats]
+      },
+      mediaTypeFilter: { mediaTypes: ['ALL_MEDIA'] }
+    };
+    const res = await gp('POST', 'https://photoslibrary.googleapis.com/v1/mediaItems:search', body);
+    const items = res.mediaItems || [];
+    nextPageToken = res.nextPageToken || null;
+    items.forEach(item => {
+      // Determine pillar by which active categories this item was returned under
+      const pillar = guessPillarFromCategories();
+      addPhoto(item, pillar);
+    });
+  } else if (currentSearch.type === 'album') {
+    body.albumId = currentSearch.albumId;
+    const res = await gp('POST', 'https://photoslibrary.googleapis.com/v1/mediaItems:search', body);
+    const items = res.mediaItems || [];
+    nextPageToken = res.nextPageToken || null;
+    items.forEach(item => addPhoto(item, currentSearch.pillar));
+  }
+
+  updateKPIs();
+  document.getElementById('load-more-wrap').style.display = nextPageToken ? 'block' : 'none';
+  setStatus(`✅ Loaded ${allPhotos.length} items${nextPageToken ? ' — more available' : ''}.`);
+}
+
+function guessPillarFromCategories() {
+  // Score based on active categories
+  const scores = { radha:0, veronica:0, tour:0 };
+  CATEGORIES.filter(c => activeCats.has(c.id)).forEach(c => scores[c.pillar]++);
+  return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+async function loadMorePhotos() {
+  if (!nextPageToken) return;
+  await loadPhotoPage();
+}
+
+function addPhoto(item, pillar) {
+  const isVideo = item.mediaMetadata?.video !== undefined;
+  const thumb   = item.baseUrl + (isVideo ? '=dv' : '=w300-h300-c');
+  const full    = item.baseUrl + (isVideo ? '=dv' : '=d');
+
+  allPhotos.push({ id: item.id, thumb, full, pillar, isVideo, filename: item.filename, baseUrl: item.baseUrl });
+
+  const grid = document.getElementById('photo-grid');
+  const div  = document.createElement('div');
+  div.className = `photo-item`;
+  div.id = `photo-${item.id}`;
+  div.dataset.pillar = pillar;
+
+  const dotColor = { radha:'var(--magenta)', veronica:'var(--cyan)', tour:'#ffd700' }[pillar];
+
+  div.innerHTML = `
+    ${isVideo
+      ? `<video src="${thumb}" muted autoplay loop playsinline></video><span class="video-badge">VIDEO</span>`
+      : `<img src="${thumb}" loading="lazy" alt="${item.filename}"/>`}
+    <div class="photo-overlay">${item.filename}</div>
+    <div class="photo-check">✓</div>
+    <div class="photo-pillar-dot" style="background:${dotColor}"></div>`;
+
+  div.onclick = () => togglePhoto(item.id, pillar);
+  grid.appendChild(div);
+}
+
+// ── SELECTION ─────────────────────────────────────────────────────────────
+function togglePhoto(id, pillar) {
+  const el = document.getElementById(`photo-${id}`);
+  if (selectedItems.has(id)) {
+    selectedItems.delete(id);
+    el.classList.remove('selected','radha','veronica','tour');
+  } else {
+    selectedItems.add(id);
+    el.classList.add('selected', pillar);
+  }
+  updateImportBar();
+}
+
+function selectAll()  { allPhotos.forEach(p => { selectedItems.add(p.id); document.getElementById(`photo-${p.id}`)?.classList.add('selected', p.pillar); }); updateImportBar(); }
+function selectNone() { selectedItems.clear(); document.querySelectorAll('.photo-item').forEach(el => el.classList.remove('selected','radha','veronica','tour')); updateImportBar(); }
+function selectByPillar(pillar) {
+  allPhotos.filter(p=>p.pillar===pillar).forEach(p => {
+    selectedItems.add(p.id);
+    const el = document.getElementById(`photo-${p.id}`);
+    if (el) el.classList.add('selected', pillar);
+  });
+  updateImportBar();
+}
+
+function updateImportBar() {
+  const bar = document.getElementById('import-bar');
+  const n   = selectedItems.size;
+  if (!n) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  document.getElementById('import-count').textContent = `${n} selected`;
+  const byPillar = { radha:0, veronica:0, tour:0 };
+  allPhotos.filter(p=>selectedItems.has(p.id)).forEach(p => byPillar[p.pillar]++);
+  document.getElementById('import-breakdown').textContent =
+    `💍 ${byPillar.radha}  🏢 ${byPillar.veronica}  🌍 ${byPillar.tour}`;
+  document.getElementById('sel-count').textContent = `${n} selected`;
+}
+
+function updateKPIs() {
+  document.getElementById('kpi-total').textContent    = allPhotos.length;
+  document.getElementById('kpi-radha').textContent    = allPhotos.filter(p=>p.pillar==='radha').length;
+  document.getElementById('kpi-veronica').textContent = allPhotos.filter(p=>p.pillar==='veronica').length;
+  document.getElementById('kpi-tour').textContent     = allPhotos.filter(p=>p.pillar==='tour').length;
+}
+
+// ── IMPORT ────────────────────────────────────────────────────────────────
+async function importSelected() {
+  const toImport = allPhotos.filter(p => selectedItems.has(p.id));
+  if (!toImport.length) return;
+
+  const btn  = document.getElementById('import-btn');
+  const prog = document.getElementById('import-progress');
+  btn.disabled = true;
+  btn.textContent = 'Importing…';
+
+  let done = 0;
+  const errors = [];
+
+  for (const photo of toImport) {
+    try {
+      // Fetch the actual image data from Google Photos
+      const mediaRes = await fetch(photo.baseUrl + (photo.isVideo ? '=dv' : '=d'));
+      if (!mediaRes.ok) throw new Error('Fetch failed');
+      const blob = await mediaRes.blob();
+      const ext  = photo.isVideo ? '.mp4' : (photo.filename.split('.').pop() || 'jpg');
+      const file = new File([blob], photo.filename || `gp_${photo.id}.${ext}`, { type: blob.type });
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('pillar', photo.pillar === 'veronica' ? 'corporate' : photo.pillar);
+      fd.append('type',   photo.isVideo ? 'video' : 'image');
+      fd.append('source', 'google-photos');
+
+      await fetch('/api/media', { method: 'POST', body: fd });
+      done++;
+    } catch(e) {
+      errors.push(photo.filename);
+    }
+    prog.style.width = `${(done / toImport.length) * 100}%`;
+    setStatus(`📥 Importing ${done}/${toImport.length}…`);
+  }
+
+  prog.style.width = '0';
+  btn.disabled = false;
+  btn.textContent = '⬇ Import to Gallery';
+  selectNone();
+
+  if (errors.length) {
+    setStatus(`✅ Imported ${done}/${toImport.length}. ${errors.length} failed (CORS restriction from Google — download those manually).`);
+  } else {
+    setStatus(`🎉 All ${done} items imported to their pillar galleries!`);
+  }
+}
+
+// ── GOOGLE PHOTOS API HELPER ──────────────────────────────────────────────
+async function gp(method, url, body) {
+  const opts = {
+    method,
+    headers: {
+      Authorization: `Bearer ${ACCESS_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (res.status === 401) {
+    // Token expired — re-auth
+    alert('Session expired. Please reconnect Google Photos.');
+    document.getElementById('app-section').style.display  = 'none';
+    document.getElementById('auth-section').style.display = 'block';
+    return {};
+  }
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
+}
+</script>
+</body>
+</html>

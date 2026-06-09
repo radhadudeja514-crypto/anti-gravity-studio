@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Analytics — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<style>
+.chart-svg{width:100%;height:200px;}
+.bar-chart{display:flex;align-items:flex-end;gap:0.5rem;height:180px;padding:0.5rem 0;}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:0.35rem;}
+.bar{width:100%;border-radius:6px 6px 0 0;transition:height 1s ease;min-height:4px;position:relative;}
+.bar:hover{opacity:0.8;transform:scaleX(1.05);}
+.bar-label{font-size:0.6rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;max-width:80px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-val{font-family:var(--font-display);font-size:0.72rem;font-weight:700;}
+.event-list{display:flex;flex-direction:column;gap:0.35rem;max-height:350px;overflow-y:auto;}
+.event-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;border-radius:var(--radius-xs);background:var(--surface);border:1px solid var(--border);font-size:0.8rem;}
+.event-name{font-weight:600;}
+.event-count{font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--cyan);}
+.ring-chart{position:relative;width:120px;height:120px;margin:0 auto;}
+.ring-chart svg{transform:rotate(-90deg);}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.ring-val{font-family:var(--font-display);font-size:1.2rem;font-weight:700;}
+.ring-label{font-size:0.6rem;color:var(--text-dim);}
+.insight-item{padding:0.65rem 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.8rem;display:flex;align-items:flex-start;gap:0.5rem;}
+.insight-item:last-child{border:none;}
+.insight-icon{font-size:1rem;flex-shrink:0;margin-top:2px;}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>📊 ANALYTICS HQ</h1><p>Real-time performance tracking across all pillars</p></div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="loadData()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,0.1);color:var(--cyan);">👁️</div><div class="kpi-value" id="kViews">0</div><div class="kpi-label">Total Page Views</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:var(--green);">⚡</div><div class="kpi-value" id="kEvents">0</div><div class="kpi-label">Total Events</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(232,135,30,0.1);color:var(--orange);">💰</div><div class="kpi-value" id="kRev">₹0</div><div class="kpi-label">Revenue Est.</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(157,78,221,0.1);color:var(--purple);">📈</div><div class="kpi-value" id="kConv">0%</div><div class="kpi-label">Conversion Rate</div></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Page Views by Pillar -->
+    <div class="glass-card">
+      <div class="card-header"><div class="card-title"><span class="icon">👁️</span> PAGE VIEWS BY PILLAR</div></div>
+      <div class="bar-chart" id="viewsChart"><div class="shimmer" style="width:100%;height:100%;"></div></div>
+    </div>
+
+    <!-- Revenue Breakdown -->
+    <div class="glass-card">
+      <div class="card-header"><div class="card-title"><span class="icon">💰</span> REVENUE BY PILLAR</div></div>
+      <div id="revChart" style="display:flex;align-items:center;justify-content:space-around;padding:1rem 0;">
+        <div class="shimmer" style="width:120px;height:120px;border-radius:50%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Events -->
+    <div class="glass-card">
+      <div class="card-header"><div class="card-title"><span class="icon">⚡</span> EVENT BREAKDOWN</div></div>
+      <div class="event-list" id="eventList"><div class="shimmer" style="height:200px;"></div></div>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="glass-card accent-purple">
+      <div class="card-header"><div class="card-title" style="color:var(--purple);"><span class="icon">🧠</span> AI INSIGHTS</div></div>
+      <div id="insights"><div class="shimmer" style="height:200px;"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let statsData={},analyticsData={},insightsData={};
+
+async function loadData(){
+  try{
+    const [stats,ana,ins]=await Promise.all([
+      fetch('/api/analytics/stats').then(r=>r.json()).catch(()=>({views:{},events:{}})),
+      fetch('/api/admin/analytics').then(r=>r.json()).catch(()=>({revenue:{},conversion:0})),
+      fetch('/api/admin/insights').then(r=>r.json()).catch(()=>({insights:[]}))
+    ]);
+    statsData=stats; analyticsData=ana; insightsData=ins;
+    renderKPIs(); renderViews(); renderRevenue(); renderEvents(); renderInsights();
+  }catch(e){console.error(e);}
+}
+
+function renderKPIs(){
+  const v=statsData.views||{};const totalV=Object.values(v).reduce((a,b)=>a+b,0);
+  const e=statsData.events||{};let totalE=0;
+  Object.values(e).forEach(p=>{Object.values(p).forEach(c=>{totalE+=c;});});
+  document.getElementById('kViews').textContent=totalV.toLocaleString();
+  document.getElementById('kEvents').textContent=totalE.toLocaleString();
+  const rev=analyticsData.revenue||{};const totalR=Object.values(rev).reduce((a,b)=>a+(b||0),0);
+  document.getElementById('kRev').textContent='₹'+totalR.toLocaleString('en-IN');
+  const conv=analyticsData.conversion||0;
+  document.getElementById('kConv').textContent=conv+'%';
+}
+
+function renderViews(){
+  const v=statsData.views||{};
+  const entries=Object.entries(v).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){document.getElementById('viewsChart').innerHTML='<div class="empty-state">No view data yet</div>';return;}
+  const max=Math.max(...entries.map(e=>e[1]),1);
+  const colors={Radha:'var(--orange)',Corporate:'#C0C0C0',Tour:'#F2A541',Unknown:'var(--text-dim)'};
+  document.getElementById('viewsChart').innerHTML=entries.map(([name,count])=>{
+    const h=Math.max((count/max)*160,8);
+    const c=Object.entries(colors).find(([k])=>name.toLowerCase().includes(k.toLowerCase()));
+    return`<div class="bar-col"><div class="bar-val" style="color:${c?c[1]:'var(--cyan)'}">${count}</div><div class="bar" style="height:${h}px;background:${c?c[1]:'var(--cyan)'};"></div><div class="bar-label">${name}</div></div>`;
+  }).join('');
+}
+
+function renderRevenue(){
+  const rev=analyticsData.revenue||{};const entries=Object.entries(rev);
+  const total=entries.reduce((a,[,v])=>a+v,0)||1;
+  const colors=['var(--orange)','#C0C0C0','#F2A541','var(--purple)'];
+  let offset=0;
+  const circles=entries.map(([name,val],i)=>{
+    const pct=(val/total)*100;const dash=(pct/100)*Math.PI*2*50;
+    const circ=`<circle cx="60" cy="60" r="50" fill="none" stroke="${colors[i%colors.length]}" stroke-width="12" stroke-dasharray="${dash} ${Math.PI*2*50}" stroke-dashoffset="${-offset}" opacity="0.8"/>`;
+    offset+=dash;return circ;
+  }).join('');
+  const legend=entries.map(([name,val],i)=>`
+    <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;margin-bottom:0.3rem;">
+      <span style="width:10px;height:10px;border-radius:50%;background:${colors[i%colors.length]};flex-shrink:0;"></span>
+      <span style="color:var(--text-dim);">${name}</span>
+      <span style="font-family:var(--font-display);font-weight:700;margin-left:auto;font-size:0.72rem;">₹${val.toLocaleString('en-IN')}</span>
+    </div>
+  `).join('');
+  document.getElementById('revChart').innerHTML=entries.length?`
+    <div class="ring-chart"><svg viewBox="0 0 120 120" width="120" height="120">${circles}</svg><div class="ring-center"><div class="ring-val">₹${(total/1000).toFixed(0)}K</div><div class="ring-label">TOTAL</div></div></div>
+    <div style="min-width:150px;">${legend}</div>
+  `:'<div class="empty-state">No revenue data</div>';
+}
+
+function renderEvents(){
+  const ev=statsData.events||{};const items=[];
+  Object.entries(ev).forEach(([pillar,events])=>{Object.entries(events).forEach(([name,count])=>{items.push({pillar,name,count});});});
+  items.sort((a,b)=>b.count-a.count);
+  const el=document.getElementById('eventList');
+  if(!items.length){el.innerHTML='<div class="empty-state">No events tracked yet</div>';return;}
+  el.innerHTML=items.slice(0,20).map(i=>`
+    <div class="event-row"><div><span class="event-name">${esc(i.name)}</span><span style="font-size:0.65rem;color:var(--text-muted);margin-left:0.5rem;">${esc(i.pillar)}</span></div><div class="event-count">${i.count}</div></div>
+  `).join('');
+}
+
+function renderInsights(){
+  const ins=insightsData.insights||[];
+  const el=document.getElementById('insights');
+  if(!ins.length){
+    el.innerHTML=`
+      <div class="insight-item"><span class="insight-icon">💡</span><div>Add more page tracking to generate AI insights. Install analytics.js on all public pages.</div></div>
+      <div class="insight-item"><span class="insight-icon">📊</span><div>Revenue estimates are calculated from lead budget ranges and conversion rates.</div></div>
+    `;return;
+  }
+  el.innerHTML=ins.map(t=>`<div class="insight-item"><span class="insight-icon">${t.icon||'💡'}</span><div>${esc(t.text||t)}</div></div>`).join('');
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+loadData();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

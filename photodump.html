@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DUMP — Your Photo Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --border: #222;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #666;
+    --card: #1a1a1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .logo span { color: var(--text); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .count-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.3rem 0.7rem;
+    border-radius: 2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .count-badge span {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* HERO SECTION */
+  .hero {
+    padding: 4rem 2rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 12vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title .line1 { display: block; }
+  .hero-title .line2 {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--muted);
+  }
+  .hero-title .accent { color: var(--accent); }
+
+  .hero-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+
+  /* ACTION STRIP */
+  .action-strip {
+    max-width: 1200px;
+    margin: 0 auto 3rem;
+    padding: 0 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.9rem 1.6rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .btn:hover::after { opacity: 0.08; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-weight: 500;
+  }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-google {
+    background: #fff;
+    color: #222;
+    font-weight: 500;
+  }
+
+  .btn-google svg { flex-shrink: 0; }
+
+  .btn-danger {
+    background: #ff3b3b22;
+    color: #ff6b6b;
+    border: 1px solid #ff3b3b44;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* GOOGLE STATUS */
+  .g-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 0.9rem 1rem;
+  }
+
+  .g-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .g-dot.connected { background: #4ade80; box-shadow: 0 0 6px #4ade8088; }
+
+  /* DROP ZONE */
+  .dropzone {
+    max-width: 1200px;
+    margin: 0 auto 3rem;
+    padding: 0 2rem;
+  }
+
+  .drop-area {
+    border: 1.5px dashed var(--border);
+    border-radius: 4px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    position: relative;
+  }
+
+  .drop-area:hover, .drop-area.dragover {
+    border-color: var(--accent);
+    background: #e8ff4708;
+  }
+
+  .drop-area.dragover .drop-icon { transform: scale(1.1); }
+
+  .drop-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+    transition: transform 0.2s;
+  }
+
+  .drop-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .drop-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .drop-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  /* TOOLBAR */
+  .toolbar {
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .tab {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    padding: 0.4rem 0.9rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2rem;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--accent); }
+  .tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  .view-toggles {
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .view-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 34px; height: 34px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 3px;
+    font-size: 0.9rem;
+  }
+  .view-btn.active { border-color: var(--accent); color: var(--accent); }
+
+  /* GALLERY */
+  .gallery-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+  }
+
+  .gallery {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .gallery.view-2 { grid-template-columns: repeat(2, 1fr); }
+  .gallery.view-4 { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+  .photo-card {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--card);
+    cursor: pointer;
+    border-radius: 2px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .photo-card img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+    display: block;
+  }
+
+  .photo-card:hover img { transform: scale(1.05); }
+
+  .photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.25s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0.8rem;
+  }
+
+  .photo-card:hover .photo-overlay { opacity: 1; }
+
+  .photo-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.5rem;
+  }
+
+  .photo-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .photo-action-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    padding: 0.35rem 0.7rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .photo-action-btn:hover { background: rgba(255,255,255,0.3); }
+
+  .photo-source-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .badge-device { background: #0007; color: #fff; }
+  .badge-google { background: #1a73e8cc; color: #fff; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 6rem 2rem;
+    color: var(--muted);
+  }
+
+  .empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: block;
+    opacity: 0.3;
+  }
+
+  .empty-state h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+    opacity: 0.4;
+  }
+
+  .empty-state p {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    opacity: 0.5;
+  }
+
+  /* LIGHTBOX */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .lightbox.open { display: flex; }
+
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 2px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1.5rem; right: 1.5rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+  .lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
+
+  .lightbox-nav {
+    position: absolute;
+    bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .lightbox-info {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: center;
+    padding: 0 2rem;
+  }
+
+  /* PROGRESS BAR */
+  .upload-progress {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    z-index: 200;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+  }
+
+  .upload-progress.show { display: flex; }
+
+  .progress-bar-wrap {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.2s;
+    width: 0%;
+  }
+
+  /* GOOGLE PHOTOS MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    width: min(500px, 90vw);
+    border-radius: 4px;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .modal-field {
+    margin-bottom: 1rem;
+  }
+
+  .modal-field label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.8rem 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    outline: none;
+    transition: border-color 0.15s;
+    border-radius: 2px;
+  }
+  .modal-field input:focus { border-color: var(--accent); }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    justify-content: flex-end;
+  }
+
+  .modal-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--bg);
+    border-left: 2px solid var(--accent);
+    line-height: 1.6;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .hero { padding: 2rem 1rem 1rem; }
+    .action-strip, .dropzone, .toolbar, .gallery-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    .gallery { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">DUMP<span>.</span></div>
+  <div class="header-right">
+    <span class="count-badge"><span id="photoCount">0</span> photos</span>
+    <button class="btn btn-danger" id="clearAllBtn" onclick="clearAll()" style="display:none">
+      ✕ Clear All
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1 class="hero-title">
+    <span class="line1">YOUR</span>
+    <span class="line2">PHOTO <span class="accent">VAULT</span></span>
+  </h1>
+  <p class="hero-sub">// Drop. Browse. Connect. Keep everything in one place.</p>
+</section>
+
+<!-- ACTION STRIP -->
+<div class="action-strip">
+  <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    Upload Photos
+  </button>
+  <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+
+  <button class="btn btn-google" onclick="openGoogleModal()" id="googleBtn">
+    <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Connect Google Photos
+  </button>
+
+  <button class="btn btn-secondary" onclick="openLinkModal()">
+    🔗 Import from Link / YouTube
+  </button>
+
+  <div class="g-status" id="googleStatus">
+    <div class="g-dot" id="googleDot"></div>
+    <span id="googleStatusText">Not connected</span>
+  </div>
+</div>
+
+<!-- DROP ZONE -->
+<div class="dropzone">
+  <div class="drop-area" id="dropArea">
+    <input type="file" multiple accept="image/*" onchange="handleFiles(this.files)" title="Click or drop photos here">
+    <span class="drop-icon">📸</span>
+    <div class="drop-title">Drop Photos Here</div>
+    <div class="drop-hint">JPG, PNG, HEIC, GIF, WEBP — any images from WhatsApp, camera or gallery</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar" id="toolbar" style="display:none">
+  <div class="toolbar-left">
+    <span class="section-label">Gallery</span>
+    <div class="filter-tabs">
+      <button class="tab active" onclick="filterPhotos('all', this)">All</button>
+      <button class="tab" onclick="filterPhotos('device', this)">📱 Device</button>
+      <button class="tab" onclick="filterPhotos('google', this)">🔵 Google</button>
+    </div>
+  </div>
+  <div class="view-toggles">
+    <button class="view-btn active" onclick="setView('default', this)" title="Grid">⊞</button>
+    <button class="view-btn" onclick="setView('view-2', this)" title="2 columns">⬛</button>
+    <button class="view-btn" onclick="setView('view-4', this)" title="Small grid">⊟</button>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="gallery-wrapper">
+  <div class="gallery" id="gallery">
+    <div class="empty-state" id="emptyState">
+      <span class="empty-icon">🖼️</span>
+      <h3>Nothing here yet</h3>
+      <p>Upload from device or connect Google Photos above</p>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">ESC / CLOSE</button>
+  <img id="lightboxImg" src="" alt="">
+  <div class="lightbox-nav">
+    <button class="btn btn-secondary" onclick="lightboxNav(-1)">← Prev</button>
+    <span class="lightbox-info" id="lightboxInfo"></span>
+    <button class="btn btn-secondary" onclick="lightboxNav(1)">Next →</button>
+  </div>
+</div>
+
+<!-- UPLOAD PROGRESS -->
+<div class="upload-progress" id="uploadProgress">
+  <span id="progressText">Uploading...</span>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+</div>
+
+<!-- LINK / YOUTUBE IMPORT MODAL -->
+<div class="modal-overlay" id="linkModal">
+  <div class="modal">
+    <h2>Import from Link</h2>
+    <p>Paste an image URL or a YouTube link. YouTube links will import the video thumbnail.</p>
+    <div class="modal-field">
+      <label>URL — Image or YouTube</label>
+      <input type="text" id="linkInput" placeholder="https://... or https://youtu.be/..." />
+    </div>
+    <div class="modal-note">
+      <strong>Supported:</strong><br>
+      • Any direct image URL (.jpg, .png, .webp, etc.)<br>
+      • YouTube: youtube.com/watch?v=... or youtu.be/...<br>
+      • Instagram / Twitter image URLs<br>
+      Paste multiple links on separate lines to import in bulk.
+    </div>
+    <div id="linkPreview" style="display:none;margin-top:1rem;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeLinkModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="importFromLink()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOOGLE PHOTOS MODAL -->
+<div class="modal-overlay" id="googleModal">
+  <div class="modal">
+    <h2>Connect Google Photos</h2>
+    <p>Enter your Google OAuth Client ID to connect your Google Photos library. Photos will be browsed directly from your account.</p>
+    <div class="modal-field">
+      <label>Google OAuth Client ID</label>
+      <input type="text" id="clientIdInput" placeholder="xxxx.apps.googleusercontent.com" />
+    </div>
+    <div class="modal-note">
+      <strong>How to get a Client ID:</strong><br>
+      1. Go to console.cloud.google.com<br>
+      2. Create a project → Enable "Photos Library API"<br>
+      3. Credentials → Create OAuth 2.0 Client ID (Web)<br>
+      4. Add this page's URL to authorized origins<br>
+      5. Paste the Client ID above
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeGoogleModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="connectGoogle()">Connect</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let photos = JSON.parse(localStorage.getItem('dump_photos') || '[]');
+let currentFilter = 'all';
+let currentView = 'default';
+let lightboxIndex = 0;
+let googleAccessToken = null;
+let googleClientId = localStorage.getItem('dump_google_client_id') || '';
+
+// ─── INIT ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderGallery();
+  setupDragDrop();
+  if (googleClientId) {
+    document.getElementById('clientIdInput').value = googleClientId;
+    checkGoogleTokenInHash();
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+  });
+});
+
+// ─── DRAG & DROP ──────────────────────────────────────────
+function setupDragDrop() {
+  const area = document.getElementById('dropArea');
+  ['dragenter','dragover'].forEach(ev => {
+    area.addEventListener(ev, e => { e.preventDefault(); area.classList.add('dragover'); });
+  });
+  ['dragleave','drop'].forEach(ev => {
+    area.addEventListener(ev, e => { e.preventDefault(); area.classList.remove('dragover'); });
+  });
+  area.addEventListener('drop', e => {
+    const files = e.dataTransfer.files;
+    if (files.length) handleFiles(files);
+  });
+}
+
+// ─── HANDLE DEVICE FILES ─────────────────────────────────
+function handleFiles(files) {
+  const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!imageFiles.length) return;
+  showProgress(imageFiles.length);
+  let loaded = 0;
+  imageFiles.forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      photos.push({
+        id: Date.now() + i,
+        src: e.target.result,
+        name: file.name,
+        size: file.size,
+        source: 'device',
+        date: new Date().toISOString()
+      });
+      loaded++;
+      updateProgress(loaded, imageFiles.length);
+      if (loaded === imageFiles.length) {
+        savePhotos();
+        renderGallery();
+        hideProgress();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ─── PROGRESS ─────────────────────────────────────────────
+function showProgress(total) {
+  const bar = document.getElementById('uploadProgress');
+  bar.classList.add('show');
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressText').textContent = `Loading 0 / ${total}`;
+}
+function updateProgress(n, total) {
+  document.getElementById('progressFill').style.width = `${(n/total)*100}%`;
+  document.getElementById('progressText').textContent = `Loading ${n} / ${total}`;
+}
+function hideProgress() {
+  setTimeout(() => document.getElementById('uploadProgress').classList.remove('show'), 800);
+}
+
+// ─── RENDER GALLERY ───────────────────────────────────────
+function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  const toolbar = document.getElementById('toolbar');
+  const clearBtn = document.getElementById('clearAllBtn');
+  const empty = document.getElementById('emptyState');
+  const countEl = document.getElementById('photoCount');
+
+  const filtered = photos.filter(p => currentFilter === 'all' || p.source === currentFilter);
+  countEl.textContent = photos.length;
+
+  if (photos.length === 0) {
+    gallery.innerHTML = '';
+    gallery.appendChild(empty);
+    toolbar.style.display = 'none';
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  toolbar.style.display = 'flex';
+  clearBtn.style.display = 'flex';
+  gallery.innerHTML = '';
+
+  filtered.forEach((photo, idx) => {
+    const card = document.createElement('div');
+    card.className = 'photo-card';
+    card.innerHTML = `
+      <img src="${photo.src}" alt="${photo.name}" loading="lazy" onclick="openLightbox(${idx})">
+      <div class="photo-overlay">
+        <div class="photo-name">${photo.name}</div>
+        <div class="photo-actions">
+          <button class="photo-action-btn" onclick="downloadPhoto(${photo.id}, event)">↓ Save</button>
+          <button class="photo-action-btn" onclick="sharePhoto(${photo.id}, event)">Share</button>
+          <button class="photo-action-btn" onclick="deletePhoto(${photo.id}, event)">✕</button>
+        </div>
+      </div>
+      <span class="photo-source-badge ${photo.source === 'google' ? 'badge-google' : 'badge-device'}">
+        ${photo.source === 'google' ? '🔵 Google' : '📱 Device'}
+      </span>
+    `;
+    gallery.appendChild(card);
+  });
+}
+
+// ─── FILTER & VIEW ────────────────────────────────────────
+function filterPhotos(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderGallery();
+}
+
+function setView(view, btn) {
+  const gallery = document.getElementById('gallery');
+  gallery.classList.remove('view-2', 'view-4');
+  if (view !== 'default') gallery.classList.add(view);
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── LIGHTBOX ─────────────────────────────────────────────
+function getFilteredPhotos() {
+  return photos.filter(p => currentFilter === 'all' || p.source === currentFilter);
+}
+
+function openLightbox(idx) {
+  lightboxIndex = idx;
+  const p = getFilteredPhotos()[idx];
+  document.getElementById('lightboxImg').src = p.src;
+  document.getElementById('lightboxInfo').textContent = `${p.name} · ${idx + 1} / ${getFilteredPhotos().length}`;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e) {
+  if (e && e.target !== document.getElementById('lightbox') && !e.target.classList.contains('lightbox-close')) return;
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lightboxNav(dir) {
+  const arr = getFilteredPhotos();
+  lightboxIndex = (lightboxIndex + dir + arr.length) % arr.length;
+  openLightbox(lightboxIndex);
+}
+
+// ─── DOWNLOAD & SHARE ─────────────────────────────────────
+function downloadPhoto(id, e) {
+  e.stopPropagation();
+  const photo = photos.find(p => p.id === id);
+  if (!photo) return;
+  const a = document.createElement('a');
+  a.href = photo.src;
+  a.download = photo.name || 'photo.jpg';
+  a.click();
+}
+
+function sharePhoto(id, e) {
+  e.stopPropagation();
+  const photo = photos.find(p => p.id === id);
+  if (!photo) return;
+  if (navigator.share) {
+    fetch(photo.src).then(r => r.blob()).then(blob => {
+      const file = new File([blob], photo.name || 'photo.jpg', { type: blob.type });
+      navigator.share({ files: [file], title: photo.name });
+    });
+  } else {
+    navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'));
+  }
+}
+
+function deletePhoto(id, e) {
+  e.stopPropagation();
+  photos = photos.filter(p => p.id !== id);
+  savePhotos();
+  renderGallery();
+}
+
+function clearAll() {
+  if (!confirm('Delete all photos from this vault?')) return;
+  photos = [];
+  savePhotos();
+  renderGallery();
+}
+
+// ─── PERSISTENCE ──────────────────────────────────────────
+function savePhotos() {
+  try {
+    localStorage.setItem('dump_photos', JSON.stringify(photos));
+  } catch(e) {
+    // Storage quota exceeded — photos only in memory for this session
+    console.warn('Storage full, photos not persisted');
+  }
+}
+
+// ─── GOOGLE PHOTOS ────────────────────────────────────────
+function openGoogleModal() {
+  document.getElementById('googleModal').classList.add('open');
+}
+
+function closeGoogleModal() {
+  document.getElementById('googleModal').classList.remove('open');
+}
+
+function connectGoogle() {
+  const clientId = document.getElementById('clientIdInput').value.trim();
+  if (!clientId) { alert('Please enter a Client ID'); return; }
+  googleClientId = clientId;
+  localStorage.setItem('dump_google_client_id', clientId);
+  closeGoogleModal();
+
+  const scope = 'https://www.googleapis.com/auth/photoslibrary.readonly';
+  const redirectUri = window.location.href.split('#')[0];
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
+  window.location.href = url;
+}
+
+function checkGoogleTokenInHash() {
+  const hash = window.location.hash;
+  if (!hash) return;
+  const params = new URLSearchParams(hash.replace('#', ''));
+  const token = params.get('access_token');
+  if (!token) return;
+  googleAccessToken = token;
+  history.replaceState(null, '', window.location.pathname);
+  setGoogleStatus(true);
+  loadGooglePhotos(token);
+}
+
+function setGoogleStatus(connected, text) {
+  const dot = document.getElementById('googleDot');
+  const statusText = document.getElementById('googleStatusText');
+  if (connected) {
+    dot.classList.add('connected');
+    statusText.textContent = text || 'Google Photos connected';
+    document.getElementById('googleBtn').textContent = '✓ Google Connected';
+    document.getElementById('googleBtn').disabled = true;
+  } else {
+    dot.classList.remove('connected');
+    statusText.textContent = text || 'Not connected';
+  }
+}
+
+// ─── LINK / YOUTUBE IMPORT ────────────────────────────────
+function openLinkModal() {
+  document.getElementById('linkModal').classList.add('open');
+  document.getElementById('linkInput').focus();
+}
+
+function closeLinkModal() {
+  document.getElementById('linkModal').classList.remove('open');
+  document.getElementById('linkInput').value = '';
+  document.getElementById('linkPreview').style.display = 'none';
+  document.getElementById('linkPreview').innerHTML = '';
+}
+
+function extractYouTubeId(url) {
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+function importFromLink() {
+  const raw = document.getElementById('linkInput').value.trim();
+  if (!raw) { alert('Please enter a URL'); return; }
+  const lines = raw.split(/\n/).map(l => l.trim()).filter(Boolean);
+  let imported = 0;
+
+  lines.forEach((url, i) => {
+    const ytId = extractYouTubeId(url);
+    if (ytId) {
+      // YouTube — use maxresdefault, fallback to hqdefault
+      const thumbUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+      photos.push({
+        id: Date.now() + i,
+        src: thumbUrl,
+        name: `YouTube — ${ytId}.jpg`,
+        size: 0,
+        source: 'device',
+        date: new Date().toISOString(),
+        link: url
+      });
+      imported++;
+    } else if (/^https?:\/\//i.test(url)) {
+      // Regular image URL
+      photos.push({
+        id: Date.now() + i,
+        src: url,
+        name: url.split('/').pop().split('?')[0] || 'image.jpg',
+        size: 0,
+        source: 'device',
+        date: new Date().toISOString(),
+        link: url
+      });
+      imported++;
+    }
+  });
+
+  if (imported === 0) { alert('No valid URLs found. Make sure URLs start with http:// or https://'); return; }
+  savePhotos();
+  renderGallery();
+  closeLinkModal();
+}
+
+// Live preview on paste
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('linkInput');
+  if (inp) {
+    inp.addEventListener('input', () => {
+      const url = inp.value.trim();
+      const preview = document.getElementById('linkPreview');
+      const ytId = extractYouTubeId(url);
+      if (ytId) {
+        preview.style.display = 'block';
+        preview.innerHTML = `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" style="width:100%;border-radius:2px;margin-top:0.5rem;" onerror="this.style.display='none'"><div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:#666;margin-top:0.4rem;">▶ YouTube thumbnail preview</div>`;
+      } else if (/^https?:\/\//i.test(url) && /\.(jpg|jpeg|png|webp|gif|avif)/i.test(url)) {
+        preview.style.display = 'block';
+        preview.innerHTML = `<img src="${url}" style="max-height:120px;border-radius:2px;margin-top:0.5rem;" onerror="this.innerHTML='<span style=color:#666;font-size:0.7rem>Cannot preview this URL</span>'">`;
+      } else {
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+      }
+    });
+  }
+});
+
+async function loadGooglePhotos(token) {
+  setGoogleStatus(true, 'Loading Google Photos...');
+  try {
+    let nextPageToken = null;
+    let loaded = 0;
+    do {
+      const body = { pageSize: 50 };
+      if (nextPageToken) body.pageToken = nextPageToken;
+      const res = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=50' + (nextPageToken ? '&pageToken=' + nextPageToken : ''), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!data.mediaItems) break;
+      data.mediaItems.forEach(item => {
+        if (item.mimeType && item.mimeType.startsWith('image/')) {
+          photos.push({
+            id: item.id,
+            src: item.baseUrl + '=w800',
+            name: item.filename,
+            size: 0,
+            source: 'google',
+            date: item.mediaMetadata?.creationTime || new Date().toISOString()
+          });
+          loaded++;
+        }
+      });
+      nextPageToken = data.nextPageToken;
+      renderGallery();
+    } while (nextPageToken && loaded < 200);
+    setGoogleStatus(true, `${loaded} Google photos loaded`);
+    savePhotos();
+  } catch (err) {
+    setGoogleStatus(false, 'Error loading Google Photos');
+    console.error(err);
+  }
+}
+</script>
+</body>
+</html>

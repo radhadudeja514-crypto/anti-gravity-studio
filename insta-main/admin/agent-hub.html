@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Agent Hub — Anti-Gravity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+<div class="admin-page">
+  <div class="page-header">
+    <div><h1>🤖 AI AGENT HUB</h1><p>Your autonomous AI workforce — always on, always optimizing</p></div>
+    <div class="header-actions">
+      <span class="badge badge-green"><span class="agent-dot online" style="display:inline-block;width:6px;height:6px;margin-right:4px;"></span> 4 Agents Online</span>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline">
+    <div class="pipeline-step"><div class="pipeline-icon">📥</div><span>Lead Capture</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step"><div class="pipeline-icon">🧠</div><span>AI Scoring</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step"><div class="pipeline-icon">📢</div><span>Marketing</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step"><div class="pipeline-icon">📸</div><span>Instagram</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step"><div class="pipeline-icon">🎨</div><span>Design</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step"><div class="pipeline-icon">📊</div><span>Analytics</span></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Marketing Agent -->
+    <a href="agent-marketing.html" class="agent-card" style="text-decoration:none;">
+      <div class="agent-glow" style="background:var(--magenta);"></div>
+      <div class="agent-icon">📢</div>
+      <div class="agent-name">MARKETING & SALES AGENT</div>
+      <div class="agent-desc">Generates hooks, upsells, CTAs and full campaign copy for each pillar. Uses pre-trained templates fine-tuned for wedding, corporate, and tour audiences.</div>
+      <div class="agent-status"><span class="agent-dot online"></span> <span style="color:var(--green);">ACTIVE</span> · <span style="color:var(--text-dim);">3 pillar templates loaded</span></div>
+    </a>
+
+    <!-- Instagram Agent -->
+    <a href="agent-instagram.html" class="agent-card" style="text-decoration:none;">
+      <div class="agent-glow" style="background:var(--purple);"></div>
+      <div class="agent-icon">📸</div>
+      <div class="agent-name">INSTAGRAM SCHEDULER</div>
+      <div class="agent-desc">Analyzes optimal posting times, generates hashtag sets, and manages the content calendar. Keeps your three Instagram accounts in perfect posting rhythm.</div>
+      <div class="agent-status"><span class="agent-dot online"></span> <span style="color:var(--green);">ACTIVE</span> · <span style="color:var(--text-dim);" id="schedCount">Loading...</span></div>
+    </a>
+
+    <!-- Design Agent -->
+    <a href="agent-design.html" class="agent-card" style="text-decoration:none;">
+      <div class="agent-glow" style="background:var(--cyan);"></div>
+      <div class="agent-icon">🎨</div>
+      <div class="agent-name">DESIGN & THEME ENGINE</div>
+      <div class="agent-desc">Controls per-pillar visual identity — colors, fonts, headlines, and mood. Changes propagate instantly to the public website for each persona.</div>
+      <div class="agent-status"><span class="agent-dot online"></span> <span style="color:var(--green);">ACTIVE</span> · <span style="color:var(--text-dim);">3 themes configured</span></div>
+    </a>
+
+    <!-- Data Agent -->
+    <a href="agent-data.html" class="agent-card" style="text-decoration:none;">
+      <div class="agent-glow" style="background:var(--orange);"></div>
+      <div class="agent-icon">🧠</div>
+      <div class="agent-name">DATA & HEALTH MONITOR</div>
+      <div class="agent-desc">System health monitoring, lead data exports, media statistics, and database maintenance. Your operational intelligence layer.</div>
+      <div class="agent-status"><span class="agent-dot online"></span> <span style="color:var(--green);">ACTIVE</span> · <span style="color:var(--text-dim);" id="healthMsg">Checking...</span></div>
+    </a>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="glass-card" style="margin-top:1.25rem;">
+    <div class="card-header"><div class="card-title"><span class="icon">⚡</span> QUICK ACTIONS</div></div>
+    <div class="qa-grid">
+      <a href="agent-marketing.html" class="qa-card"><div class="qa-icon">📝</div><div><strong>Generate Copy</strong><span>Create marketing content</span></div></a>
+      <a href="agent-instagram.html" class="qa-card"><div class="qa-icon">📅</div><div><strong>Schedule Post</strong><span>Plan Instagram content</span></div></a>
+      <a href="agent-design.html" class="qa-card"><div class="qa-icon">🎨</div><div><strong>Edit Theme</strong><span>Customize pillar visuals</span></div></a>
+      <a href="agent-data.html" class="qa-card"><div class="qa-icon">📊</div><div><strong>Export Data</strong><span>Download leads & stats</span></div></a>
+      <a href="studio.html" class="qa-card"><div class="qa-icon">🎬</div><div><strong>Media Studio</strong><span>Edit videos & images</span></div></a>
+      <a href="dashboard.html" class="qa-card"><div class="qa-icon">🛸</div><div><strong>Dashboard</strong><span>Mission Control overview</span></div></a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Load real counts
+fetch('/api/agent/instagram/scheduled').then(r=>r.json()).then(d=>{
+  document.getElementById('schedCount').textContent=(d.posts||[]).length+' posts scheduled';
+}).catch(()=>{});
+fetch('/api/agent/data/health').then(r=>r.json()).then(d=>{
+  document.getElementById('healthMsg').textContent='Server '+(d.status||'online')+' · '+(d.leads||0)+' leads';
+}).catch(()=>{document.getElementById('healthMsg').textContent='Server offline';});
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

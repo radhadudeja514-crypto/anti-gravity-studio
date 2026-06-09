@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Media Bifurcator — Anti Gravity Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+<style>
+:root{--cyan:#00f9ff;--magenta:#ff00aa;--purple:#9d4edd;--gold:#ffd700;--bg:#0a0a0f;--card:rgba(255,255,255,0.03)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100vh;padding:2rem}
+h1{font-family:'Orbitron',sans-serif;font-size:1.4rem;color:var(--cyan);letter-spacing:2px;margin-bottom:0.25rem}
+.subtitle{color:rgba(255,255,255,0.4);font-size:0.8rem;letter-spacing:1px;margin-bottom:2rem}
+.upload-zone{border:2px dashed rgba(0,249,255,0.3);border-radius:1.5rem;padding:3rem;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:2rem;background:var(--card)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:rgba(0,249,255,0.05)}
+.upload-zone input{display:none}
+.upload-icon{font-size:3rem;margin-bottom:1rem}
+.upload-zone p{color:rgba(255,255,255,0.5);font-size:0.9rem}
+.upload-zone strong{color:var(--cyan)}
+
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:1rem;padding:1rem;text-align:center}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:700;margin-bottom:0.25rem}
+.stat-label{font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px}
+.radha-color{color:#ff00aa}.veronica-color{color:#00f9ff}.tour-color{color:#ffd700}.total-color{color:#9d4edd}
+
+.controls{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.btn{padding:0.7rem 1.5rem;border:none;border-radius:999px;font-family:'Orbitron',sans-serif;font-size:0.75rem;letter-spacing:1px;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:0.5rem}
+.btn-primary{background:linear-gradient(90deg,var(--cyan),var(--purple));color:#000;font-weight:700}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#fff}
+.btn-secondary:hover{background:rgba(255,255,255,0.12)}
+.btn-danger{background:rgba(255,60,60,0.15);border:1px solid rgba(255,60,60,0.3);color:#ff8080}
+
+.progress-wrap{background:rgba(255,255,255,0.05);border-radius:999px;height:6px;margin-bottom:1rem;overflow:hidden;display:none}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:999px;width:0;transition:width .3s}
+.status-msg{font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:1.5rem;min-height:1.2rem}
+
+.pillar-tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.tab{padding:0.5rem 1.2rem;border-radius:999px;font-size:0.8rem;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.5);transition:all .3s}
+.tab.active{color:#000;font-weight:600}
+.tab-all.active{background:#9d4edd;border-color:#9d4edd}
+.tab-radha.active{background:#ff00aa;border-color:#ff00aa}
+.tab-veronica.active{background:#00f9ff;border-color:#00f9ff}
+.tab-tour.active{background:#ffd700;border-color:#ffd700}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+.card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:1rem;overflow:hidden;transition:all .3s;position:relative}
+.card:hover{border-color:rgba(0,249,255,0.25);transform:translateY(-3px)}
+.card img{width:100%;height:160px;object-fit:cover;display:block}
+.card-body{padding:0.75rem}
+.card-pillar{display:inline-block;padding:0.2rem 0.6rem;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:1px;margin-bottom:0.5rem;text-transform:uppercase}
+.pill-radha{background:rgba(255,0,170,0.15);color:#ff00aa;border:1px solid rgba(255,0,170,0.3)}
+.pill-veronica{background:rgba(0,249,255,0.1);color:#00f9ff;border:1px solid rgba(0,249,255,0.2)}
+.pill-tour{background:rgba(255,215,0,0.1);color:#ffd700;border:1px solid rgba(255,215,0,0.2)}
+.card-name{font-size:0.75rem;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.4rem}
+.card-confidence{font-size:0.65rem;color:rgba(255,255,255,0.35)}
+.card-actions{display:flex;gap:0.3rem;margin-top:0.5rem}
+.card-btn{flex:1;padding:0.3rem;border:1px solid rgba(255,255,255,0.1);border-radius:0.5rem;background:transparent;color:rgba(255,255,255,0.5);font-size:0.65rem;cursor:pointer;transition:all .2s}
+.card-btn:hover{background:rgba(255,255,255,0.08);color:#fff}
+.card-btn.selected{background:rgba(0,249,255,0.15);color:var(--cyan);border-color:rgba(0,249,255,0.3)}
+.processing-overlay{position:absolute;inset:0;background:rgba(10,10,15,0.8);display:flex;align-items:center;justify-content:center;font-size:1.5rem;border-radius:1rem}
+
+.empty-state{text-align:center;padding:4rem;color:rgba(255,255,255,0.25)}
+.empty-state .icon{font-size:4rem;margin-bottom:1rem}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.modal.open{display:flex}
+.modal-card{background:#111118;border:1px solid rgba(0,249,255,0.2);border-radius:1.5rem;padding:2rem;max-width:420px;width:100%;text-align:center}
+.modal-card h3{font-family:'Orbitron',sans-serif;color:var(--cyan);margin-bottom:0.5rem}
+.modal-card p{color:rgba(255,255,255,0.5);font-size:0.85rem;margin-bottom:1.5rem}
+.modal-actions{display:flex;gap:1rem;justify-content:center}
+
+@media(max-width:600px){
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .controls{flex-direction:column}
+}
+</style>
+<script>
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+  if(!d.authenticated) window.location='/admin/login.html';
+}).catch(()=>{});
+</script>
+</head>
+<body>
+
+<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+  <a href="dashboard.html" style="color:rgba(255,255,255,0.4);font-size:0.8rem;text-decoration:none">← Dashboard</a>
+</div>
+
+<h1>🤖 AI MEDIA BIFURCATOR</h1>
+<p class="subtitle">UPLOAD PHOTOS → AI CLASSIFIES → ASSIGN TO PILLAR AUTOMATICALLY</p>
+
+<!-- Upload Zone -->
+<div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" 
+     ondragover="event.preventDefault();this.classList.add('drag')"
+     ondragleave="this.classList.remove('drag')"
+     ondrop="handleDrop(event)">
+  <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)">
+  <div class="upload-icon">📸</div>
+  <p>Drag & drop photos here or <strong>click to browse</strong></p>
+  <p style="font-size:0.75rem;margin-top:0.5rem;color:rgba(255,255,255,0.3)">
+    AI will auto-classify into: 💍 Radha (Weddings/Bhakti/Family) · 🏢 Veronica (Corporate/Parties) · 🌍 Tour
+  </p>
+</div>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num total-color" id="stat-total">0</div><div class="stat-label">Total</div></div>
+  <div class="stat"><div class="stat-num radha-color" id="stat-radha">0</div><div class="stat-label">💍 Radha</div></div>
+  <div class="stat"><div class="stat-num veronica-color" id="stat-veronica">0</div><div class="stat-label">🏢 Veronica</div></div>
+  <div class="stat"><div class="stat-num tour-color" id="stat-tour">0</div><div class="stat-label">🌍 Tour</div></div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="btn btn-primary" id="classify-btn" onclick="startClassification()" disabled>
+    🤖 Run AI Classification
+  </button>
+  <button class="btn btn-secondary" onclick="saveToServer()" id="save-btn" disabled>
+    💾 Save to Gallery
+  </button>
+  <button class="btn btn-secondary" onclick="exportCSV()">
+    📥 Export CSV
+  </button>
+  <button class="btn btn-danger" onclick="clearAll()" id="clear-btn" style="display:none">
+    🗑 Clear All
+  </button>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-bar" id="progress-bar"></div>
+</div>
+<div class="status-msg" id="status-msg">Upload photos to begin AI classification.</div>
+
+<!-- Tabs -->
+<div class="pillar-tabs">
+  <button class="tab tab-all active" onclick="filterTab('all',this)">All</button>
+  <button class="tab tab-radha" onclick="filterTab('radha',this)">💍 Radha</button>
+  <button class="tab tab-veronica" onclick="filterTab('veronica',this)">🏢 Veronica</button>
+  <button class="tab tab-tour" onclick="filterTab('tour',this)">🌍 Tour</button>
+</div>
+
+<!-- Grid -->
+<div class="grid" id="media-grid">
+  <div class="empty-state" style="grid-column:1/-1">
+    <div class="icon">🖼</div>
+    <p>No photos yet. Upload to begin.</p>
+  </div>
+</div>
+
+<!-- Confirm save modal -->
+<div class="modal" id="save-modal">
+  <div class="modal-card">
+    <h3>SAVE TO GALLERY</h3>
+    <p>This will upload all classified photos to the server and assign them to their respective pillar galleries. Continue?</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmSave()">✓ Confirm</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('save-modal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────
+let mediaItems   = []; // {id, file, url, name, pillar, confidence, classified}
+let model        = null;
+let modelLoading = false;
+let currentFilter = 'all';
+
+// ── Pillar keyword maps for AI heuristic boost ───────────────
+const PILLAR_KEYWORDS = {
+  radha: [
+    'wedding','bride','groom','sangeet','mehendi','haldi','mandap','puja',
+    'temple','mandir','bhakti','pooja','festival','diwali','holi','garba',
+    'navratri','family','kids','children','birthday','party','home','aarti',
+    'prasad','tilak','pheras','bridal','dupatta','lehenga','saree','bindi',
+    'playgroup','school','maa','bapu','dadi','nani','bhai','behen',
+  ],
+  veronica: [
+    'office','corporate','meeting','conference','presentation','business',
+    'suit','tie','professional','seminar','awards','gala','stage','podium',
+    'pool','poolside','cocktail','mocktail','lounge','rooftop','nightclub',
+    'bar','event','launch','brand','logo','product','shoot','model',
+    'fashion','ramp','catwalk','hotel','ballroom','banquet',
+  ],
+  tour: [
+    'travel','trip','mountains','beach','forest','landscape','waterfall',
+    'trek','adventure','backpack','concert','festival','music','dance',
+    'stage','crowd','live','performance','street','city','architecture',
+    'monument','heritage','culture','food','market','tour','journey',
+  ],
+};
+
+// MobileNet class → pillar mapping (top ImageNet classes)
+const CLASS_MAP = {
+  // Radha keywords
+  'groom':'radha','bride':'radha','wedding':'radha','veil':'radha',
+  'altar':'radha','church':'radha','mosque':'radha','temple':'radha',
+  'prayer':'radha','candle':'radha',
+  // Veronica
+  'suit':'veronica','neck_brace':'veronica','tie':'veronica',
+  'stage':'veronica','spotlight':'veronica','microphone':'veronica',
+  'swimming_pool':'veronica','cocktail_shaker':'veronica',
+  // Tour
+  'alp':'tour','valley':'tour','seashore':'tour','promontory':'tour',
+  'lakeside':'tour','mountain_tent':'tour','backpack':'tour',
+  'volcano':'tour','cliff':'tour','coral_reef':'tour',
+};
+
+// ── Load MobileNet model ─────────────────────────────────────
+async function loadModel() {
+  if (model) return model;
+  if (modelLoading) return null;
+  modelLoading = true;
+  setStatus('🤖 Loading AI model (first time only)…');
+  try {
+    model = await mobilenet.load({ version: 2, alpha: 1.0 });
+    setStatus('✅ AI model ready!');
+    return model;
+  } catch(e) {
+    setStatus('⚠ AI model failed — using keyword classification only.');
+    return null;
+  }
+}
+
+// ── File handling ────────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  if (!files.length) return;
+  const allowed = [...files].filter(f => f.type.startsWith('image/'));
+  if (!allowed.length) { setStatus('⚠ No image files found.'); return; }
+
+  // Clear empty state
+  const grid = document.getElementById('media-grid');
+  if (mediaItems.length === 0) grid.innerHTML = '';
+
+  allowed.forEach(file => {
+    const id  = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const url = URL.createObjectURL(file);
+    const item = { id, file, url, name: file.name, pillar: null, confidence: 0, classified: false };
+    mediaItems.push(item);
+    renderCard(item);
+  });
+
+  updateStats();
+  document.getElementById('classify-btn').disabled = false;
+  document.getElementById('clear-btn').style.display = 'flex';
+  setStatus(`📂 ${allowed.length} photo(s) loaded. Click "Run AI Classification" to start.`);
+}
+
+// ── Classification ───────────────────────────────────────────
+async function startClassification() {
+  if (!mediaItems.length) return;
+  const btn = document.getElementById('classify-btn');
+  btn.disabled = true;
+
+  const m = await loadModel();
+
+  const wrap = document.getElementById('progress-wrap');
+  const bar  = document.getElementById('progress-bar');
+  wrap.style.display = 'block';
+
+  const unclassified = mediaItems.filter(i => !i.classified);
+  let done = 0;
+
+  for (const item of unclassified) {
+    setStatus(`🔍 Classifying ${item.name}… (${done+1}/${unclassified.length})`);
+    markCardProcessing(item.id, true);
+
+    const pillarResult = await classifyImage(item, m);
+    item.pillar     = pillarResult.pillar;
+    item.confidence = pillarResult.confidence;
+    item.classified = true;
+
+    updateCard(item);
+    markCardProcessing(item.id, false);
+    done++;
+    bar.style.width = `${(done / unclassified.length) * 100}%`;
+  }
+
+  wrap.style.display = 'none';
+  bar.style.width = '0';
+  updateStats();
+  btn.disabled = false;
+  document.getElementById('save-btn').disabled = false;
+  setStatus(`✅ Classification complete! ${unclassified.length} photos classified.`);
+  applyFilter(currentFilter);
+}
+
+async function classifyImage(item, m) {
+  // 1. Filename keyword heuristic
+  const nameLower = item.name.toLowerCase();
+  const heuristic = scoreByKeywords(nameLower);
+
+  // 2. MobileNet visual classification
+  let visualScore = { radha: 0, veronica: 0, tour: 0 };
+  if (m) {
+    try {
+      const img = await loadImg(item.url);
+      const predictions = await m.classify(img, 5);
+      predictions.forEach(p => {
+        const cls = p.className.toLowerCase().replace(/ /g,'_');
+        const mapped = CLASS_MAP[cls];
+        if (mapped) visualScore[mapped] += p.probability * 0.8;
+        // Additional semantic matching
+        PILLAR_KEYWORDS.radha.forEach(kw => { if (cls.includes(kw)) visualScore.radha += p.probability * 0.3; });
+        PILLAR_KEYWORDS.veronica.forEach(kw => { if (cls.includes(kw)) visualScore.veronica += p.probability * 0.3; });
+        PILLAR_KEYWORDS.tour.forEach(kw => { if (cls.includes(kw)) visualScore.tour += p.probability * 0.3; });
+      });
+    } catch(e) { /* ignore */ }
+  }
+
+  // 3. Combine scores
+  const combined = {
+    radha:    heuristic.radha    + visualScore.radha,
+    veronica: heuristic.veronica + visualScore.veronica,
+    tour:     heuristic.tour     + visualScore.tour,
+  };
+
+  const winner = Object.entries(combined).sort((a,b) => b[1]-a[1])[0];
+  const total  = Object.values(combined).reduce((a,b) => a+b, 0) || 1;
+  const confidence = Math.min(Math.round((winner[1] / total) * 100), 99);
+
+  // Default to radha if no strong signal (most common pillar for this studio)
+  return { pillar: winner[1] > 0 ? winner[0] : 'radha', confidence: confidence || 45 };
+}
+
+function scoreByKeywords(text) {
+  const scores = { radha: 0, veronica: 0, tour: 0 };
+  Object.entries(PILLAR_KEYWORDS).forEach(([pillar, words]) => {
+    words.forEach(w => { if (text.includes(w)) scores[pillar] += 1; });
+  });
+  return scores;
+}
+
+function loadImg(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload  = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+// ── Render ───────────────────────────────────────────────────
+function renderCard(item) {
+  const grid = document.getElementById('media-grid');
+  const div  = document.createElement('div');
+  div.className = 'card';
+  div.id = `card-${item.id}`;
+  div.innerHTML = cardHTML(item);
+  grid.appendChild(div);
+}
+
+function cardHTML(item) {
+  const pillClass = item.pillar ? `pill-${item.pillar}` : '';
+  const pillLabel = item.pillar
+    ? ({ radha:'💍 Radha', veronica:'🏢 Veronica', tour:'🌍 Tour' }[item.pillar])
+    : '⏳ Unclassified';
+  return `
+    <img src="${item.url}" alt="${item.name}" loading="lazy">
+    <div class="card-body">
+      <span class="card-pillar ${pillClass}">${pillLabel}</span>
+      <div class="card-name" title="${item.name}">${item.name}</div>
+      <div class="card-confidence">${item.classified ? `AI confidence: ${item.confidence}%` : 'Not yet classified'}</div>
+      <div class="card-actions">
+        <button class="card-btn ${item.pillar==='radha'?'selected':''}" onclick="reassign('${item.id}','radha')">💍</button>
+        <button class="card-btn ${item.pillar==='veronica'?'selected':''}" onclick="reassign('${item.id}','veronica')">🏢</button>
+        <button class="card-btn ${item.pillar==='tour'?'selected':''}" onclick="reassign('${item.id}','tour')">🌍</button>
+        <button class="card-btn" onclick="removeItem('${item.id}')" style="color:#ff8080">✕</button>
+      </div>
+    </div>`;
+}
+
+function updateCard(item) {
+  const card = document.getElementById(`card-${item.id}`);
+  if (card) card.innerHTML = cardHTML(item);
+}
+
+function markCardProcessing(id, on) {
+  const card = document.getElementById(`card-${id}`);
+  if (!card) return;
+  let ov = card.querySelector('.processing-overlay');
+  if (on && !ov) {
+    ov = document.createElement('div');
+    ov.className = 'processing-overlay';
+    ov.textContent = '🤖';
+    card.appendChild(ov);
+  } else if (!on && ov) { ov.remove(); }
+}
+
+function reassign(id, pillar) {
+  const item = mediaItems.find(i => i.id === id);
+  if (item) { item.pillar = pillar; item.classified = true; updateCard(item); updateStats(); }
+}
+
+function removeItem(id) {
+  mediaItems = mediaItems.filter(i => i.id !== id);
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.remove();
+  updateStats();
+  if (!mediaItems.length) {
+    document.getElementById('media-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🖼</div><p>No photos yet.</p></div>`;
+  }
+}
+
+// ── Filter tabs ───────────────────────────────────────────────
+function filterTab(filter, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = filter;
+  applyFilter(filter);
+}
+
+function applyFilter(filter) {
+  document.querySelectorAll('.card').forEach(card => {
+    const id   = card.id.replace('card-','');
+    const item = mediaItems.find(i => i.id === id);
+    if (!item) return;
+    card.style.display = (filter === 'all' || item.pillar === filter) ? '' : 'none';
+  });
+}
+
+// ── Stats ─────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-total').textContent    = mediaItems.length;
+  document.getElementById('stat-radha').textContent    = mediaItems.filter(i=>i.pillar==='radha').length;
+  document.getElementById('stat-veronica').textContent = mediaItems.filter(i=>i.pillar==='veronica').length;
+  document.getElementById('stat-tour').textContent     = mediaItems.filter(i=>i.pillar==='tour').length;
+}
+
+// ── Save to server ────────────────────────────────────────────
+function saveToServer() {
+  if (!mediaItems.filter(i=>i.classified).length) { setStatus('⚠ Classify photos first.'); return; }
+  document.getElementById('save-modal').classList.add('open');
+}
+
+async function confirmSave() {
+  document.getElementById('save-modal').classList.remove('open');
+  const classified = mediaItems.filter(i => i.classified);
+  setStatus(`💾 Uploading ${classified.length} photos…`);
+  const wrap = document.getElementById('progress-wrap');
+  const bar  = document.getElementById('progress-bar');
+  wrap.style.display = 'block';
+
+  let done = 0;
+  for (const item of classified) {
+    try {
+      const fd = new FormData();
+      fd.append('file', item.file);
+      fd.append('pillar', item.pillar === 'radha' ? 'radha' : item.pillar === 'veronica' ? 'corporate' : 'tour');
+      fd.append('type', 'image');
+      await fetch('/api/media', { method: 'POST', body: fd });
+      done++;
+      bar.style.width = `${(done/classified.length)*100}%`;
+    } catch(e) { console.error('Upload failed:', item.name); }
+  }
+
+  wrap.style.display = 'none';
+  setStatus(`✅ ${done}/${classified.length} photos saved to gallery!`);
+}
+
+// ── Export CSV ────────────────────────────────────────────────
+function exportCSV() {
+  if (!mediaItems.length) { setStatus('No items to export.'); return; }
+  const rows = [['Filename','Pillar','Confidence','Classified']];
+  mediaItems.forEach(i => rows.push([i.name, i.pillar||'unclassified', i.confidence+'%', i.classified?'Yes':'No']));
+  const csv  = rows.map(r => r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `media_bifurcation_${Date.now()}.csv`;
+  a.click();
+}
+
+function clearAll() {
+  if (!confirm('Clear all loaded photos?')) return;
+  mediaItems = [];
+  document.getElementById('media-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🖼</div><p>No photos yet.</p></div>`;
+  updateStats();
+  document.getElementById('classify-btn').disabled = true;
+  document.getElementById('save-btn').disabled = true;
+  document.getElementById('clear-btn').style.display = 'none';
+  setStatus('Upload photos to begin AI classification.');
+}
+
+function setStatus(msg) { document.getElementById('status-msg').textContent = msg; }
+
+// Pre-load model silently
+setTimeout(loadModel, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var pillar = document.body.dataset.pillar || '';
+  if(!pillar) return;
+  fetch('/api/agent/design/theme/' + pillar)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.success || !d.theme) return;
+      var t = d.theme;
+      var root = document.documentElement;
+      if(t.primary)  root.style.setProperty('--pillar-primary', t.primary);
+      if(t.accent)   root.style.setProperty('--pillar-accent', t.accent);
+      if(t.bg)       document.body.style.background = t.bg;
+    }).catch(function(){});
+})();
+</script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veronica — Corporate MC & Conference Host India | Anti Gravity Studio</title>
+  <meta name="description" content="Veronica — India's premier corporate MC. Keynote hosting, C-suite summits, product launches, tech conferences. Trusted by Google, Infosys, TATA, Reliance, Microsoft India.">
+  <meta name="keywords" content="corporate MC India, conference host Delhi, keynote emcee, corporate event anchor, product launch host, C-suite summit MC, tech conference host India, award ceremony anchor">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="robots" content="index, follow">
+
+  <!-- Canonical & hreflang -->
+  <link rel="canonical" href="https://antigravitystudio.in/pillar-veronica.html">
+  <link rel="alternate" hreflang="en" href="https://antigravitystudio.in/pillar-veronica.html">
+  <link rel="alternate" hreflang="x-default" href="https://antigravitystudio.in/pillar-veronica.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="Veronica — Corporate MC & Conference Host India | Anti Gravity Studio">
+  <meta property="og:description" content="Veronica — India's premier corporate MC. Keynote hosting, C-suite summits, product launches. Trusted by Google, Infosys, TATA, Reliance, Microsoft India.">
+  <meta property="og:url"         content="https://antigravitystudio.in/pillar-veronica.html">
+  <meta property="og:image"       content="/assets/media/gallery/photos/IMG20241121115211.jpg">
+  <meta property="og:site_name"   content="Anti Gravity Studio">
+  <meta property="og:locale"      content="en_IN">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:site"        content="@AntiGravityStudio">
+  <meta name="twitter:title"       content="Veronica — Corporate MC & Conference Host India | Anti Gravity Studio">
+  <meta name="twitter:description" content="India's premier corporate MC. Keynote hosting, C-suite summits, product launches. Trusted by Google, Infosys, TATA.">
+  <meta name="twitter:image"       content="/assets/media/gallery/photos/IMG20241121115211.jpg">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/media/icon-192.png" onerror="this.remove()">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/vfx.css">
+  <link rel="stylesheet" href="assets/css/pillar-veronica.css">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Veronica",
+  "jobTitle": "Corporate MC & Conference Host",
+  "description": "India's premier corporate MC. Keynote hosting, C-suite summits, product launches, and tech conferences for top MNCs.",
+  "worksFor": {
+    "@type": "Organization",
+    "name": "Anti Gravity Studio",
+    "url": "https://antigravitystudio.in",
+    "logo": "https://antigravitystudio.in/assets/media/og-cover.jpg"
+  },
+  "areaServed": ["Delhi", "Mumbai", "Bangalore", "India"],
+  "knowsAbout": ["Corporate Events", "Keynote Hosting", "Conference MC", "Product Launches", "Award Ceremonies"],
+  "url": "https://antigravitystudio.in/pillar-veronica.html"
+}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+  // Load real Measurement ID from server config
+  fetch('/api/ga4-id').then(r=>r.json()).then(d=>{
+    if(d.id && d.id !== 'G-XXXXXXXXXX') {
+      gtag('config', d.id);
+      document.querySelectorAll('script[src*="gtag/js"]').forEach(s=>{
+        s.src = s.src.replace('G-XXXXXXXXXX', d.id);
+      });
+    }
+  }).catch(()=>{});
+</script>
+</head>
+<body data-pillar="corporate" class="corp-theme">
+
+<nav class="site-nav" id="site-nav">
+  <a href="index.html" class="nav-logo" style="color:#fff;">V<span style="color:var(--corp-gold)">.</span></a>
+  <ul class="nav-links" id="nav-menu">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#gallery">Work</a></li>
+    <li><a href="gallery.html?filter=corporate">Full Gallery</a></li>
+    <li><a href="#enquire">Book Now</a>
+        <a href="review-hub.html">Review Us</a></li>
+    <li><a href="pillar-radha.html" style="color:var(--radha-primary);">See Radha →</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="#enquire" class="btn btn-corp-cta">Book Veronica</a>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="corp-hero" id="hero">
+<div id="hero-3d" style="position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.45"></div>
+  <div class="corp-hero-bg">
+    <div class="corp-grid-lines"></div>
+    <div class="corp-spotlight"></div>
+  </div>
+  <div class="container corp-hero-content">
+    <div class="corp-eyebrow animate-fade-up">
+      <span class="corp-line"></span>
+      <span class="tag tag-corp">⚡ AI-Optimized C-Suite Hosting · @Veronica</span>
+      <span class="corp-line"></span>
+    </div>
+    <h1 class="corp-title animate-fade-up delay-1">
+      She Owns<br/>The <span class="gradient-text-corp">Stage.</span>
+    </h1>
+    <p class="corp-sub animate-fade-up delay-2">
+      High-voltage. Authoritative. Globally-neutral. The premier corporate MC who commands 10,000-seat tech auditoriums and steers intimate C-suite summits with absolute precision.
+    </p>
+    <div class="flex gap-2 animate-fade-up delay-3" style="flex-wrap:wrap;">
+      <a href="#enquire" class="btn btn-corp-primary magnetic-btn">Book for Your Event</a>
+      <a href="#gallery" class="btn btn-ghost magnetic-btn">View Corporate Work</a>
+    </div>
+    <div class="corp-stats-row animate-fade-up delay-4">
+      <div class="corp-stat"><span class="corp-stat-n">300+</span><span class="corp-stat-l">Corporate Events</span></div>
+      <div class="corp-stat-divider"></div>
+      <div class="corp-stat"><span class="corp-stat-n">50+</span><span class="corp-stat-l">MNC Clients</span></div>
+      <div class="corp-stat-divider"></div>
+      <div class="corp-stat"><span class="corp-stat-n">12</span><span class="corp-stat-l">Years Experience</span></div>
+    </div>
+  </div>
+  <div class="corp-scroll-line"></div>
+</section>
+
+<!-- ── AUTO-CYCLING VIDEO REEL ─────────────────────────────────────── -->
+<section class="section" id="videos" style="padding:0;background:#000;position:relative;overflow:hidden;">
+  <!-- Video container -->
+  <div style="position:relative;width:100%;padding-bottom:56.25%;max-height:80vh;overflow:hidden;">
+    <div id="vreel-veronica" style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;"></div>
+    <!-- Overlay gradient -->
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.8) 100%);z-index:2;pointer-events:none;"></div>
+    <!-- Labels -->
+    <div style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+      <div style="font-size:0.7rem;letter-spacing:3px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:0.5rem;">Veronica — Corporate Events</div>
+      <div id="vreel-title-veronica" style="font-size:1rem;color:#fff;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,0.8);max-width:400px;"></div>
+    </div>
+    <!-- Dot indicators -->
+    <div id="vreel-dots-veronica" style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:0.4rem;"></div>
+    <!-- Prev/Next controls -->
+    <button onclick="vreelPrev('veronica')" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">‹</button>
+    <button onclick="vreelNext('veronica')" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">›</button>
+  </div>
+  <!-- Thumbnail strip -->
+  <div id="vreel-strip-veronica" style="display:flex;gap:0.5rem;padding:0.75rem 1rem;background:#111;overflow-x:auto;scrollbar-width:none;"></div>
+</section>
+
+<script>
+(function(){
+  var videos_veronica = ["YGqdpcUXBpY", "SupXWnnW414", "UZ9kZyxQYT8"];
+  var titles_veronica = ["YGqdpcUXBpY", "SupXWnnW414", "UZ9kZyxQYT8"];
+  var cur_veronica = 0;
+  var timer_veronica = null;
+
+  function initReel_veronica(){
+    var strip = document.getElementById('vreel-strip-veronica');
+    var dots  = document.getElementById('vreel-dots-veronica');
+    videos_veronica.forEach(function(id, i){
+      var thumb = document.createElement('img');
+      thumb.src = 'https://i.ytimg.com/vi/'+id+'/mqdefault.jpg';
+      thumb.style.cssText = 'width:100px;height:56px;object-fit:cover;border-radius:0.4rem;cursor:pointer;opacity:'+(i===0?'1':'0.5')+';flex-shrink:0;transition:opacity .3s;border:2px solid '+(i===0?'"#8B5CF6"':'transparent');
+      thumb.onclick = function(){ playReel_veronica(i); };
+      thumb.id = 'vreel-th-veronica-'+i;
+      strip.appendChild(thumb);
+      var dot = document.createElement('div');
+      dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:'+(i===0?'"#8B5CF6"':'rgba(255,255,255,0.3)')+';cursor:pointer;transition:all .3s;';
+      dot.onclick = function(){ playReel_veronica(i); };
+      dot.id = 'vreel-dot-veronica-'+i;
+      dots.appendChild(dot);
+    });
+    playReel_veronica(0);
+  }
+
+  function playReel_veronica(idx){
+    if(timer_veronica) clearTimeout(timer_veronica);
+    cur_veronica = idx;
+    var id = videos_veronica[idx];
+    var container = document.getElementById('vreel-veronica');
+    container.innerHTML = '<iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/'+id+'?autoplay=1&mute=1&rel=0&modestbranding=1&controls=0&showinfo=0&loop=1&playlist='+id+'" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
+    // Update title
+    var titleEl = document.getElementById('vreel-title-veronica');
+    if(titleEl) titleEl.textContent = ''; // titles fetched dynamically
+    // Update dots/thumbs
+    videos_veronica.forEach(function(_, i){
+      var th  = document.getElementById('vreel-th-veronica-'+i);
+      var dot = document.getElementById('vreel-dot-veronica-'+i);
+      if(th)  { th.style.opacity  = i===idx?'1':'0.5'; th.style.border='2px solid '+(i===idx?'"#8B5CF6"':'transparent'); }
+      if(dot) dot.style.background = i===idx?'"#8B5CF6"':'rgba(255,255,255,0.3)';
+    });
+    // Auto-advance after 45s
+    timer_veronica = setTimeout(function(){
+      playReel_veronica((idx+1) % videos_veronica.length);
+    }, 45000);
+  }
+
+  window.vreelNext = window.vreelNext || function(){};
+  window.vreelPrev = window.vreelPrev || function(){};
+
+  // Override for this pillar
+  var _origNext = window.vreelNext;
+  window.vreelNext = function(p){
+    if(p==='veronica') playReel_veronica((cur_veronica+1) % videos_veronica.length);
+    else _origNext(p);
+  };
+  var _origPrev = window.vreelPrev;
+  window.vreelPrev = function(p){
+    if(p==='veronica') playReel_veronica((cur_veronica-1+videos_veronica.length) % videos_veronica.length);
+    else _origPrev(p);
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initReel_veronica);
+  else initReel_veronica();
+})();
+</script>
+
+
+<!-- CLIENT TICKER -->
+<div class="ticker-wrapper" style="background:rgba(255,255,255,0.02);">
+  <div class="ticker-track">
+    <div class="ticker-item">Google India</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Infosys</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>TATA Group</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Reliance Industries</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Deloitte</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Microsoft India</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>AWS Summit</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>CII Events</div>
+    <!-- duplicate -->
+    <div class="ticker-item">Google India</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Infosys</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>TATA Group</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Reliance Industries</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Deloitte</div>
+    <div class="ticker-item"><span class="ticker-dot" style="background:var(--corp-gold)"></span>Microsoft India</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="corp-about-grid">
+      <div class="reveal">
+        <div class="section-label">About Veronica</div>
+        <h2 class="display-md" style="margin-bottom:1.5rem;">The Voice That<br/><span class="gradient-text-corp">Defines the Room</span></h2>
+        <p style="color:rgba(255,255,255,0.65);line-height:1.9;margin-bottom:1.25rem;">
+          Veronica is not just a host. She is a brand ambassador, a crisis manager, and a crowd conductor — all in one. She reads the energy of a room in seconds and pivots to match it, every time.
+        </p>
+        <p style="color:rgba(255,255,255,0.65);line-height:1.9;margin-bottom:2rem;">
+          From product launches and AGMs to tech conferences and leadership summits — Veronica brings sharp, globally-neutral English and an undeniable stage presence that CEOs trust and audiences remember.
+        </p>
+        <div class="corp-traits">
+          <div class="corp-chip">🎤 Keynote MC</div>
+          <div class="corp-chip">💼 AGM &amp; Board Meets</div>
+          <div class="corp-chip">🚀 Product Launches</div>
+          <div class="corp-chip">🌐 International Conferences</div>
+          <div class="corp-chip">🏆 Awards Ceremonies</div>
+          <div class="corp-chip">📺 Live Streaming Host</div>
+        </div>
+      </div>
+      <div class="corp-about-visual reveal delay-2">
+        <div class="corp-photo-frame">
+          <img src="assets/media/veronica-hero.png" alt="Veronica - Corporate MC" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-lg);" />
+          <div class="corp-frame-accent top"></div>
+          <div class="corp-frame-accent bottom"></div>
+        </div>
+        <div class="corp-quote-badge">
+          <p>"The stage isn't a platform. It's a command centre."</p>
+          <span>— Veronica</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section" id="services" style="background:rgba(255,255,255,0.015);border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);">
+  <div class="container">
+    <div class="text-center reveal" style="margin-bottom:3rem;">
+      <div class="section-label">What Veronica Delivers</div>
+      <h2 class="display-md" style="margin-bottom:1rem;">Services &<br/><span class="gradient-text-corp">Specialisations</span></h2>
+      <div class="scarcity-badge">🔥 Calendar 85% Booked for 2026</div>
+    </div>
+    <div class="grid-3" style="gap:1.5rem;">
+      <div class="corp-service-card reveal">
+        <div class="corp-service-num">01</div>
+        <h3>Corporate MC &amp; Host</h3>
+        <p>Full-day conference hosting, panel moderation, and audience engagement. Controls the agenda, pace, and energy of your entire event.</p>
+        <div class="corp-service-tag">— contact for pricing</div>
+      </div>
+      <div class="corp-service-card reveal delay-1">
+        <div class="corp-service-num">02</div>
+        <h3>Product Launch Events</h3>
+        <p>High-energy, brand-aligned hosting for tech and FMCG product launches. Creates the narrative, builds the hype, delivers the reveal.</p>
+        <div class="corp-service-tag">— contact for pricing</div>
+      </div>
+      <div class="corp-service-card reveal delay-2">
+        <div class="corp-service-num">03</div>
+        <h3>Awards &amp; Gala Nights</h3>
+        <p>Corporate awards ceremonies, felicitation events, and annual galas. Elegant, witty, and precise — making every winner feel seen.</p>
+        <div class="corp-service-tag">— contact for pricing</div>
+      </div>
+      <div class="corp-service-card reveal delay-3">
+        <div class="corp-service-num">04</div>
+        <h3>Town Halls &amp; AGMs</h3>
+        <p>Large-scale town halls, shareholder meetings, and leadership conclaves. Neutral, professional, and authoritative execution.</p>
+        <div class="corp-service-tag">— contact for pricing</div>
+      </div>
+      <div class="corp-service-card reveal delay-4">
+        <div class="corp-service-num">05</div>
+        <h3>Tech Summits &amp; Conferences</h3>
+        <p>Multi-day technology conferences, startup summits, and innovation forums. Technical fluency combined with audience engagement.</p>
+        <div class="corp-service-tag">— contact for pricing/ day</div>
+      </div>
+      <div class="corp-service-card reveal delay-5">
+        <div class="corp-service-num">06</div>
+        <h3>The Friday Gateway Post</h3>
+        <p>Cross-platform collaboration linking corporate and celebration worlds. Veronica hyping up massive weekend events via Instagram collab with Radha.</p>
+        <div class="corp-service-tag">Instagram Collab</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="section" id="gallery">
+  <div class="container">
+    <div class="flex justify-between items-center reveal" style="margin-bottom:2rem;">
+      <div>
+        <div class="section-label">Stage Moments</div>
+        <h2 class="display-md">Corporate <span class="gradient-text-corp">Highlights</span></h2>
+      </div>
+      <a href="https://www.instagram.com/veronicaemcee/" target="_blank" class="btn btn-ghost">View Instagram →</a>
+    </div>
+    <div class="gallery-grid" id="corpGallery">
+      <div class="gallery-item" style="background-image:url('/assets/media/gallery/photos/IMG20241121115211.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG20241121115211.jpg" alt="Corporate event" loading="lazy" style="opacity:0;"/></div>
+      <div class="gallery-item" style="grid-row:span 2;background-image:url('/assets/media/gallery/photos/IMG20241121115246.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG20241121115246.jpg" alt="Stage hosting" loading="lazy" style="opacity:0;"/></div>
+      <div class="gallery-item" style="background-image:url('/assets/media/gallery/photos/IMG_20180310_175841.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG_20180310_175841.jpg" alt="Corporate 2018" loading="lazy" style="opacity:0;"/></div>
+      <div class="gallery-item"><img src="assets/media/veronica-hero.png" alt="Awards gala" loading="lazy" style="object-position:center 60%;"/></div>
+      <div class="gallery-item"><img src="assets/media/gallery-corp-1.png" alt="Conference" loading="lazy" style="object-position:left center;"/></div>
+      <div class="gallery-item"><img src="assets/media/veronica-hero.png" alt="Tech summit" loading="lazy" style="object-position:right center;"/></div>
+    </div>
+    <div style="text-align:center;margin-top:2rem;">
+      <a href="gallery.html?filter=corporate" class="btn btn-ghost">View Full Corporate Gallery →</a>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- LOCAL VIDEO REEL — Corporate Real Moments -->
+<section class="section" id="corp-local-videos" style="background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(10,10,15,0));padding:4rem 0 2rem;">
+  <div class="container">
+    <div class="reveal text-center" style="margin-bottom:2rem;">
+      <div class="section-label">On Stage</div>
+      <h2 class="display-sm">Real <span class="gradient-text-corp">Moments</span></h2>
+      <p style="color:var(--text-muted);margin-top:0.75rem;">Behind the mic — corporate events captured live.</p>
+    </div>
+    <div style="position:relative;max-width:900px;margin:0 auto 1.5rem;border-radius:1rem;overflow:hidden;background:#000;box-shadow:0 0 60px rgba(139,92,246,0.15);">
+      <video id="corp-local-vid" autoplay loop muted playsinline style="width:100%;max-height:70vh;object-fit:cover;display:block;"
+        src="/assets/media/gallery/videos/VID20210920120648.mp4"></video>
+      <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+        <div id="corp-vid-label" style="font-size:0.8rem;letter-spacing:2px;color:rgba(255,255,255,0.7);text-transform:uppercase;background:rgba(0,0,0,0.5);padding:0.35rem 1rem;border-radius:2rem;">Corporate Reel · Sep 2021</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto;" id="corp-vid-strip"></div>
+  </div>
+</section>
+<script>
+(function(){
+  var clips = [
+    { src:'/assets/media/gallery/videos/VID20210920120648.mp4', label:'Corporate Reel · Sep 2021' },
+    { src:'/assets/media/gallery/videos/video_20180310_175726.mp4', label:'Corporate Event · 2018' },
+    { src:'/assets/media/gallery/videos/VID20260204184449.mp4', label:'Corporate Show · 2026' }
+  ];
+  var strip = document.getElementById('corp-vid-strip');
+  var mainVid = document.getElementById('corp-local-vid');
+  var label = document.getElementById('corp-vid-label');
+  clips.forEach(function(clip, i){
+    var thumb = document.createElement('div');
+    thumb.style.cssText = 'width:120px;height:68px;border-radius:0.5rem;overflow:hidden;cursor:pointer;border:2px solid '+(i===0?'var(--corp-gold)':'transparent')+';flex-shrink:0;transition:all .3s;position:relative;background:#111;';
+    thumb.id = 'cvth-'+i;
+    var tv = document.createElement('video');
+    tv.src = clip.src; tv.muted = true; tv.preload = 'metadata';
+    tv.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+    tv.onmouseenter = function(){ tv.play(); };
+    tv.onmouseleave = function(){ tv.pause(); };
+    thumb.appendChild(tv);
+    thumb.onclick = function(){
+      mainVid.src = clip.src; mainVid.play();
+      if(label) label.textContent = clip.label;
+      clips.forEach(function(_,j){ var t=document.getElementById('cvth-'+j); if(t) t.style.border='2px solid '+(j===i?'var(--corp-gold)':'transparent'); });
+    };
+    strip.appendChild(thumb);
+  });
+})();
+</script>
+
+<!-- TESTIMONIAL CAROUSEL -->
+<section class="section testimonial-section" style="background:var(--corp-surface);">
+  <div class="container text-center reveal" style="margin-bottom:3rem;">
+    <div class="section-label">Industry Trust</div>
+    <h2 class="display-md">Executive <span class="gradient-text-corp">Endorsements</span></h2>
+  </div>
+  <div class="testimonial-track" id="corpTestimonials">
+    <div class="testimonial-slide">
+      <div class="testimonial-card">
+        <div class="testimonial-text">"Veronica doesn't just host the event; she elevates the entire brand. Her ability to keep a 5,000-person tech summit engaged for 8 hours straight is unparalleled."</div>
+        <div class="testimonial-author">Sarah Jenkins</div>
+        <div class="testimonial-role">CMO, TechGlobal Innovations</div>
+      </div>
+    </div>
+    <div class="testimonial-slide">
+      <div class="testimonial-card">
+        <div class="testimonial-text">"When the keynote speaker's flight was delayed by an hour, Veronica stepped in and held the room flawlessly. She is a crisis manager on stage."</div>
+        <div class="testimonial-author">Rajiv Menon</div>
+        <div class="testimonial-role">Director of Events, Horizon Group</div>
+      </div>
+    </div>
+    <div class="testimonial-slide">
+      <div class="testimonial-card">
+        <div class="testimonial-text">"Sharp, authoritative, and brilliantly articulate. She is our go-to host for every major product launch."</div>
+        <div class="testimonial-author">David Chen</div>
+        <div class="testimonial-role">VP Marketing, NexaCorp</div>
+      </div>
+    </div>
+  </div>
+  <div class="testimonial-controls">
+    <button class="tc-btn tc-prev">←</button>
+    <button class="tc-btn tc-next">→</button>
+  </div>
+</section>
+
+
+
+<!-- CROSS-PILLAR BRIDGE -->
+<section class="section" style="background:rgba(232,135,30,0.04);border-top:1px solid rgba(232,135,30,0.1);">
+  <div class="container text-center reveal">
+    <p style="font-family:var(--font-elegant);font-style:italic;font-size:1.2rem;color:var(--text-muted);margin-bottom:1rem;">Planning a family celebration or wedding?</p>
+    <h2 class="display-md" style="margin-bottom:0.5rem;">Meet <span class="gradient-text-radha">Radha</span></h2>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">The Bhakt — for sangeet, family events, and spiritual gatherings.</p>
+    <a href="booking.html?pillar=corp" class="btn btn-corp" style="margin-bottom:0.75rem;">⚡ Book Veronica</a>
+    <a href="pillar-radha.html" class="btn btn-radha">Discover Radha →</a>
+  </div>
+</section>
+
+<!-- ENQUIRY -->
+<section class="section" id="enquire">
+  <div class="container">
+    <div class="enquiry-wrap">
+      <div class="reveal">
+        <div class="section-label">Book Veronica</div>
+        <h2 class="display-md" style="margin-bottom:1rem;">Let's Make Your<br/><span class="gradient-text-corp">Event Unforgettable</span></h2>
+        <p style="color:var(--text-muted);margin-bottom:2rem;">Veronica's calendar fills fast. Secure your date early — every engagement is exclusive and personalised.</p>
+        <div id="corpQRBlock" style="padding:1.5rem;background:rgba(255,255,255,0.03);border:1px solid var(--border-subtle);border-radius:var(--radius-md);margin-bottom:1.5rem;">
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;">Pay token to confirm:</p>
+          <div id="corpQRContainer" style="width:160px;height:160px;background:rgba(255,255,255,0.04);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.8rem;">QR via Admin</div>
+        </div>
+        <a href="https://wa.me/918192901515" target="_blank" class="btn btn-corp-primary">WhatsApp Veronica</a>
+      </div>
+      <div class="reveal delay-2">
+        <form id="corpEnquiryForm" class="enquiry-form-wrap">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Name</label><input type="text" name="name" class="form-input" required placeholder="Full name"/></div>
+            <div class="form-group"><label class="form-label">Phone</label><input type="tel" name="phone" class="form-input" required placeholder="+91 XXXXX"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Work Email</label><input type="email" name="email" class="form-input" required placeholder="work@company.com"/></div>
+          <div class="form-group"><label class="form-label">Company / Organisation</label><input type="text" name="company" class="form-input" placeholder="Company name"/></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Event Type</label>
+              <select name="eventType" class="form-select" required>
+                <option value="" disabled selected>Select</option>
+                <option>Corporate Conference</option>
+                <option>Product Launch</option>
+                <option>Awards Ceremony</option>
+                <option>Town Hall / AGM</option>
+                <option>Tech Summit</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Event Date</label><input type="date" name="eventDate" class="form-input"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Expected Audience Size</label>
+            <select name="budget" class="form-select">
+              <option value="" disabled selected>Select size</option>
+              <option>Under 100</option>
+              <option>100–500</option>
+              <option>500–2000</option>
+              <option>2000–10000</option>
+              <option>10000+</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Brief</label><textarea name="message" class="form-textarea" placeholder="Event theme, location, requirements…"></textarea></div>
+          <button type="submit" class="btn btn-corp-primary" style="width:100%;justify-content:center;">🚀 Process via AI Lead-Scoring Engine</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOOGLE REVIEWS WIDGET -->
+<style>
+/* Reviews section styles */
+.reviews-section {
+  padding: 6rem 6%;
+  background: var(--navy-mid, #070f20);
+}
+
+.reviews-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.reviews-label {
+  font-size: 0.69rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold, #c9a84c);
+  margin-bottom: 0.9rem;
+}
+
+.reviews-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.9rem, 3.8vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--ivory, #f8f5ee);
+}
+
+.reviews-overall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: rgba(248, 245, 238, 0.62);
+}
+
+.reviews-stars-big {
+  color: var(--gold, #c9a84c);
+  font-size: 1.3rem;
+  letter-spacing: 0.15rem;
+}
+
+.reviews-rating-num {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold, #c9a84c);
+  margin-right: 0.5rem;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.4rem;
+  margin-top: 2.5rem;
+}
+
+.review-card {
+  background: rgba(3, 8, 18, 0.65);
+  border: 1px solid rgba(201, 168, 76, 0.11);
+  border-radius: 4px;
+  padding: 1.8rem;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.review-card:hover {
+  border-color: rgba(201, 168, 76, 0.38);
+  transform: translateY(-2px);
+}
+
+.review-card::before {
+  content: '"';
+  font-family: 'Playfair Display', serif;
+  font-size: 4.5rem;
+  color: rgba(201, 168, 76, 0.13);
+  position: absolute;
+  top: 0.8rem;
+  left: 1.4rem;
+  line-height: 1;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.review-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(201, 168, 76, 0.28);
+}
+
+.review-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(201, 168, 76, 0.18);
+  border: 1px solid rgba(201, 168, 76, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  color: var(--gold, #c9a84c);
+  font-weight: 600;
+}
+
+.review-info {
+  flex: 1;
+}
+
+.review-author {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ivory, #f8f5ee);
+  margin-bottom: 0.2rem;
+}
+
+.review-stars {
+  color: var(--gold, #c9a84c);
+  font-size: 0.85rem;
+  letter-spacing: 0.1rem;
+}
+
+.review-date {
+  font-size: 0.72rem;
+  color: rgba(248, 245, 238, 0.4);
+  margin-top: 0.15rem;
+}
+
+.review-text {
+  font-size: 0.9rem;
+  line-height: 1.82;
+  color: rgba(248, 245, 238, 0.62);
+  position: relative;
+  z-index: 1;
+}
+
+.reviews-cta {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.reviews-cta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--ivory, #f8f5ee);
+  padding: 0.9rem 2rem;
+  border: 1px solid rgba(248, 245, 238, 0.28);
+  border-radius: 2px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.reviews-cta a:hover {
+  border-color: rgba(201, 168, 76, 0.5);
+  color: var(--gold, #c9a84c);
+  background: rgba(201, 168, 76, 0.05);
+}
+
+.reviews-loading {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(248, 245, 238, 0.4);
+  font-size: 0.9rem;
+}
+
+.reviews-error {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
+  padding: 1.2rem;
+  text-align: center;
+  color: #e74c3c;
+  font-size: 0.88rem;
+}
+</style>
+
+<section class="reviews-section" id="reviews">
+  <div class="reviews-header">
+    <p class="reviews-label">✦ Client Testimonials</p>
+    <h2 class="reviews-title">Verified Google Reviews</h2>
+    <div class="reviews-overall" id="reviews-overall">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <div id="reviews-container">
+    <div class="reviews-loading">
+      <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+      <p>Loading reviews from Google...</p>
+    </div>
+  </div>
+
+  <div class="reviews-cta" id="reviews-cta" style="display: none;">
+    <a href="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID" target="_blank" rel="noopener">
+      <i class="fas fa-star"></i> Leave us a Google Review
+    </a>
+  </div>
+</section>
+
+<script>
+async function loadGoogleReviews() {
+  try {
+    const response = await fetch('/api/google-reviews');
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load reviews');
+    }
+
+    const { reviews, overall_rating, total_ratings, business_name, place_id } = data;
+    
+    if (place_id) {
+      const ctaLink = document.querySelector('#reviews-cta a');
+      if (ctaLink) ctaLink.href = `https://search.google.com/local/writereview?placeid=${place_id}`;
+    }
+
+    const overallContainer = document.getElementById('reviews-overall');
+    if (overall_rating && total_ratings) {
+      const stars = '★'.repeat(Math.floor(overall_rating)) + 
+                    (overall_rating % 1 >= 0.5 ? '⯨' : '') + 
+                    '☆'.repeat(5 - Math.ceil(overall_rating));
+      
+      overallContainer.innerHTML = `
+        <span class="reviews-stars-big">${stars}</span>
+        <span>
+          <span class="reviews-rating-num">${overall_rating.toFixed(1)}</span>
+          based on ${total_ratings} reviews
+        </span>
+      `;
+    }
+
+    const container = document.getElementById('reviews-container');
+    
+    if (reviews.length === 0) {
+      container.innerHTML = '<div class="reviews-loading"><p>No reviews yet. Be the first to leave a review!</p></div>';
+      document.getElementById('reviews-cta').style.display = 'block';
+      return;
+    }
+
+    const reviewsHTML = reviews.map(review => {
+      const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+      const date = new Date(review.time * 1000).toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'short' 
+      });
+      
+      const initials = review.author_name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+
+      const avatarHTML = review.profile_photo_url 
+        ? `<img src="${review.profile_photo_url}" alt="${review.author_name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="review-avatar-fallback" style="display:none;">${initials}</div>`
+        : `<div class="review-avatar-fallback">${initials}</div>`;
+
+      return `
+        <div class="review-card">
+          <div class="review-header">
+            ${avatarHTML}
+            <div class="review-info">
+              <div class="review-author">${review.author_name}</div>
+              <div class="review-stars">${stars}</div>
+              <div class="review-date">${date}</div>
+            </div>
+          </div>
+          <p class="review-text">${review.text || 'Amazing experience!'}</p>
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `<div class="reviews-grid">${reviewsHTML}</div>`;
+    document.getE

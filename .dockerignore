@@ -1,0 +1,10 @@
+node_modules
+.env
+database.sqlite
+uploads
+*.log
+.git
+.gitignore
+*.bak
+3-pillars-audio
+anti-gravity-studio-deploy.zip

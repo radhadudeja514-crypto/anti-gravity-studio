@@ -1,0 +1,281 @@
+/* assets/css/style.css – Glass‑morphism premium theme */
+:root {
+  --bg-primary: hsl(220, 15%, 8%);
+  --bg-card: hsla(220, 15%, 12%, 0.6);
+  --bg-glass: rgba(255, 255, 255, 0.08);
+  --text-primary: hsl(0, 0%, 95%);
+  --text-muted: hsl(0, 0%, 65%);
+  --accent-cyan: hsl(180, 100%, 60%);
+  --accent-magenta: hsl(330, 100%, 65%);
+  --accent-purple: hsl(260, 55%, 55%);
+  --radius: 12px;
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-glass);
+  padding: 1.5rem;
+}
+
+a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--accent-magenta);
+}
+
+button {
+  background: var(--bg-glass);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.6rem 1.2rem;
+  transition: background 0.2s, transform 0.1s;
+}
+
+button:hover {
+  background: var(--bg-card);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Micro‑animations */
+.animate-fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.6s forwards;
+}
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Gradient text utilities */
+.gradient-text-radha { background: linear-gradient(45deg, var(--accent-cyan), var(--accent-magenta)); -webkit-background-clip: text; color: transparent; }
+.gradient-text-corp { background: linear-gradient(45deg, var(--accent-purple), var(--accent-magenta)); -webkit-background-clip: text; color: transparent; }
+.gradient-text-tour { background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple)); -webkit-background-clip: text; color: transparent; }
+
+/* ── ELITE GIG BOOKING SYSTEM STYLES ── */
+.booking-hero {
+  padding: 8rem 0 3rem;
+  text-align: center;
+  background: radial-gradient(circle at 50% 10%, rgba(232,135,30,0.1) 0%, transparent 60%);
+}
+.booking-container {
+  max-width: 840px;
+  margin: 0 auto 6rem;
+  padding: 0 1.5rem;
+}
+.booking-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 3.5rem;
+}
+.booking-steps::before {
+  content: '';
+  position: absolute;
+  top: 20px; left: 10%; right: 10%;
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  z-index: 0;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1;
+  flex: 1;
+}
+.step-dot {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d0e12;
+  border: 2px solid rgba(255,255,255,0.08);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.step.active .step-dot {
+  border-color: var(--accent-cyan);
+  background: var(--accent-cyan);
+  color: #000;
+  box-shadow: 0 0 20px rgba(0,249,255,0.4);
+}
+.step-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: color 0.3s;
+}
+.step.active .step-label {
+  color: #fff;
+}
+.booking-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 3rem;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(10px);
+}
+.booking-card.page.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+.pillar-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin: 2.5rem 0;
+}
+.pillar-pill {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pillar-pill:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-cyan);
+  background: rgba(0,249,255,0.04);
+  box-shadow: 0 10px 30px rgba(0,249,255,0.15);
+}
+.pillar-pill.selected {
+  border-color: var(--accent-magenta);
+  background: rgba(255,0,170,0.06);
+  box-shadow: 0 12px 35px rgba(255,0,170,0.25);
+  transform: translateY(-5px);
+}
+.pillar-pill-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+.pillar-pill-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+.pillar-pill-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.qr-info {
+  background: rgba(0,249,255,0.05);
+  border: 1px solid rgba(0,249,255,0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+}
+.amt-btn {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 0.85rem 1.75rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-radius: 30px;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.amt-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+}
+.amt-btn.selected {
+  background: var(--accent-cyan);
+  color: #000;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0,249,255,0.3);
+}
+.qr-box {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 16px;
+  display: inline-block;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  margin: 1.5rem auto;
+}
+.upi-id-display {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  background: rgba(255,255,255,0.05);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  color: var(--accent-cyan);
+  margin-top: 1rem;
+}
+.wa-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #25d366;
+  color: #fff !important;
+  font-weight: 700;
+  padding: 0.9rem 2rem;
+  border-radius: 30px;
+  text-decoration: none;
+  box-shadow: 0 10px 25px rgba(37,211,102,0.3);
+  transition: all 0.3s ease;
+  margin-top: 1.5rem;
+}
+.wa-confirm:hover {
+  background: #20ba59;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(37,211,102,0.45);
+}
+
+@media(max-width:768px) {
+  .pillar-pills {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .booking-steps::before {
+    display: none;
+  }
+  .booking-steps {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .booking-card {
+    padding: 2rem 1.5rem;
+  }
+}
+
