@@ -1,10 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function(){
+  var pillar = document.body.dataset.pillar || '';
+  if(!pillar) return;
+  fetch('/api/agent/design/theme/' + pillar)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.success || !d.theme) return;
+      var t = d.theme;
+      var root = document.documentElement;
+      if(t.primary)  root.style.setProperty('--pillar-primary', t.primary);
+      if(t.accent)   root.style.setProperty('--pillar-accent', t.accent);
+      if(t.bg)       document.body.style.background = t.bg;
+    }).catch(function(){});
+})();
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veronica — Corporate Media Pillar | Anti Gravity Studio</title>
-  <meta name="description" content="Corporate videos, product shoots, and brand campaigns. Sophisticated. Strategic. Impactful.">
+  <title>Veronica — Corporate MC & Conference Host India | Anti Gravity Studio</title>
+  <meta name="description" content="Veronica — India's premier corporate MC. Keynote hosting, C-suite summits, product launches, tech conferences. Trusted by Google, Infosys, TATA, Reliance, Microsoft India.">
+  <meta name="keywords" content="corporate MC India, conference host Delhi, keynote emcee, corporate event anchor, product launch host, C-suite summit MC, tech conference host India, award ceremony anchor">
   <meta name="theme-color" content="#0a0a0f">
   <meta name="robots" content="index, follow">
 
@@ -15,19 +33,19 @@
 
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
-  <meta property="og:title"       content="Veronica — Corporate Media Pillar | Anti Gravity Studio">
-  <meta property="og:description" content="Corporate videos, product shoots, and brand campaigns. Sophisticated. Strategic. Impactful.">
+  <meta property="og:title"       content="Veronica — Corporate MC & Conference Host India | Anti Gravity Studio">
+  <meta property="og:description" content="Veronica — India's premier corporate MC. Keynote hosting, C-suite summits, product launches. Trusted by Google, Infosys, TATA, Reliance, Microsoft India.">
   <meta property="og:url"         content="https://antigravitystudio.in/pillar-veronica.html">
-  <meta property="og:image"       content="/assets/media/og-cover.jpg">
+  <meta property="og:image"       content="/assets/media/gallery/photos/IMG20241121115211.jpg">
   <meta property="og:site_name"   content="Anti Gravity Studio">
   <meta property="og:locale"      content="en_IN">
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:site"        content="@AntiGravityStudio">
-  <meta name="twitter:title"       content="Veronica — Corporate Media Pillar | Anti Gravity Studio">
-  <meta name="twitter:description" content="Corporate videos, product shoots, and brand campaigns. Sophisticated. Strategic. Impactful.">
-  <meta name="twitter:image"       content="/assets/media/og-cover.jpg">
+  <meta name="twitter:title"       content="Veronica — Corporate MC & Conference Host India | Anti Gravity Studio">
+  <meta name="twitter:description" content="India's premier corporate MC. Keynote hosting, C-suite summits, product launches. Trusted by Google, Infosys, TATA.">
+  <meta name="twitter:image"       content="/assets/media/gallery/photos/IMG20241121115211.jpg">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -48,26 +66,50 @@
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">{
   "@context": "https://schema.org",
-  "@type": "Service",
-  "name": "Corporate Media Production",
-  "provider": {
-    "@type": "LocalBusiness",
+  "@type": "Person",
+  "name": "Veronica",
+  "jobTitle": "Corporate MC & Conference Host",
+  "description": "India's premier corporate MC. Keynote hosting, C-suite summits, product launches, and tech conferences for top MNCs.",
+  "worksFor": {
+    "@type": "Organization",
     "name": "Anti Gravity Studio",
-    "url": "https://antigravitystudio.in"
+    "url": "https://antigravitystudio.in",
+    "logo": "https://antigravitystudio.in/assets/media/og-cover.jpg"
   },
-  "description": "Veronica Pillar — premium media services by Anti Gravity Studio.",
-  "areaServed": "IN"
+  "areaServed": ["Delhi", "Mumbai", "Bangalore", "India"],
+  "knowsAbout": ["Corporate Events", "Keynote Hosting", "Conference MC", "Product Launches", "Award Ceremonies"],
+  "url": "https://antigravitystudio.in/pillar-veronica.html"
 }</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+  // Load real Measurement ID from server config
+  fetch('/api/ga4-id').then(r=>r.json()).then(d=>{
+    if(d.id && d.id !== 'G-XXXXXXXXXX') {
+      gtag('config', d.id);
+      document.querySelectorAll('script[src*="gtag/js"]').forEach(s=>{
+        s.src = s.src.replace('G-XXXXXXXXXX', d.id);
+      });
+    }
+  }).catch(()=>{});
+</script>
 </head>
 <body data-pillar="corporate" class="corp-theme">
 
 <nav class="site-nav" id="site-nav">
   <a href="index.html" class="nav-logo" style="color:#fff;">V<span style="color:var(--corp-gold)">.</span></a>
   <ul class="nav-links" id="nav-menu">
+    <li><a href="index.html">Home</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#services">Services</a></li>
     <li><a href="#gallery">Work</a></li>
-    <li><a href="#enquire">Book Now</a></li>
+    <li><a href="gallery.html?filter=corporate">Full Gallery</a></li>
+    <li><a href="#enquire">Book Now</a>
+        <a href="review-hub.html">Review Us</a></li>
     <li><a href="pillar-radha.html" style="color:var(--radha-primary);">See Radha →</a></li>
   </ul>
   <div class="nav-cta">
@@ -109,6 +151,97 @@
   </div>
   <div class="corp-scroll-line"></div>
 </section>
+
+<!-- ── AUTO-CYCLING VIDEO REEL ─────────────────────────────────────── -->
+<section class="section" id="videos" style="padding:0;background:#000;position:relative;overflow:hidden;">
+  <!-- Video container -->
+  <div style="position:relative;width:100%;padding-bottom:56.25%;max-height:80vh;overflow:hidden;">
+    <div id="vreel-veronica" style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;"></div>
+    <!-- Overlay gradient -->
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.8) 100%);z-index:2;pointer-events:none;"></div>
+    <!-- Labels -->
+    <div style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+      <div style="font-size:0.7rem;letter-spacing:3px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:0.5rem;">Veronica — Corporate Events</div>
+      <div id="vreel-title-veronica" style="font-size:1rem;color:#fff;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,0.8);max-width:400px;"></div>
+    </div>
+    <!-- Dot indicators -->
+    <div id="vreel-dots-veronica" style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:0.4rem;"></div>
+    <!-- Prev/Next controls -->
+    <button onclick="vreelPrev('veronica')" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">‹</button>
+    <button onclick="vreelNext('veronica')" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">›</button>
+  </div>
+  <!-- Thumbnail strip -->
+  <div id="vreel-strip-veronica" style="display:flex;gap:0.5rem;padding:0.75rem 1rem;background:#111;overflow-x:auto;scrollbar-width:none;"></div>
+</section>
+
+<script>
+(function(){
+  var videos_veronica = ["YGqdpcUXBpY", "SupXWnnW414", "UZ9kZyxQYT8"];
+  var titles_veronica = ["YGqdpcUXBpY", "SupXWnnW414", "UZ9kZyxQYT8"];
+  var cur_veronica = 0;
+  var timer_veronica = null;
+
+  function initReel_veronica(){
+    var strip = document.getElementById('vreel-strip-veronica');
+    var dots  = document.getElementById('vreel-dots-veronica');
+    videos_veronica.forEach(function(id, i){
+      var thumb = document.createElement('img');
+      thumb.src = 'https://i.ytimg.com/vi/'+id+'/mqdefault.jpg';
+      thumb.style.cssText = 'width:100px;height:56px;object-fit:cover;border-radius:0.4rem;cursor:pointer;opacity:'+(i===0?'1':'0.5')+';flex-shrink:0;transition:opacity .3s;border:2px solid '+(i===0?'"#8B5CF6"':'transparent');
+      thumb.onclick = function(){ playReel_veronica(i); };
+      thumb.id = 'vreel-th-veronica-'+i;
+      strip.appendChild(thumb);
+      var dot = document.createElement('div');
+      dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:'+(i===0?'"#8B5CF6"':'rgba(255,255,255,0.3)')+';cursor:pointer;transition:all .3s;';
+      dot.onclick = function(){ playReel_veronica(i); };
+      dot.id = 'vreel-dot-veronica-'+i;
+      dots.appendChild(dot);
+    });
+    playReel_veronica(0);
+  }
+
+  function playReel_veronica(idx){
+    if(timer_veronica) clearTimeout(timer_veronica);
+    cur_veronica = idx;
+    var id = videos_veronica[idx];
+    var container = document.getElementById('vreel-veronica');
+    container.innerHTML = '<iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/'+id+'?autoplay=1&mute=1&rel=0&modestbranding=1&controls=0&showinfo=0&loop=1&playlist='+id+'" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
+    // Update title
+    var titleEl = document.getElementById('vreel-title-veronica');
+    if(titleEl) titleEl.textContent = ''; // titles fetched dynamically
+    // Update dots/thumbs
+    videos_veronica.forEach(function(_, i){
+      var th  = document.getElementById('vreel-th-veronica-'+i);
+      var dot = document.getElementById('vreel-dot-veronica-'+i);
+      if(th)  { th.style.opacity  = i===idx?'1':'0.5'; th.style.border='2px solid '+(i===idx?'"#8B5CF6"':'transparent'); }
+      if(dot) dot.style.background = i===idx?'"#8B5CF6"':'rgba(255,255,255,0.3)';
+    });
+    // Auto-advance after 45s
+    timer_veronica = setTimeout(function(){
+      playReel_veronica((idx+1) % videos_veronica.length);
+    }, 45000);
+  }
+
+  window.vreelNext = window.vreelNext || function(){};
+  window.vreelPrev = window.vreelPrev || function(){};
+
+  // Override for this pillar
+  var _origNext = window.vreelNext;
+  window.vreelNext = function(p){
+    if(p==='veronica') playReel_veronica((cur_veronica+1) % videos_veronica.length);
+    else _origNext(p);
+  };
+  var _origPrev = window.vreelPrev;
+  window.vreelPrev = function(p){
+    if(p==='veronica') playReel_veronica((cur_veronica-1+videos_veronica.length) % videos_veronica.length);
+    else _origPrev(p);
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initReel_veronica);
+  else initReel_veronica();
+})();
+</script>
+
 
 <!-- CLIENT TICKER -->
 <div class="ticker-wrapper" style="background:rgba(255,255,255,0.02);">
@@ -228,17 +361,68 @@
       <a href="https://www.instagram.com/veronicaemcee/" target="_blank" class="btn btn-ghost">View Instagram →</a>
     </div>
     <div class="gallery-grid" id="corpGallery">
-      <div class="gallery-item"><img src="assets/media/gallery-corp-1.png" alt="Corporate event" loading="lazy"/></div>
-      <div class="gallery-item" style="grid-row:span 2"><img src="assets/media/veronica-hero.png" alt="Stage hosting" loading="lazy"/></div>
-      <div class="gallery-item"><img src="assets/media/gallery-corp-1.png" alt="Product launch" loading="lazy" style="object-position:center 30%;"/></div>
+      <div class="gallery-item" style="background-image:url('/assets/media/gallery/photos/IMG20241121115211.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG20241121115211.jpg" alt="Corporate event" loading="lazy" style="opacity:0;"/></div>
+      <div class="gallery-item" style="grid-row:span 2;background-image:url('/assets/media/gallery/photos/IMG20241121115246.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG20241121115246.jpg" alt="Stage hosting" loading="lazy" style="opacity:0;"/></div>
+      <div class="gallery-item" style="background-image:url('/assets/media/gallery/photos/IMG_20180310_175841.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG_20180310_175841.jpg" alt="Corporate 2018" loading="lazy" style="opacity:0;"/></div>
       <div class="gallery-item"><img src="assets/media/veronica-hero.png" alt="Awards gala" loading="lazy" style="object-position:center 60%;"/></div>
       <div class="gallery-item"><img src="assets/media/gallery-corp-1.png" alt="Conference" loading="lazy" style="object-position:left center;"/></div>
       <div class="gallery-item"><img src="assets/media/veronica-hero.png" alt="Tech summit" loading="lazy" style="object-position:right center;"/></div>
+    </div>
+    <div style="text-align:center;margin-top:2rem;">
+      <a href="gallery.html?filter=corporate" class="btn btn-ghost">View Full Corporate Gallery →</a>
     </div>
   </div>
 </section>
 
 
+
+<!-- LOCAL VIDEO REEL — Corporate Real Moments -->
+<section class="section" id="corp-local-videos" style="background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(10,10,15,0));padding:4rem 0 2rem;">
+  <div class="container">
+    <div class="reveal text-center" style="margin-bottom:2rem;">
+      <div class="section-label">On Stage</div>
+      <h2 class="display-sm">Real <span class="gradient-text-corp">Moments</span></h2>
+      <p style="color:var(--text-muted);margin-top:0.75rem;">Behind the mic — corporate events captured live.</p>
+    </div>
+    <div style="position:relative;max-width:900px;margin:0 auto 1.5rem;border-radius:1rem;overflow:hidden;background:#000;box-shadow:0 0 60px rgba(139,92,246,0.15);">
+      <video id="corp-local-vid" autoplay loop muted playsinline style="width:100%;max-height:70vh;object-fit:cover;display:block;"
+        src="/assets/media/gallery/videos/VID20210920120648.mp4"></video>
+      <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+        <div id="corp-vid-label" style="font-size:0.8rem;letter-spacing:2px;color:rgba(255,255,255,0.7);text-transform:uppercase;background:rgba(0,0,0,0.5);padding:0.35rem 1rem;border-radius:2rem;">Corporate Reel · Sep 2021</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto;" id="corp-vid-strip"></div>
+  </div>
+</section>
+<script>
+(function(){
+  var clips = [
+    { src:'/assets/media/gallery/videos/VID20210920120648.mp4', label:'Corporate Reel · Sep 2021' },
+    { src:'/assets/media/gallery/videos/video_20180310_175726.mp4', label:'Corporate Event · 2018' },
+    { src:'/assets/media/gallery/videos/VID20260204184449.mp4', label:'Corporate Show · 2026' }
+  ];
+  var strip = document.getElementById('corp-vid-strip');
+  var mainVid = document.getElementById('corp-local-vid');
+  var label = document.getElementById('corp-vid-label');
+  clips.forEach(function(clip, i){
+    var thumb = document.createElement('div');
+    thumb.style.cssText = 'width:120px;height:68px;border-radius:0.5rem;overflow:hidden;cursor:pointer;border:2px solid '+(i===0?'var(--corp-gold)':'transparent')+';flex-shrink:0;transition:all .3s;position:relative;background:#111;';
+    thumb.id = 'cvth-'+i;
+    var tv = document.createElement('video');
+    tv.src = clip.src; tv.muted = true; tv.preload = 'metadata';
+    tv.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+    tv.onmouseenter = function(){ tv.play(); };
+    tv.onmouseleave = function(){ tv.pause(); };
+    thumb.appendChild(tv);
+    thumb.onclick = function(){
+      mainVid.src = clip.src; mainVid.play();
+      if(label) label.textContent = clip.label;
+      clips.forEach(function(_,j){ var t=document.getElementById('cvth-'+j); if(t) t.style.border='2px solid '+(j===i?'var(--corp-gold)':'transparent'); });
+    };
+    strip.appendChild(thumb);
+  });
+})();
+</script>
 
 <!-- TESTIMONIAL CAROUSEL -->
 <section class="section testimonial-section" style="background:var(--corp-surface);">
@@ -275,12 +459,15 @@
   </div>
 </section>
 
+
+
 <!-- CROSS-PILLAR BRIDGE -->
 <section class="section" style="background:rgba(232,135,30,0.04);border-top:1px solid rgba(232,135,30,0.1);">
   <div class="container text-center reveal">
     <p style="font-family:var(--font-elegant);font-style:italic;font-size:1.2rem;color:var(--text-muted);margin-bottom:1rem;">Planning a family celebration or wedding?</p>
     <h2 class="display-md" style="margin-bottom:0.5rem;">Meet <span class="gradient-text-radha">Radha</span></h2>
     <p style="color:var(--text-muted);margin-bottom:2rem;">The Bhakt — for sangeet, family events, and spiritual gatherings.</p>
+    <a href="booking.html?pillar=corp" class="btn btn-corp" style="margin-bottom:0.75rem;">⚡ Book Veronica</a>
     <a href="pillar-radha.html" class="btn btn-radha">Discover Radha →</a>
   </div>
 </section>
@@ -571,7 +758,7 @@ async function loadGoogleReviews() {
     
     if (place_id) {
       const ctaLink = document.querySelector('#reviews-cta a');
-      if (ctaLink) ctaLink.href = \`https://search.google.com/local/writereview?placeid=\${place_id}\`;
+      if (ctaLink) ctaLink.href = `https://search.google.com/local/writereview?placeid=${place_id}`;
     }
 
     const overallContainer = document.getElementById('reviews-overall');
@@ -580,13 +767,13 @@ async function loadGoogleReviews() {
                     (overall_rating % 1 >= 0.5 ? '⯨' : '') + 
                     '☆'.repeat(5 - Math.ceil(overall_rating));
       
-      overallContainer.innerHTML = \`
-        <span class="reviews-stars-big">\${stars}</span>
+      overallContainer.innerHTML = `
+        <span class="reviews-stars-big">${stars}</span>
         <span>
-          <span class="reviews-rating-num">\${overall_rating.toFixed(1)}</span>
-          based on \${total_ratings} reviews
+          <span class="reviews-rating-num">${overall_rating.toFixed(1)}</span>
+          based on ${total_ratings} reviews
         </span>
-      \`;
+      `;
     }
 
     const container = document.getElementById('reviews-container');
@@ -612,107 +799,24 @@ async function loadGoogleReviews() {
         .slice(0, 2);
 
       const avatarHTML = review.profile_photo_url 
-        ? \`<img src="\${review.profile_photo_url}" alt="\${review.author_name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-           <div class="review-avatar-fallback" style="display:none;">\${initials}</div>\`
-        : \`<div class="review-avatar-fallback">\${initials}</div>\`;
+        ? `<img src="${review.profile_photo_url}" alt="${review.author_name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="review-avatar-fallback" style="display:none;">${initials}</div>`
+        : `<div class="review-avatar-fallback">${initials}</div>`;
 
-      return \`
+      return `
         <div class="review-card">
           <div class="review-header">
-            \${avatarHTML}
+            ${avatarHTML}
             <div class="review-info">
-              <div class="review-author">\${review.author_name}</div>
-              <div class="review-stars">\${stars}</div>
-              <div class="review-date">\${date}</div>
+              <div class="review-author">${review.author_name}</div>
+              <div class="review-stars">${stars}</div>
+              <div class="review-date">${date}</div>
             </div>
           </div>
-          <p class="review-text">\${review.text || 'Amazing experience!'}</p>
+          <p class="review-text">${review.text || 'Amazing experience!'}</p>
         </div>
-      \`;
+      `;
     }).join('');
 
-    container.innerHTML = \`<div class="reviews-grid">\${reviewsHTML}</div>\`;
-    document.getElementById('reviews-cta').style.display = 'block';
-
-  } catch (error) {
-    console.error('Failed to load Google reviews:', error);
-    document.getElementById('reviews-container').innerHTML = \`
-      <div class="reviews-error">
-        <p>Unable to load reviews at this time.</p>
-        <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">\${error.message}</p>
-      </div>
-    \`;
-  }
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadGoogleReviews);
-} else {
-  loadGoogleReviews();
-}
-</script>
-
-<footer class="site-footer">
-  <div class="container footer-bottom" style="padding-top:2rem;">
-    <span style="font-family:var(--font-display);font-size:1.2rem;color:#fff;">V<span style="color:var(--corp-gold)">.</span></span>
-    <span style="color:var(--text-muted);font-size:0.85rem;">© 2025 Veronica. All rights reserved.</span>
-    <a href="https://www.instagram.com/veronicaemcee/" target="_blank" class="btn btn-ghost" style="padding:0.5rem 1rem;font-size:0.8rem;">Instagram</a>
-  </div>
-</footer>
-
-<a href="https://wa.me/918192901515" target="_blank" class="whatsapp-float">
-  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-</a>
-
-<script src="assets/js/utils.js"></script>
-<script src="assets/js/advanced.js"></script>
-
-
-<!-- VFX Suite -->
-<script src="assets/js/loader.js"></script>
-<script src="assets/js/cursor-fx.js"></script>
-<script src="assets/js/scroll-reveal.js"></script>
-<script src="assets/js/magnetic.js"></script>
-<script src="assets/js/ai-chat-widget.js"></script>
-
-<script>
-initEnquiryForm('corpEnquiryForm','Corporate');
-const qr = Config.get('qr_corporate');
-if(qr){const img=document.createElement('img');img.src=qr;img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:8px;';document.getElementById('corpQRContainer').innerHTML='';document.getElementById('corpQRContainer').appendChild(img);}
-Media.getByPillar('Corporate').then(corpMedia => {
-  if(corpMedia.length){const g=document.getElementById('corpGallery');g.innerHTML='';corpMedia.forEach(m=>{const d=document.createElement('div');d.className='gallery-item';d.innerHTML=`<img src="${m.url}" alt="${m.name}" loading="lazy"/>`;g.appendChild(d);});}
-});
-
-// Init Testimonials
-document.addEventListener('DOMContentLoaded', () => {
-  initTestimonials('corpTestimonials');
-});
-</script>
-
-<!-- STICKY BOOKING BAR -->
-<div class="sticky-booking-bar" id="stickyBookingBar">
-  <span class="sticky-bar-text">Secure your corporate event date</span>
-  <a href="#enquire" class="btn btn-corp-primary sticky-bar-btn magnetic-btn" style="padding:0.5rem 1.5rem;">Book Veronica</a>
-</div>
-
-
-
-<script>
-(function(){
-  try {
-    fetch('/api/analytics/view', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        page: location.pathname,
-        pillar: document.body.dataset.pillar || ''
-      })
-    }).catch(()=>{});
-  } catch(e) {}
-})();
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="/assets/js/three-hero.js"></script>
-</body>
-</html>
+    container.innerHTML = `<div class="reviews-grid">${reviewsHTML}</div>`;
+    document.getE

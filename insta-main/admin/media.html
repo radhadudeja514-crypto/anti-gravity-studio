@@ -73,7 +73,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
     <div class="card-header"><div class="card-title" style="color:var(--cyan);"><span class="icon">⬆️</span> UPLOAD MEDIA</div></div>
     <div class="grid-3" style="gap:1rem;margin-bottom:1rem;">
       <div class="form-group"><label class="form-label">Pillar</label>
-        <select class="form-select" id="uPillar"><option value="radha">🪔 Radha</option><option value="corporate">🎤 Corporate</option><option value="tour">🧭 Tour</option><option value="main">🌐 Main</option></select>
+        <select class="form-select" id="uPillar"><option value="radha">🪔 Radhaa</option><option value="corporate">🎤 Corporate</option><option value="tour">🧭 Tour</option><option value="main">🌐 Main</option></select>
       </div>
       <div class="form-group"><label class="form-label">Type</label>
         <select class="form-select" id="uType"><option value="photo">📷 Photo</option><option value="video">🎬 Video</option></select>
@@ -109,7 +109,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
         <label class="form-label">Pillar</label>
         <select id="ytPillar" class="form-select" style="height:110px">
           <option value="main">🌐 Main</option>
-          <option value="radha">💍 Radha</option>
+          <option value="radha">💍 Radhaa</option>
           <option value="corporate">🎤 Corporate</option>
           <option value="tour">🧭 Tour</option>
         </select>
@@ -170,7 +170,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
         <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
           Target Pillar: 
           <select id="gpPillar" class="form-select" style="display: inline-block; width: auto; padding: 0.25rem 0.5rem; font-size: 0.8rem; height: 32px;">
-            <option value="radha">🪔 Radha (Wedding)</option>
+            <option value="radha">🪔 Radhaa (Wedding)</option>
             <option value="corporate">🎤 Corporate</option>
             <option value="tour">🧭 Tour</option>
             <option value="main">🌐 Main</option>
@@ -209,8 +209,9 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
       <div class="card-title"><span class="icon">📁</span> GALLERY</div>
       <div class="filter-group">
         <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
-        <button class="filter-btn" onclick="setFilter('radha',this)">🪔 Radha</button>
+        <button class="filter-btn" onclick="setFilter('radha',this)">🪔 Radhaa</button>
         <button class="filter-btn" onclick="setFilter('corporate',this)">🎤 Corporate</button>
+          <button class="filter-btn" onclick="setFilter('veronica',this)">🎤 Veronica</button>
         <button class="filter-btn" onclick="setFilter('tour',this)">🧭 Tour</button>
       </div>
     </div>
@@ -531,7 +532,7 @@ function runAiEnhancement() {
   }, 160); // Total animation ~8 seconds
 
   async function finalizeEnhancement() {
-    const pillarMap = { radha: 'Radha', corporate: 'Corporate', tour: 'Tour', main: 'Main' };
+    const pillarMap = { radha: 'Radhaa', corporate: 'Corporate', tour: 'Tour', main: 'Main' };
     const targetPillar = pillarMap[document.getElementById('gpPillar').value] || 'Main';
     
     let successCount = 0;

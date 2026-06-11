@@ -46,6 +46,23 @@
 
   <!-- JSON-LD Structured Data -->
   
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+  // Load real Measurement ID from server config
+  fetch('/api/ga4-id').then(r=>r.json()).then(d=>{
+    if(d.id && d.id !== 'G-XXXXXXXXXX') {
+      gtag('config', d.id);
+      document.querySelectorAll('script[src*="gtag/js"]').forEach(s=>{
+        s.src = s.src.replace('G-XXXXXXXXXX', d.id);
+      });
+    }
+  }).catch(()=>{});
+</script>
 </head>
 <body>
 
@@ -146,7 +163,8 @@
   <!-- Page 3: QR Payment -->
   <div class="booking-card page" id="page3">
     <div class="section-label">Step 3 — Confirm with Token Payment</div>
-    <h2 style="margin:1rem 0 .5rem;">Pay Token via <span class="gradient-text-radha">UPI QR</span></h2>
+    <h2 style="margin:1rem 0 .5rem;"><img src="/assets/media/upi-qr.png" alt="UPI QR" style="width:160px;display:block;margin:0 auto 1rem;border-radius:0.5rem;background:#fff;padding:0.25rem;"/>
+      Pay Token via <span class="gradient-text-radha">UPI QR</span></h2>
     <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:1.5rem;">Pay a small token amount to block your date. Balance due on event day.</p>
 
     <!-- Generated Proposal Box -->
@@ -341,7 +359,9 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').cat
 <script>
 // Auto-select pillar from URL query param ?pillar=radha
 (function() {
-  const p = new URLSearchParams(location.search).get('pillar');
+  const rawP = new URLSearchParams(location.search).get('pillar');
+  const paramMap = { veronica: 'corp', corporate: 'corp' };
+  const p = paramMap[rawP] || rawP;
   if (p) {
     document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('pill-' + p);

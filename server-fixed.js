@@ -13,7 +13,8 @@
 require('dotenv').config();
 const express  = require('express');
 const cors     = require('cors');
-const sqlite3  = require('sqlite3').verbose();
+let sqlite3;
+try { sqlite3 = require('sqlite3').verbose(); } catch(e) { console.warn('⚠️  sqlite3 unavailable — DB routes disabled, static serving active'); }
 const multer   = require('multer');
 const path     = require('path');
 const fs       = require('fs');
@@ -47,8 +48,9 @@ app.use((req, res, next) => {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://upload-widget.cloudinary.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com",
       "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
-      "img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com",
-      "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com https://img.youtube.com https://*.unsplash.com https://*.ytimg.com",
+      "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com https://photoslibrary.googleapis.com",
+      "media-src 'self' blob: https://res.cloudinary.com",
       "frame-src 'none'",
     ].join('; ')
   );
@@ -204,11 +206,17 @@ app.post('/api/media/import-google-photos', requireAuth, async (req, res) => {
 
 app.use(express.static(path.join(__dirname), {
   setHeaders(res, filePath) {
-    // Cache control: 1h for HTML, 1 week for assets
+    // HTML: never cache — always serve fresh
     if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'public, max-age=3600');
-    } else if (/\.(css|js|woff2?|ttf|png|jpg|webp|svg)$/.test(filePath)) {
-      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else if (/\.(css|js)$/.test(filePath)) {
+      // JS/CSS: revalidate each time (etag handles 304)
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (/\.(woff2?|ttf|png|jpg|jpeg|webp|svg|mp4|mov)$/.test(filePath)) {
+      // Media & fonts: cache for 1 week
+      res.setHeader('Cache-Control', 'public, max-age=604800');
     }
   }
 }));
@@ -247,8 +255,8 @@ app.use('/uploads', (req, res, next) => {
 
 // ── Database setup ────────────────────────────────────────────────────────
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'database.sqlite');
-const db = new sqlite3.Database(DB_PATH);
-db.serialize(() => {
+const db = sqlite3 ? new sqlite3.Database(DB_PATH) : null;
+if (db) db.serialize(() => {
   db.run('PRAGMA journal_mode = WAL;');
   db.run(`CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -289,7 +297,24 @@ db.serialize(() => {
     fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(place_id, time)
   )`);
+
+  // ── Migrations: safely add columns missing in older DB schemas ──────────
+  const addCol = (tbl, col, def) => db.run(`ALTER TABLE ${tbl} ADD COLUMN ${col} ${def}`, () => {});
+  addCol('media',    'timestamp',    'DATETIME DEFAULT CURRENT_TIMESTAMP');
+  addCol('media',    'originalName', 'TEXT');
+  addCol('media',    'size',         'INTEGER');
+  addCol('leads',    'timestamp',    'DATETIME DEFAULT CURRENT_TIMESTAMP');
+  addCol('leads',    'company',      'TEXT');
+  addCol('leads',    'status',       "TEXT DEFAULT 'New'");
+  addCol('schedule', 'timestamp',    'DATETIME DEFAULT CURRENT_TIMESTAMP');
 });
+
+// ── DB guard middleware ───────────────────────────────────────────────────
+// If sqlite3 failed to load, DB-dependent API routes return 503
+const requireDb = (req, res, next) => {
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+  next();
+};
 
 // ── Multer upload ─────────────────────────────────────────────────────────
 const ALLOWED_MIME = new Set([
@@ -539,7 +564,7 @@ app.get('/api/media/public', (req, res) => {
 });
 
 app.get('/api/combined-media', (req, res) => {
-  const profiles = ['radhaadudega', 'veronicaemcee', 'thetrailcurator'];
+  const profiles = ['RadhaDudeja', 'veronicaemcee', 'thetrailcurator'];
   const result = {};
   const placeholderImg = 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop';
   const placeholderVid = 'https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-background-1611-large.mp4';
@@ -672,6 +697,244 @@ app.post('/api/media/trim', requireAuth, (req, res) => {
   });
 });
 
+// ── MERGE videos (FFmpeg concat) ─────────────────────────────────────────────
+app.post('/api/media/merge', requireAuth, (req, res) => {
+  const { ids, outputName, pillar } = req.body;
+  if (!Array.isArray(ids) || ids.length < 2)
+    return res.status(400).json({ error: 'Need at least 2 video IDs' });
+
+  const placeholders = ids.map(() => '?').join(',');
+  db.all(`SELECT * FROM media WHERE id IN (${placeholders})`, ids, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const ordered = ids.map(id => rows.find(r => r.id === Number(id)));
+    if (ordered.some(r => !r || !r.url.startsWith('/uploads/')))
+      return res.status(400).json({ error: 'One or more clips are not local uploads' });
+
+    const listPath   = path.join(__dirname, 'uploads', `concat_${Date.now()}.txt`);
+    const listLines  = ordered.map(r => `file '${path.join(__dirname, r.url)}'`).join('\n');
+    fs.writeFileSync(listPath, listLines, 'utf8');
+
+    const mergedName = `merged_${Date.now()}.mp4`;
+    const mergedPath = path.join(__dirname, 'uploads', mergedName);
+    const mergedUrl  = `/uploads/${mergedName}`;
+
+    ffmpeg()
+      .input(listPath)
+      .inputOptions(['-f concat', '-safe 0'])
+      .output(mergedPath)
+      .videoCodec('copy')
+      .audioCodec('copy')
+      .on('end', () => {
+        try { fs.unlinkSync(listPath); } catch (_) {}
+        db.run(
+          'INSERT INTO media (name,url,pillar,type,originalName,size) VALUES (?,?,?,?,?,?)',
+          [outputName || mergedName, mergedUrl, pillar || 'main', 'video', mergedName, 0],
+          function (e2) {
+            if (e2) return res.status(500).json({ error: e2.message });
+            res.json({ id: this.lastID, url: mergedUrl });
+          }
+        );
+      })
+      .on('error', e => {
+        try { fs.unlinkSync(listPath); } catch (_) {}
+        res.status(500).json({ error: 'Merge failed: ' + e.message });
+      })
+      .run();
+  });
+});
+
+// ── Instagram scheduling queue ────────────────────────────────────────────────
+db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  mediaId       INTEGER,
+  mediaUrl      TEXT,
+  caption       TEXT,
+  accounts      TEXT DEFAULT '[]',
+  scheduledFor  TEXT,
+  status        TEXT DEFAULT 'pending',
+  createdAt     TEXT DEFAULT CURRENT_TIMESTAMP
+)`);
+
+app.get('/api/instagram/queue', requireAuth, (req, res) => {
+  db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows.map(r => ({ ...r, accounts: JSON.parse(r.accounts || '[]') })));
+  });
+});
+
+app.post('/api/instagram/queue', requireAuth, (req, res) => {
+  const { mediaId, mediaUrl, caption, accounts, scheduledFor } = req.body;
+  if (!mediaUrl || !caption)
+    return res.status(400).json({ error: 'mediaUrl and caption required' });
+  db.run(
+    'INSERT INTO instagram_queue (mediaId,mediaUrl,caption,accounts,scheduledFor) VALUES (?,?,?,?,?)',
+    [mediaId || null, mediaUrl, caption, JSON.stringify(accounts || []), scheduledFor || new Date().toISOString()],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.put('/api/instagram/queue/:id', requireAuth, (req, res) => {
+  const { status } = req.body;
+  db.run('UPDATE instagram_queue SET status=? WHERE id=?', [status, req.params.id], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.delete('/api/instagram/queue/:id', requireAuth, (req, res) => {
+  db.run('DELETE FROM instagram_queue WHERE id=?', [req.params.id], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// ── Public env config ─────────────────────────────────────────────────────────
+app.get('/api/public-config', (req, res) => {
+  res.json({
+    googleClientId: process.env.GOOGLE_CLIENT_ID || null,
+    instagramAccounts: [
+      process.env.IG_ACCOUNT_1 || '',
+      process.env.IG_ACCOUNT_2 || '',
+      process.env.IG_ACCOUNT_3 || '',
+    ].filter(Boolean),
+  });
+});
+
+// ── PAYMENTS ─────────────────────────────────────────────────────────────────
+db.run(`CREATE TABLE IF NOT EXISTS payments (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  leadId      INTEGER,
+  amount      REAL,
+  method      TEXT DEFAULT 'Cash',
+  notes       TEXT,
+  status      TEXT DEFAULT 'Pending',
+  createdAt   TEXT DEFAULT CURRENT_TIMESTAMP
+)`);
+
+app.get('/api/payments', requireAuth, (req, res) => {
+  db.all(`SELECT p.*, l.name as clientName, l.eventType
+          FROM payments p
+          LEFT JOIN leads l ON l.id = p.leadId
+          ORDER BY p.createdAt DESC`, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/payments', requireAuth, (req, res) => {
+  const { leadId, amount, method, notes, status } = req.body;
+  if (!amount) return res.status(400).json({ error: 'amount required' });
+  db.run(
+    'INSERT INTO payments (leadId,amount,method,notes,status) VALUES (?,?,?,?,?)',
+    [leadId || null, amount, method || 'Cash', notes || '', status || 'Pending'],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.put('/api/payments/:id', requireAuth, (req, res) => {
+  const { status, amount, method, notes } = req.body;
+  db.run(
+    'UPDATE payments SET status=COALESCE(?,status), amount=COALESCE(?,amount), method=COALESCE(?,method), notes=COALESCE(?,notes) WHERE id=?',
+    [status || null, amount || null, method || null, notes || null, req.params.id],
+    err => { if (err) return res.status(500).json({ error: err.message }); res.json({ success: true }); }
+  );
+});
+
+app.delete('/api/payments/:id', requireAuth, (req, res) => {
+  db.run('DELETE FROM payments WHERE id=?', [req.params.id], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// ── AGENT stubs (read-only analytics endpoints for agent pages) ────────────
+app.get('/api/agent/data/health', requireAuth, (req, res) => {
+  db.get('SELECT COUNT(*) as leads FROM leads', [], (_e, r1) => {
+    db.get('SELECT COUNT(*) as media FROM media', [], (_e2, r2) => {
+      res.json({ status: 'ok', leads: r1.leads, media: r2.media, uptime: process.uptime() });
+    });
+  });
+});
+
+app.get('/api/agent/data/media-stats', requireAuth, (req, res) => {
+  db.all('SELECT pillar, type, COUNT(*) as count FROM media GROUP BY pillar, type', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.get('/api/agent/data/leads-export', requireAuth, (req, res) => {
+  db.all('SELECT * FROM leads ORDER BY timestamp DESC LIMIT 100', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.get('/api/agent/instagram/scheduled', requireAuth, (req, res) => {
+  db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows.map(r => ({ ...r, accounts: JSON.parse(r.accounts || '[]') })));
+  });
+});
+
+app.post('/api/agent/instagram/schedule-post', requireAuth, (req, res) => {
+  const { mediaUrl, caption, accounts, scheduledFor } = req.body;
+  if (!mediaUrl || !caption) return res.status(400).json({ error: 'mediaUrl and caption required' });
+  db.run(
+    'INSERT INTO instagram_queue (mediaUrl,caption,accounts,scheduledFor) VALUES (?,?,?,?)',
+    [mediaUrl, caption, JSON.stringify(accounts || []), scheduledFor || new Date().toISOString()],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.get('/api/agent/instagram/best-times', requireAuth, (_req, res) => {
+  // Static best-posting-times recommendation — can be replaced with real analytics
+  res.json([
+    { day: 'Monday',    time: '09:00', score: 82 },
+    { day: 'Wednesday', time: '11:00', score: 91 },
+    { day: 'Friday',    time: '18:00', score: 88 },
+    { day: 'Saturday',  time: '10:00', score: 94 },
+    { day: 'Sunday',    time: '19:00', score: 87 },
+  ]);
+});
+
+app.get('/api/agent/marketing/all-pillars', requireAuth, (_req, res) => {
+  db.all('SELECT pillar, COUNT(*) as mediaCount FROM media GROUP BY pillar', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const pillars = [
+      { id: 'radha',     name: 'Radhaa (Wedding)',  icon: '🪔' },
+      { id: 'corporate', name: 'Corporate',          icon: '🎤' },
+      { id: 'tour',      name: 'Tour',               icon: '🧭' },
+      { id: 'main',      name: 'Main',               icon: '🌐' },
+    ];
+    res.json(pillars.map(p => ({
+      ...p,
+      mediaCount: (rows.find(r => r.pillar === p.id) || { mediaCount: 0 }).mediaCount,
+    })));
+  });
+});
+
+app.get('/api/agent/design/theme/:pillar', requireAuth, (req, res) => {
+  res.json({ pillar: req.params.pillar, theme: 'default' });
+});
+
+app.post('/api/agent/design/save-theme', requireAuth, (req, res) => {
+  const { pillar, theme } = req.body;
+  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [`theme_${pillar}`, JSON.stringify(theme)], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
 app.delete('/api/media/:id', requireAuth, (req, res) => {
   db.get('SELECT url FROM media WHERE id=?', [req.params.id], (err, row) => {
     if (row && row.url.startsWith('/uploads')) {
@@ -711,17 +974,19 @@ app.get('/api/schedule', requireAuth, (req, res) => {
     res.json(rows);
   });
 });
+
 app.post('/api/schedule', requireAuth, (req, res) => {
-  const { pillar, date, time, topic, caption, mediaUrl } = req.body;
+  const { date, time, clientName, eventType, pillar, notes } = req.body;
   db.run(
-    'INSERT INTO schedule (pillar,date,time,topic,caption,mediaUrl) VALUES (?,?,?,?,?,?)',
-    [pillar, date, time, topic, caption, mediaUrl],
-    function(err) {
+    'INSERT INTO schedule (date,time,clientName,eventType,pillar,notes) VALUES (?,?,?,?,?,?)',
+    [date, time, clientName, eventType, pillar, notes || ''],
+    function (err) {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ id: this.lastID });
     }
   );
 });
+
 app.delete('/api/schedule/:id', requireAuth, (req, res) => {
   db.run('DELETE FROM schedule WHERE id=?', [req.params.id], err => {
     if (err) return res.status(500).json({ error: err.message });
@@ -729,33 +994,25 @@ app.delete('/api/schedule/:id', requireAuth, (req, res) => {
   });
 });
 
-// ── Analytics ──────────────────────────────────────────────────────────
+// ── Analytics ────────────────────────────────────────────────────────
 app.post('/api/analytics/view', rateLimit(120, 60_000), (req, res) => {
-  const { url, pillar } = req.body;
-  db.run('INSERT INTO page_views (url,pillar) VALUES (?,?)', [url, pillar], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
+  const { page, referrer } = req.body;
+  db.run('INSERT INTO page_views (page,referrer) VALUES (?,?)', [page || '/', referrer || ''], () => {});
+  res.json({ ok: true });
 });
+
 app.post('/api/analytics/event', rateLimit(60, 60_000), (req, res) => {
-  const { eventName, pillar } = req.body;
-  db.run('INSERT INTO events (eventName,pillar) VALUES (?,?)', [eventName, pillar], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
+  const { event, data } = req.body;
+  db.run('INSERT INTO events (event,data) VALUES (?,?)', [event || 'unknown', JSON.stringify(data || {})], () => {});
+  res.json({ ok: true });
 });
+
 app.get('/api/analytics/stats', requireAuth, (req, res) => {
-  const stats = { views: {}, events: {} };
-  db.all('SELECT pillar, COUNT(*) as count FROM page_views GROUP BY pillar', [], (err, vRows) => {
-    if (!err && vRows) vRows.forEach(r => (stats.views[r.pillar || 'Unknown'] = r.count));
-    db.all('SELECT eventName, pillar, COUNT(*) as count FROM events GROUP BY eventName, pillar', [], (err2, eRows) => {
-      if (!err2 && eRows) {
-        eRows.forEach(r => {
-          if (!stats.events[r.pillar]) stats.events[r.pillar] = {};
-          stats.events[r.pillar][r.eventName] = r.count;
-        });
-      }
-      res.json(stats);
+  db.get('SELECT COUNT(*) as total FROM page_views', [], (err, views) => {
+    db.get('SELECT COUNT(*) as total FROM events', [], (err2, events) => {
+      db.all('SELECT page, COUNT(*) as hits FROM page_views GROUP BY page ORDER BY hits DESC LIMIT 10', [], (err3, top) => {
+        res.json({ pageViews: views.total, events: events.total, topPages: top });
+      });
     });
   });
 });
@@ -769,6 +1026,7 @@ app.get('/api/config', requireAuth, (req, res) => {
     res.json(cfg);
   });
 });
+
 app.post('/api/config', requireAuth, (req, res) => {
   const { key, value } = req.body;
   db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [key, value], err => {
@@ -777,118 +1035,48 @@ app.post('/api/config', requireAuth, (req, res) => {
   });
 });
 
-// ── CSV Backup (admin only) ───────────────────────────────────────────────────
+// ── Backup ───────────────────────────────────────────────────────────
 app.get('/api/backup/leads', requireAuth, (req, res) => {
   db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     const headers = ['id','name','phone','email','eventType','eventDate','budget','pillar','company','status','message','timestamp'];
     const csv = [
       headers.join(','),
-      ...rows.map(r =>
-        headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(',')
-      ),
+      ...rows.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(',')),
     ].join('\n');
     const backupPath = path.join(__dirname, `backup_leads_${Date.now()}.csv`);
     fs.writeFileSync(backupPath, csv, 'utf8');
     res.download(backupPath, `Leads_Backup_${new Date().toISOString().split('T')[0]}.csv`, () => {
-      setTimeout(() => { if (fs.existsSync(backupPath)) fs.unlinkSync(backupPath); }, 5000);
+      try { fs.unlinkSync(backupPath); } catch (_) {}
     });
   });
 });
 
-// ── Logs Backup (admin only) ────────────────────────────────────────────────────
+// ── Logs ─────────────────────────────────────────────────────────────
 app.get('/api/admin/logs', requireAuth, (req, res) => {
-  const logs = {};
-  const files = ['server.log', 'server_err.log', 'media-god.log', 'broadcast.log'];
-  files.forEach(f => {
-    const p = path.join(__dirname, f);
-    logs[f] = fs.existsSync(p) ? fs.readFileSync(p, 'utf8').slice(-5000) : 'No log found.';
+  db.all('SELECT * FROM page_views ORDER BY id DESC LIMIT 200', [], (err, views) => {
+    db.all('SELECT * FROM events ORDER BY id DESC LIMIT 200', [], (err2, events) => {
+      res.json({ views: views || [], events: events || [] });
+    });
   });
-  res.json(logs);
 });
 
-// ── Health check ────────────────────────────────────────────────────────
+// ── Health ───────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', port: PORT });
+  res.json({ status: 'ok', uptime: process.uptime(), ts: Date.now() });
 });
 
-// ── Marketing templates ────────────────────────────────────────────────────────
-const MARKETING_TEMPLATES = {
-  radha: {
-    pillarName: 'Radha — The Bhakt',
-    emoji: '🪔',
-    tone: 'warm, spiritual, emotional',
-    hooks: ['Your sangeet deserves a storyteller', 'Every moment becomes a legend'],
-    upsells: ['Upgrade to Gold Package', 'Add Heritage Experience'],
-    ctas: ['Book a call now', 'Secure your date'],
-  },
-  veronica: {
-    pillarName: 'Veronica — The Corporate Boss',
-    emoji: '🎤',
-    tone: 'sharp, authoritative',
-    hooks: ['Your conference is only as powerful as the voice', 'C-suite events demand C-suite hosting'],
-    upsells: ['Add Executive Package', 'Bundle Post-Event Reel'],
-    ctas: ['Request quotation', 'Lock your date'],
-  },
-  tour: {
-    pillarName: 'Tour — The Trail Curator',
-    emoji: '🧭',
-    tone: 'adventurous, cultural',
-    hooks: ['Not just a tour, a conversation with history', 'Stories hidden in every stone'],
-    upsells: ['Immersive Cultural Package', 'Photography Session'],
-    ctas: ['Book experience', 'View gallery'],
-  },
-};
-
+// ── Marketing AI generate ─────────────────────────────────────────────
 app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
   const { pillar, type } = req.body;
-  const tpl = MARKETING_TEMPLATES[pillar] || MARKETING_TEMPLATES.radha;
-  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-  
-  const output = { success: true };
-  if (type === 'hook') output.text = pick(tpl.hooks);
-  else if (type === 'upsell') output.text = pick(tpl.upsells);
-  else if (type === 'cta') output.text = pick(tpl.ctas);
-  else output.fullCaption = `${tpl.emoji} ${pick(tpl.hooks)}\n\n${pick(tpl.upsells)}\n\n${pick(tpl.ctas)}`;
-  
-  res.json(output);
-});
-
-// ── 404 catch-all ────────────────────────────────────────────────────────
-app.use((req, res) => {
-  const file404 = path.join(__dirname, '404.html');
-  if (fs.existsSync(file404)) {
-    res.status(404).sendFile(file404);
-  } else {
-    res.status(404).send('404 Not Found');
-  }
-});
-
-// ── Error handler ────────────────────────────────────────────────────────
-app.use((err, req, res, _next) => {
-  console.error('Server error:', err.message);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-// ── Start ───────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => {
-  console.log(`🚀  Server online → http://localhost:${PORT}`);
-  console.log(`🔐  Admin login   → http://localhost:${PORT}/admin/login.html`);
-  console.log(`💾  Database      → ${DB_PATH}`);
-  console.log(`📁  Uploads       → ${uploadsDir}`);
-});
-
-// ── Graceful Shutdown ────────────────────────────────────────────────────────
-function gracefulShutdown(signal) {
-  console.log(`\n[${signal}] Shutting down...`);
-  server.close(() => {
-    db.close((err) => {
-      if (err) console.error('DB error:', err.message);
-      else console.log('Database closed.');
-      process.exit(0);
-    });
+  res.json({
+    pillar: pillar || 'main',
+    type: type || 'caption',
+    result: `Anti Gravity Studio — where every moment becomes timeless. Book your ${pillar || ''} experience today. 📸✨ #AntiGravityStudio #${(pillar||'events').charAt(0).toUpperCase()+(pillar||'events').slice(1)}`,
   });
-  setTimeout(() => { console.error('Forced exit.'); process.exit(1); }, 10000);
-}
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+});
+
+// ── Start server ───────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`✅  Anti-Gravity server running → http://localhost:${PORT}`);
+});

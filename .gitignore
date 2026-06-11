@@ -2,6 +2,8 @@ node_modules/
 .env
 database.sqlite
 database.sqlite-journal
+database.sqlite-shm
+database.sqlite-wal
 uploads/
 *.log
 broadcast.log

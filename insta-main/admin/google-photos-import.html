@@ -236,7 +236,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
 <script>
 // ── CONFIG ───────────────────────────────────────────────────────────────
 const SCOPES = 'https://www.googleapis.com/auth/photoslibrary.readonly';
-const REDIRECT = location.origin + '/api/google-photos/callback';
+const REDIRECT = location.origin + location.pathname;
 let CLIENT_ID = localStorage.getItem('gp_client_id') || '';
 let ACCESS_TOKEN = null;
 
@@ -279,34 +279,23 @@ let currentSearch = null;
 // ── INIT ─────────────────────────────────────────────────────────────────
 document.getElementById('redirect-uri-display').textContent = REDIRECT;
 
-// Auto-load CLIENT_ID from server config, fall back to localStorage
-(async function initClientId() {
-  try {
-    const cfg = await fetch('/api/public-config').then(r => r.json());
-    if (cfg.googleClientId) {
-      CLIENT_ID = cfg.googleClientId;
-      localStorage.setItem('gp_client_id', CLIENT_ID);
-    }
-  } catch(e) {}
-  if (CLIENT_ID) {
-    document.getElementById('client-id-input').value = CLIENT_ID;
-    document.getElementById('connect-btn').disabled = false;
-    document.getElementById('connect-btn').style.opacity = '1';
-    document.getElementById('connect-btn').style.cursor = 'pointer';
+if (CLIENT_ID) {
+  document.getElementById('client-id-input').value = CLIENT_ID;
+  document.getElementById('connect-btn').disabled = false;
+  document.getElementById('connect-btn').style.opacity = '1';
+  document.getElementById('connect-btn').style.cursor = 'pointer';
+}
+
+// Check if we already have a token in the URL hash (OAuth callback)
+(function checkCallback() {
+  const hash = new URLSearchParams(location.hash.replace('#',''));
+  const token = hash.get('access_token');
+  if (token) {
+    ACCESS_TOKEN = token;
+    history.replaceState(null, '', location.pathname); // clean URL
+    onAuthenticated();
   }
 })();
-
-// Listen for token posted back from the OAuth popup
-window.addEventListener('message', (e) => {
-  if (e.data && e.data.type === 'gp_token') {
-    const hash = new URLSearchParams(e.data.hash.replace('#',''));
-    const token = hash.get('access_token');
-    if (token) {
-      ACCESS_TOKEN = token;
-      onAuthenticated();
-    }
-  }
-});
 
 // ── AUTH ─────────────────────────────────────────────────────────────────
 function saveClientId() {
@@ -321,7 +310,7 @@ function saveClientId() {
 }
 
 function connectGoogle() {
-  if (!CLIENT_ID) { alert('Client ID not found. Check server .env → GOOGLE_CLIENT_ID.'); return; }
+  if (!CLIENT_ID) { alert('Paste your Google OAuth Client ID first.'); return; }
   const params = new URLSearchParams({
     client_id:     CLIENT_ID,
     redirect_uri:  REDIRECT,
@@ -329,9 +318,7 @@ function connectGoogle() {
     scope:         SCOPES,
     prompt:        'consent',
   });
-  const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
-  const popup = window.open(url, 'gp_oauth', 'width=500,height=650,left=200,top=100');
-  if (!popup) { alert('Popup blocked — please allow popups for this page and try again.'); }
+  location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
 }
 
 async function onAuthenticated() {

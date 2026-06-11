@@ -43,11 +43,28 @@
   </url>
 
   <url>
+    <loc>https://antigravitystudio.in/gallery.html</loc>
+    <lastmod>2026-06-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://antigravitystudio.in/gallery.html"/>
+  </url>
+
+    <url>
     <loc>https://antigravitystudio.in/media-kit.html</loc>
-    <lastmod>2026-05-12</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://antigravitystudio.in/media-kit.html"/>
+  </url>
+
+
+  <url>
+    <loc>https://antigravitystudio.in/review-hub.html</loc>
+    <lastmod>2026-06-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://antigravitystudio.in/review-hub.html"/>
   </url>
 
 </urlset>

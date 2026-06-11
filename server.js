@@ -542,7 +542,7 @@ app.get('/api/backup/leads', requireAuth, (req, res) => {
 
 // ── AGENT / AI ENDPOINTS ──────────────────────────────────────────────────────
 const pillarsData = {
-  radha:     { name:'Radha (Wedding)', desc:'Destination weddings, sangeet, heirloom photography', price:'Contact for pricing' },
+  radha:     { name:'Radhaa (Wedding)', desc:'Destination weddings, sangeet, heirloom photography', price:'Contact for pricing' },
   corporate: { name:'Veronica (Corporate)', desc:'Bilingual MC, conferences, product launches', price:'Contact for pricing' },
   tour:      { name:'Trail Curator', desc:'Heritage walks, mountain treks, cultural experiences', price:'Contact for pricing' }
 };
@@ -712,18 +712,18 @@ app.post('/api/feedback/:id/resolve', requireAuth, (req, res) => {
 // Keyword-rich reply templates (double-crawler: review + reply both indexed)
 const GMB_REPLY_TEMPLATES = {
   5: [
-    name => `Thank you so much, ${name}! It was a joy and an honour to be your anchor/emcee. At Anti Gravity Studio, Radha puts her heart into every event - from sangeet nights and weddings to corporate conferences across India. Looking forward to being part of your next celebration!`,
-    name => `${name}, your kind words mean the world to us! Radha and the Anti Gravity Studio team pour their soul into every performance - whether it is a wedding, sangeet, or corporate event. We would love to see you again at your next big occasion!`,
-    name => `What a beautiful review, ${name}! This is exactly why Radha loves what she does - bringing energy, warmth, and professionalism to every stage across India. Thank you for choosing Anti Gravity Studio. Book us again any time!`,
-    name => `Thank you, ${name}! Radha Dudega and the entire Anti Gravity Studio family are grateful for your trust. Your celebration deserved the best - and we are so glad we could deliver. See you at the next event!`,
-    name => `${name}, this review made our day! Radha Dudega - premium anchor and emcee across India. Thank you for choosing Anti Gravity Studio!`,
+    name => `Thank you so much, ${name}! It was a joy and an honour to be your anchor/emcee. At Anti Gravity Studio, Radhaa puts her heart into every event - from sangeet nights and weddings to corporate conferences across India. Looking forward to being part of your next celebration!`,
+    name => `${name}, your kind words mean the world to us! Radhaa and the Anti Gravity Studio team pour their soul into every performance - whether it is a wedding, sangeet, or corporate event. We would love to see you again at your next big occasion!`,
+    name => `What a beautiful review, ${name}! This is exactly why Radhaa loves what she does - bringing energy, warmth, and professionalism to every stage across India. Thank you for choosing Anti Gravity Studio. Book us again any time!`,
+    name => `Thank you, ${name}! Radhaa Dudeja and the entire Anti Gravity Studio family are grateful for your trust. Your celebration deserved the best - and we are so glad we could deliver. See you at the next event!`,
+    name => `${name}, this review made our day! Radhaa Dudeja - premium anchor and emcee across India. Thank you for choosing Anti Gravity Studio!`,
   ],
   4: [
-    name => `Thank you, ${name}! We are delighted you had a great experience with Radha and Anti Gravity Studio. We always strive for a perfect 5-star event. If there is anything we can improve, please reach out at contact@antigravitystudio.in. We would love to make your next event absolutely perfect!`,
-    name => `${name}, thank you for the kind review! Radha and Anti Gravity Studio are committed to delivering unforgettable events every time. We would love to hear how we can do even better. See you at the next event!`,
+    name => `Thank you, ${name}! We are delighted you had a great experience with Radhaa and Anti Gravity Studio. We always strive for a perfect 5-star event. If there is anything we can improve, please reach out at contact@antigravitystudio.in. We would love to make your next event absolutely perfect!`,
+    name => `${name}, thank you for the kind review! Radhaa and Anti Gravity Studio are committed to delivering unforgettable events every time. We would love to hear how we can do even better. See you at the next event!`,
   ],
   3: [
-    name => `Thank you, ${name}, for taking the time to share your experience. We are sorry we did not fully meet your expectations. Radha and Anti Gravity Studio hold themselves to the highest standard - please reach out directly at contact@antigravitystudio.in so we can make it right.`,
+    name => `Thank you, ${name}, for taking the time to share your experience. We are sorry we did not fully meet your expectations. Radhaa and Anti Gravity Studio hold themselves to the highest standard - please reach out directly at contact@antigravitystudio.in so we can make it right.`,
   ]
 };
 

@@ -16,7 +16,7 @@ const accounts = [
 const searches = {
   veronicaemcee: ['sangeet', 'married', 'corporate'],
   thetrailcurator: ['trail curator'],
-  // radhaadudega will just use recent posts
+  // RadhaDudeja will just use recent posts
 };
 
 async function fetchMedia(page, profile, terms) {

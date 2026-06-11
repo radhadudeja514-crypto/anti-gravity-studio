@@ -49,7 +49,7 @@
       },
       {
         patterns: ['instagram', 'social', 'follow', 'portfolio', 'gallery', 'reels', 'photos'],
-        response: () => "📸 Follow us across our platforms:<br>• <strong>Studio:</strong> @AntiGravityStudio.in<br>• <strong>Weddings:</strong> @RadhaDudega<br>• <strong>Corporate:</strong> @VeronicaEmcee<br>• <strong>Trail:</strong> @TheTrailCurator"
+        response: () => "📸 Follow us across our platforms:<br>• <strong>Studio:</strong> @AntiGravityStudio.in<br>• <strong>Weddings:</strong> @RadhaDudeja<br>• <strong>Corporate:</strong> @VeronicaEmcee<br>• <strong>Trail:</strong> @TheTrailCurator"
       },
       {
         patterns: ['hello', 'hi', 'hey', 'hola', 'namaste', 'good morning', 'good evening', 'sup'],

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Media Kit 2026 — Anti Gravity Studio | Radha · Veronica · Trail Curator</title>
-  <meta name="description" content="Download the Anti Gravity Studio Media Kit 2026. Press photos, bios, and rate cards for Radha (wedding/sangeet host), Veronica (corporate MC), and Trail Curator (heritage travel). 500+ events across India.">
-  <meta name="keywords" content="Anti Gravity Studio media kit, Radha Dudega press kit, Veronica corporate MC media kit, Trail Curator press kit, wedding anchor India press, event host media kit download">
+  <title>Media Kit 2026 — Anti Gravity Studio | Radhaa · Veronica · Trail Curator</title>
+  <meta name="description" content="Download the Anti Gravity Studio Media Kit 2026. Press photos, bios, and rate cards for Radhaa (wedding/sangeet host), Veronica (corporate MC), and Trail Curator (heritage travel). 500+ events across India.">
+  <meta name="keywords" content="Anti Gravity Studio media kit, Radhaa Dudeja press kit, Veronica corporate MC media kit, Trail Curator press kit, wedding anchor India press, event host media kit download">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0a0a0f">
 
@@ -16,7 +16,7 @@
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
   <meta property="og:title"       content="Media Kit 2026 — Anti Gravity Studio">
-  <meta property="og:description" content="Press photos, bios and rate cards for three of India's finest event artists — Radha, Veronica, and Trail Curator.">
+  <meta property="og:description" content="Press photos, bios and rate cards for three of India's finest event artists — Radhaa, Veronica, and Trail Curator.">
   <meta property="og:url"         content="https://antigravitystudio.in/media-kit.html">
   <meta property="og:image"       content="/assets/media/gallery/photos/IMG20260509214426.jpg">
   <meta property="og:site_name"   content="Anti Gravity Studio">
@@ -26,7 +26,7 @@
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:site"        content="@AntiGravityStudio">
   <meta name="twitter:title"       content="Media Kit 2026 — Anti Gravity Studio">
-  <meta name="twitter:description" content="Press photos, bios and rate cards for Radha, Veronica, and Trail Curator.">
+  <meta name="twitter:description" content="Press photos, bios and rate cards for Radhaa, Veronica, and Trail Curator.">
   <meta name="twitter:image"       content="/assets/media/gallery/photos/IMG20260509214426.jpg">
 
   <!-- PWA -->
@@ -54,19 +54,19 @@
       "url": "https://antigravitystudio.in",
       "logo": "https://antigravitystudio.in/assets/media/og-cover.jpg",
       "sameAs": [
-        "https://www.instagram.com/radhadudega",
+        "https://www.instagram.com/radhadudeja",
         "https://www.instagram.com/veronicaemcee",
         "https://www.instagram.com/thetrailcurator"
       ],
       "areaServed": "IN",
-      "description": "Anti Gravity Studio — three pillars of India's finest live-event artistry: Radha (wedding & sangeet), Veronica (corporate MC), Trail Curator (heritage travel)."
+      "description": "Anti Gravity Studio — three pillars of India's finest live-event artistry: Radhaa (wedding & sangeet), Veronica (corporate MC), Trail Curator (heritage travel)."
     },
     {
       "@type": "CreativeWork",
       "name": "Anti Gravity Studio Media Kit 2026",
       "url": "https://antigravitystudio.in/media-kit.html",
       "publisher": { "@id": "https://antigravitystudio.in/#org" },
-      "description": "Press photos, bios, rate cards and portfolio for booking Radha, Veronica, and Trail Curator.",
+      "description": "Press photos, bios, rate cards and portfolio for booking Radhaa, Veronica, and Trail Curator.",
       "datePublished": "2026-06-06",
       "inLanguage": "en-IN"
     }
@@ -164,6 +164,31 @@
     .mk-gallery-item img, .mk-gallery-item video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
     .mk-gallery-item:hover img, .mk-gallery-item:hover video { transform: scale(1.05); }
 
+    /* EVENT GALLERY TABS */
+    .ev-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .ev-tab { padding: 0.45rem 1.1rem; border-radius: 999px; font-size: 0.78rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.45); transition: all .25s; font-family: 'Inter', sans-serif; }
+    .ev-tab:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+    .ev-tab.active { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.35); font-weight: 600; }
+    .ev-tab[data-ev="sangeet"].active  { background: rgba(232,135,30,0.2); color: #e8871e; border-color: rgba(232,135,30,0.5); }
+    .ev-tab[data-ev="wedding"].active  { background: rgba(255,50,100,0.2); color: #ff5070; border-color: rgba(255,50,100,0.5); }
+    .ev-tab[data-ev="haldi"].active    { background: rgba(255,215,0,0.18); color: #ffd700; border-color: rgba(255,215,0,0.45); }
+    .ev-tab[data-ev="corporate"].active{ background: rgba(201,168,76,0.2); color: #c9a84c; border-color: rgba(201,168,76,0.5); }
+    .ev-tab[data-ev="travel"].active   { background: rgba(74,158,255,0.2); color: #4a9eff; border-color: rgba(74,158,255,0.5); }
+    .ev-tab[data-ev="bhakti"].active   { background: rgba(157,78,221,0.2); color: #c084fc; border-color: rgba(157,78,221,0.5); }
+    .ev-panel { display: none; }
+    .ev-panel.active { display: block; }
+    .ev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+    .ev-grid-item { aspect-ratio: 1; border-radius: 0.6rem; overflow: hidden; position: relative; cursor: pointer; }
+    .ev-grid-item img, .ev-grid-item video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+    .ev-grid-item:hover img, .ev-grid-item:hover video { transform: scale(1.06); }
+    .ev-grid-item .ev-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%); opacity: 0; transition: opacity .3s; display: flex; align-items: flex-end; padding: 0.6rem; }
+    .ev-grid-item:hover .ev-overlay { opacity: 1; }
+    .ev-overlay span { font-size: 0.65rem; color: rgba(255,255,255,0.8); line-height: 1.3; }
+    .ev-empty { text-align: center; padding: 2.5rem; color: rgba(255,255,255,0.25); font-size: 0.85rem; grid-column: 1/-1; }
+    @media (max-width: 768px) {
+      .ev-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
     /* FOOTER */
     .mk-footer { padding: 3rem 2rem; text-align: center; border-top: 1px solid var(--mk-border); }
     .mk-footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
@@ -203,7 +228,7 @@
   <a href="index.html" class="mk-nav-logo">Anti Gravity<span style="color:var(--mk-radha)">.</span></a>
   <ul class="mk-nav-links">
     <li><a href="index.html">Home</a></li>
-    <li><a href="pillar-radha.html">💍 Radha</a></li>
+    <li><a href="pillar-radha.html">💍 Radhaa</a></li>
     <li><a href="pillar-veronica.html">🏢 Veronica</a></li>
     <li><a href="pillar-tour.html">🌍 Trail Curator</a></li>
     <li><a href="gallery.html">Gallery</a></li>
@@ -220,7 +245,7 @@
   <div class="container" style="position:relative;z-index:1;">
     <div class="mk-eyebrow">Anti Gravity Studio · 2026</div>
     <h1 class="mk-title">Media Kit &<br/><span>Press Resources</span></h1>
-    <p class="mk-subtitle">Everything you need to book, feature, or collaborate with India's most dynamic event trio — Radha, Veronica, and Trail Curator.</p>
+    <p class="mk-subtitle">Everything you need to book, feature, or collaborate with India's most dynamic event trio — Radhaa, Veronica, and Trail Curator.</p>
     <div class="mk-hero-actions">
       <a href="AntiGravityStudio-MediaKit-2026.pdf" download class="btn-download">
         <span>↓</span> Download Full Media Kit PDF
@@ -264,13 +289,13 @@
       <!-- RADHA -->
       <div class="mk-pillar-card radha-card">
         <img class="mk-pillar-photo" src="/assets/media/gallery/photos/IMG20260509214426.jpg"
-          alt="Radha — Wedding & Sangeet Host" loading="lazy"
+          alt="Radhaa — Wedding & Sangeet Host" loading="lazy"
           onerror="this.src='assets/media/gallery/radha/radha-01.jpg'">
         <div class="mk-pillar-body">
           <span class="mk-pillar-tag tag-radha-mk">💍 Weddings &amp; Sangeet</span>
-          <h3 class="mk-pillar-name">Radha</h3>
-          <div class="mk-pillar-handle">@radhadudega · India's Bhakti Anchor</div>
-          <p class="mk-pillar-bio">"जहाँ भाव है, वहाँ उत्सव है।" Radha brings grounded energy, devotion, and rhythm to sangeets, marriages, haldi ceremonies, and intimate spiritual gatherings. Every event becomes a memory for a lifetime.</p>
+          <h3 class="mk-pillar-name">Radhaa</h3>
+          <div class="mk-pillar-handle">@radhadudeja · India's Bhakti Anchor</div>
+          <p class="mk-pillar-bio">"जहाँ भाव है, वहाँ उत्सव है।" Radhaa brings grounded energy, devotion, and rhythm to sangeets, marriages, haldi ceremonies, and intimate spiritual gatherings. Every event becomes a memory for a lifetime.</p>
           <div class="mk-pillar-chips">
             <span class="mk-chip">Sangeet Hosting</span>
             <span class="mk-chip">Wedding MC</span>
@@ -281,7 +306,7 @@
           </div>
           <div class="mk-pillar-actions">
             <a href="AntiGravityStudio-MediaKit-2026.pdf" download class="mk-btn-dl radha">↓ Download PDF</a>
-            <a href="pillar-radha.html" class="mk-btn-dl mk-btn-page">View Radha →</a>
+            <a href="pillar-radha.html" class="mk-btn-dl mk-btn-page">View Radhaa →</a>
           </div>
         </div>
       </div>
@@ -339,17 +364,30 @@
   </div>
 </section>
 
-<!-- GALLERY PREVIEW -->
+<!-- EVENT GALLERY -->
 <section class="section" id="gallery-preview" style="background:rgba(255,255,255,0.015);border-top:1px solid var(--mk-border);">
   <div class="container">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
       <div>
-        <div class="section-label">Visual Portfolio</div>
+        <div class="section-label">Visual Portfolio · By Event</div>
         <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3vw,2.25rem);">Work in <em>Motion</em></h2>
       </div>
       <a href="gallery.html" style="color:rgba(255,255,255,0.5);font-size:0.85rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Full Gallery →</a>
     </div>
-    <div class="mk-gallery-grid" id="mk-gallery"></div>
+
+    <!-- Event Filter Tabs -->
+    <div class="ev-tabs" id="ev-tabs">
+      <button class="ev-tab active" data-ev="all" onclick="evFilter('all',this)">✦ All Events</button>
+      <button class="ev-tab" data-ev="sangeet" onclick="evFilter('sangeet',this)">🎵 Sangeet</button>
+      <button class="ev-tab" data-ev="wedding" onclick="evFilter('wedding',this)">💍 Wedding</button>
+      <button class="ev-tab" data-ev="haldi" onclick="evFilter('haldi',this)">🌼 Haldi / Mehendi</button>
+      <button class="ev-tab" data-ev="corporate" onclick="evFilter('corporate',this)">🏢 Corporate</button>
+      <button class="ev-tab" data-ev="travel" onclick="evFilter('travel',this)">🌍 Travel / Tour</button>
+      <button class="ev-tab" data-ev="bhakti" onclick="evFilter('bhakti',this)">🪔 Bhakti / Spiritual</button>
+    </div>
+
+    <!-- Grid renders here -->
+    <div class="ev-grid" id="ev-grid"></div>
   </div>
 </section>
 
@@ -362,7 +400,7 @@
     <div class="mk-qr-row" id="mk-qr-row">
       <div class="mk-qr-card">
         <div class="mk-qr-placeholder" id="qr-radha">UPI QR<br/>Loading…</div>
-        <div class="mk-qr-label">💍 Radha</div>
+        <div class="mk-qr-label">💍 Radhaa</div>
         <div class="mk-qr-sub">Sangeet / Wedding</div>
       </div>
       <div class="mk-qr-card">
@@ -384,7 +422,7 @@
 <footer class="mk-footer">
   <div class="mk-footer-links">
     <a href="index.html">Home</a>
-    <a href="pillar-radha.html">💍 Radha</a>
+    <a href="pillar-radha.html">💍 Radhaa</a>
     <a href="pillar-veronica.html">🏢 Veronica</a>
     <a href="pillar-tour.html">🌍 Trail Curator</a>
     <a href="gallery.html">Gallery</a>
@@ -401,43 +439,80 @@
 <script src="assets/js/ai-chat-widget.js" onerror="void 0"></script>
 
 <script>
-// ── Gallery preview ─────────────────────────────────────────────────────────
+// ── Event Gallery ────────────────────────────────────────────────────────────
+// Each item has an `ev` (event type) tag used for filtering.
+const EV_KEYWORDS = {
+  sangeet:   ['sangeet','dance','performance','music','dholak','garba','navratri'],
+  wedding:   ['wedding','bride','groom','phera','mandap','baraat','vidai','shadi','ceremony','ring'],
+  haldi:     ['haldi','mehendi','henna','yellow','ritual','pre-wed','prewed'],
+  corporate: ['corporate','office','conference','seminar','summit','awards','launch','keynote','tech','business'],
+  travel:    ['travel','trail','trek','mountain','heritage','wildlife','corbett','himalaya','safari','tour','nature'],
+  bhakti:    ['bhakti','pooja','puja','temple','aarti','spiritual','bhajan','mandir','festival','diwali','holi'],
+};
+
+function autoTag(name) {
+  const t = (name||'').toLowerCase();
+  for (const [ev, kws] of Object.entries(EV_KEYWORDS)) {
+    if (kws.some(k => t.includes(k))) return ev;
+  }
+  return 'all';
+}
+
 const LOCAL_GALLERY = [
-  { url:'/assets/media/gallery/photos/IMG20260509214426.jpg',            type:'image', name:'Stage 2026' },
-  { url:'/assets/media/gallery/photos/FB_IMG_1682789867128.jpg',         type:'image', name:'Sangeet Celebration' },
-  { url:'/assets/media/gallery/videos/VID20230422112652.mp4',            type:'video', name:'Sangeet Performance' },
-  { url:'/assets/media/gallery/photos/IMG20241121115211.jpg',            type:'image', name:'Corporate Event' },
-  { url:'/assets/media/gallery/photos/IMG20260509214438.jpg',            type:'image', name:'Stage 2026 B' },
-  { url:'/assets/media/gallery/photos/IMG-20230316-WA0027.jpg',          type:'image', name:'Wedding Moment' },
-  { url:'/assets/media/gallery/videos/VID20210920120648.mp4',            type:'video', name:'Corporate Reel' },
-  { url:'/assets/media/gallery/photos/IMG20221010221048.jpg',            type:'image', name:'Celebration 2022' },
-  { url:'/assets/media/gallery/photos/IMG_20181018_165753.jpg',          type:'image', name:'Trail 2018' },
-  { url:'/assets/media/gallery/videos/VID20250220124953.mp4',            type:'video', name:'Heritage Trail' },
-  { url:'/assets/media/gallery/photos/IMG_20230717_115452_381.webp',     type:'image', name:'Summer Event' },
-  { url:'/assets/media/gallery/photos/FB_IMG_1682789911317.jpg',         type:'image', name:'Family Gathering' }
+  { url:'/assets/media/gallery/photos/IMG20260509214426.jpg',        type:'image', name:'Stage 2026',            ev:'corporate' },
+  { url:'/assets/media/gallery/photos/FB_IMG_1682789867128.jpg',     type:'image', name:'Sangeet Celebration',   ev:'sangeet'   },
+  { url:'/assets/media/gallery/videos/VID20230422112652.mp4',        type:'video', name:'Sangeet Performance',   ev:'sangeet'   },
+  { url:'/assets/media/gallery/photos/IMG20241121115211.jpg',        type:'image', name:'Corporate Event',       ev:'corporate' },
+  { url:'/assets/media/gallery/photos/IMG20260509214438.jpg',        type:'image', name:'Stage 2026 B',          ev:'corporate' },
+  { url:'/assets/media/gallery/photos/IMG-20230316-WA0027.jpg',      type:'image', name:'Wedding Moment',        ev:'wedding'   },
+  { url:'/assets/media/gallery/videos/VID20210920120648.mp4',        type:'video', name:'Corporate Reel',        ev:'corporate' },
+  { url:'/assets/media/gallery/photos/IMG20221010221048.jpg',        type:'image', name:'Celebration 2022',      ev:'sangeet'   },
+  { url:'/assets/media/gallery/photos/IMG_20181018_165753.jpg',      type:'image', name:'Trail 2018',            ev:'travel'    },
+  { url:'/assets/media/gallery/videos/VID20250220124953.mp4',        type:'video', name:'Heritage Trail',        ev:'travel'    },
+  { url:'/assets/media/gallery/photos/IMG_20230717_115452_381.webp', type:'image', name:'Summer Event',          ev:'bhakti'    },
+  { url:'/assets/media/gallery/photos/FB_IMG_1682789911317.jpg',     type:'image', name:'Family Gathering',      ev:'wedding'   },
 ];
 
-function buildGallery(items) {
-  const grid = document.getElementById('mk-gallery');
+let allGalleryItems = [];
+let currentEvFilter = 'all';
+
+function buildEvGrid(items) {
+  const grid = document.getElementById('ev-grid');
   if (!grid) return;
-  items.slice(0, 12).forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'mk-gallery-item';
+  const filtered = currentEvFilter === 'all' ? items : items.filter(i => i.ev === currentEvFilter);
+  grid.innerHTML = '';
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="ev-empty">No photos for this event type yet.<br><a href="admin/bifurcate.html" style="color:rgba(255,255,255,0.4);font-size:0.8rem;">Import via Admin →</a></div>';
+    return;
+  }
+  filtered.slice(0, 12).forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'ev-grid-item';
+    wrap.onclick = () => location.href = 'gallery.html';
     if (item.type === 'video') {
       const v = document.createElement('video');
       v.src = item.url; v.muted = true; v.loop = true; v.preload = 'metadata';
       v.addEventListener('mouseenter', () => v.play());
       v.addEventListener('mouseleave', () => { v.pause(); v.currentTime = 0; });
-      el.appendChild(v);
+      wrap.appendChild(v);
     } else {
       const img = document.createElement('img');
       img.src = item.url; img.alt = item.name; img.loading = 'lazy';
-      el.appendChild(img);
+      wrap.appendChild(img);
     }
-    el.onclick = () => location.href = 'gallery.html';
-    el.style.cursor = 'pointer';
-    grid.appendChild(el);
+    const ov = document.createElement('div');
+    ov.className = 'ev-overlay';
+    ov.innerHTML = '<span>' + (item.name||'') + '</span>';
+    wrap.appendChild(ov);
+    grid.appendChild(wrap);
   });
+}
+
+function evFilter(ev, btn) {
+  currentEvFilter = ev;
+  document.querySelectorAll('.ev-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  buildEvGrid(allGalleryItems);
 }
 
 async function initGallery() {
@@ -445,22 +520,26 @@ async function initGallery() {
     const r = await fetch('/api/media/public');
     if (r.ok) {
       const d = await r.json();
-      // API returns a raw array; guard against both shapes
       const items = Array.isArray(d) ? d : (d.media || []);
-      if (items.length) { buildGallery(items); return; }
+      if (items.length) {
+        allGalleryItems = items.map(i => ({ ...i, ev: i.event_type || autoTag(i.name||'') }));
+        buildEvGrid(allGalleryItems);
+        return;
+      }
     }
   } catch(e) {}
-  buildGallery(LOCAL_GALLERY);
+  allGalleryItems = LOCAL_GALLERY;
+  buildEvGrid(allGalleryItems);
 }
 initGallery();
 
-// ── QR codes ─────────────────────────────────────────────────────────────────
+// ── QR codes ──────────────────────────────────────────────────────────────────
 async function loadQRs() {
   try {
     const r = await fetch('/api/config');
     if (!r.ok) return;
     const cfg = await r.json();
-    if (cfg.qr_sangeet) document.getElementById('qr-radha').innerHTML = `<img src="${cfg.qr_sangeet}" alt="Radha UPI QR" style="width:120px;height:120px;border-radius:0.5rem;">`;
+    if (cfg.qr_sangeet) document.getElementById('qr-radha').innerHTML = `<img src="${cfg.qr_sangeet}" alt="Radhaa UPI QR" style="width:120px;height:120px;border-radius:0.5rem;">`;
     if (cfg.qr_corp)    document.getElementById('qr-corp').innerHTML  = `<img src="${cfg.qr_corp}"    alt="Veronica UPI QR" style="width:120px;height:120px;border-radius:0.5rem;">`;
     if (cfg.qr_tour)    document.getElementById('qr-tour').innerHTML  = `<img src="${cfg.qr_tour}"   alt="Trail Curator UPI QR" style="width:120px;height:120px;border-radius:0.5rem;">`;
   } catch(e) { /* QRs not configured */ }
@@ -470,4 +549,8 @@ loadQRs();
 // ── Analytics ─────────────────────────────────────────────────────────────────
 fetch('/api/analytics/view', {
   method:'POST', headers:{'Content-Type':'application/json'},
-  body
+  body: JSON.stringify({ page:'media-kit', referrer: document.referrer })
+}).catch(()=>{});
+</script>
+</body>
+</html>

@@ -5,6 +5,7 @@ Allow: /pillar-radha.html
 Allow: /pillar-veronica.html
 Allow: /pillar-tour.html
 Allow: /booking.html
+Allow: /gallery.html
 Allow: /media-kit.html
 Allow: /assets/
 
@@ -23,4 +24,4 @@ Disallow: /pillars_brochure.html
 # Crawl delay for bots
 Crawl-delay: 10
 
-Sitemap: https://antigravitystudio.in/sitemap.xml
+Sitemap: https://antigravitys

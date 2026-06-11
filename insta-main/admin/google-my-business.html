@@ -20,6 +20,24 @@
 .star-row .label{min-width:60px;font-weight:600;color:var(--text-dim);}
 .star-bar{flex:1;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;}
 .star-bar-fill{height:100%;background:#F4C97A;border-radius:4px;transition:width 1s ease;}
+.rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.5rem;padding:0 1.5rem 1.5rem}
+@media(max-width:700px){.rp-grid{grid-template-columns:1fr}}
+.rp-card{background:var(--surface,#1a1a24);border:1px solid var(--border,#2a2a38);border-radius:8px;padding:1.1rem}
+.rp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.rp-card h4{font-size:.88rem;font-weight:700;margin:0}
+.rp-sub{font-size:.72rem;color:#888;margin-bottom:.8rem;line-height:1.5}
+.rp-btn{background:rgba(232,135,30,.15);border:1px solid rgba(232,135,30,.3);color:#E8871E;padding:.35rem .8rem;border-radius:4px;cursor:pointer;font-size:.75rem;font-weight:600}
+.setup-box{background:rgba(232,135,30,.05);border:1px solid rgba(232,135,30,.2);border-radius:8px;padding:1rem 1.2rem;margin:0 1.5rem 2rem;font-size:.8rem;line-height:1.9;color:#aaa}
+.setup-box strong{color:#E8871E}
+.setup-box code{background:#111;padding:.1rem .3rem;border-radius:3px;font-family:monospace;color:#f4c97a}
+.reply-row{padding:.8rem;border-radius:6px;background:#13131b;border:1px solid #2a2a38;margin-bottom:.5rem}
+.reply-review{font-size:.77rem;color:#888;border-left:2px solid #2a2a38;padding-left:.5rem;margin:.3rem 0}
+.reply-text{font-size:.79rem;color:#6ee7b7;border-left:2px solid #6ee7b7;padding-left:.5rem}
+.fb-row{padding:.8rem;border-radius:6px;background:#13131b;margin-bottom:.5rem}
+.fb-row.unresolved{border:1px solid rgba(239,68,68,.3)}
+.fb-row.resolved{border:1px solid #2a2a38;opacity:.6}
+.fb-msg{font-size:.82rem;color:#ccc;line-height:1.5;margin:.3rem 0}
+.resolve-btn{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#6ee7b7;padding:.25rem .7rem;border-radius:4px;cursor:pointer;font-size:.73rem}
 </style>
 <script>
 fetch('/api/admin/check').then(r=>r.json()).then(d=>{
@@ -30,99 +48,61 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
 <body>
 <div class="admin-page">
   <div class="page-header">
-    <div><h1>⭐ GOOGLE REVIEWS</h1><p>Monitor and manage your Google My Business reputation</p></div>
+    <div><h1>GOOGLE REVIEWS + SEO ENGINE</h1><p>Live reviews, auto-reply crawler, and private feedback protection</p></div>
     <div class="header-actions">
-      <button class="btn btn-cyan btn-sm" onclick="refreshReviews()">🔄 Refresh Cache</button>
+      <button class="btn btn-cyan btn-sm" onclick="refreshReviews()">Refresh Cache</button>
+      <a href="../review-hub.html" target="_blank" class="btn btn-sm" style="background:rgba(232,135,30,.15);border:1px solid rgba(232,135,30,.3);color:#E8871E;text-decoration:none">Open Review Hub</a>
     </div>
   </div>
 
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(244,201,122,0.1);color:#F4C97A;">⭐</div><div class="kpi-value" id="kAvg">—</div><div class="kpi-label">Average Rating</div></div>
-    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:var(--green);">📝</div><div class="kpi-value" id="kTotal">0</div><div class="kpi-label">Total Reviews</div></div>
-    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,0.1);color:var(--cyan);">🏆</div><div class="kpi-value" id="k5Star">0</div><div class="kpi-label">5-Star Reviews</div></div>
-    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(157,78,221,0.1);color:var(--purple);">📈</div><div class="kpi-value" id="kTrend">—</div><div class="kpi-label">Trend</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(244,201,122,0.1);color:#F4C97A;">&#9733;</div><div class="kpi-value" id="kAvg">-</div><div class="kpi-label">Average Rating</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:var(--green);">&#128221;</div><div class="kpi-value" id="kTotal">0</div><div class="kpi-label">Total Reviews</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,249,255,0.1);color:var(--cyan);">&#127942;</div><div class="kpi-value" id="k5Star">0</div><div class="kpi-label">5-Star Reviews</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(157,78,221,0.1);color:var(--purple);">&#128200;</div><div class="kpi-value" id="kTrend">-</div><div class="kpi-label">Trend</div></div>
   </div>
 
   <div class="grid-3-1">
-    <!-- Reviews List -->
     <div class="glass-card">
-      <div class="card-header"><div class="card-title"><span class="icon">📝</span> ALL REVIEWS</div></div>
+      <div class="card-header"><div class="card-title"><span class="icon">&#128221;</span> ALL REVIEWS</div></div>
       <div id="reviewList"><div class="shimmer" style="height:300px;"></div></div>
     </div>
 
-    <!-- Rating Distribution -->
     <div>
       <div class="glass-card accent-orange">
-        <div class="card-header"><div class="card-title" style="color:var(--orange);"><span class="icon">📊</span> DISTRIBUTION</div></div>
+        <div class="card-header"><div class="card-title" style="color:var(--orange);"><span class="icon">&#128202;</span> DISTRIBUTION</div></div>
         <div class="stars-dist" id="starDist"></div>
       </div>
 
       <div class="glass-card">
-        <div class="card-header"><div class="card-title"><span class="icon">🔗</span> QUICK LINKS</div></div>
+        <div class="card-header"><div class="card-title"><span class="icon">&#128279;</span> QUICK LINKS</div></div>
         <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          <a href="https://business.google.com" target="_blank" class="qa-card" style="padding:0.65rem;"><div class="qa-icon">🏢</div><div><strong style="font-size:0.78rem;">Google Business Profile</strong></div></a>
-          <a href="https://search.google.com/local/writereview" target="_blank" class="qa-card" style="padding:0.65rem;"><div class="qa-icon">✍️</div><div><strong style="font-size:0.78rem;">Get Review Link</strong></div></a>
+          <a href="https://business.google.com" target="_blank" class="qa-card" style="padding:0.65rem;"><div class="qa-icon">&#127970;</div><div><strong style="font-size:0.78rem;">Google Business Profile</strong></div></a>
+          <a href="https://search.google.com/local/writereview" target="_blank" class="qa-card" style="padding:0.65rem;"><div class="qa-icon">&#9999;&#65039;</div><div><strong style="font-size:0.78rem;">Get Review Link</strong></div></a>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-async function loadReviews(){
-  try{
-    const r=await fetch('/api/google-reviews');const reviews=await r.json();
-    if(!Array.isArray(reviews)||!reviews.length){
-      document.getElementById('reviewList').innerHTML='<div class="empty-state"><div class="empty-icon">⭐</div>No reviews loaded. Configure Google Places API key in Settings.</div>';
-      return;
-    }
-    renderKPIs(reviews);renderList(reviews);renderDist(reviews);
-  }catch(e){document.getElementById('reviewList').innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load reviews. Check API configuration.</div>';}
-}
+  <!-- SEO ENGINE SECTION -->
+  <div style="padding:0 1.5rem;margin-top:2rem">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:.2rem">Review SEO Engine</h3>
+    <p style="font-size:.78rem;color:#888;margin-bottom:.2rem">Double-crawler: Google indexes both the client review AND your keyword-rich auto-reply. Auto-runs every 2 hours.</p>
+  </div>
 
-function renderKPIs(reviews){
-  const avg=(reviews.reduce((a,r)=>a+(r.rating||0),0)/reviews.length).toFixed(1);
-  const fiveStars=reviews.filter(r=>r.rating===5).length;
-  document.getElementById('kAvg').textContent=avg;
-  document.getElementById('kTotal').textContent=reviews.length;
-  document.getElementById('k5Star').textContent=fiveStars;
-  document.getElementById('kTrend').textContent=avg>=4.5?'🔥 Excellent':avg>=4?'✅ Good':'⚠️ Needs Work';
-}
-
-function renderList(reviews){
-  const el=document.getElementById('reviewList');
-  el.innerHTML=reviews.sort((a,b)=>(b.time||0)-(a.time||0)).map(r=>{
-    const stars='★'.repeat(r.rating||0)+'☆'.repeat(5-(r.rating||0));
-    const date=r.time?new Date(r.time*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'';
-    return`<div class="review-card">
-      <div class="review-header">
-        <img class="review-avatar" src="${r.profile_photo_url||''}" alt="" onerror="this.style.background='var(--surface)';this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>👤</text></svg>'"/>
-        <div><div class="review-name">${esc(r.author_name||'Anonymous')}</div><div class="review-stars">${stars}</div></div>
+  <div class="rp-grid">
+    <div class="rp-card">
+      <div class="rp-head">
+        <h4>Auto-Reply Log</h4>
+        <button class="rp-btn" onclick="triggerAutoReply()">Run Now</button>
       </div>
-      <div class="review-text">${esc(r.text||'No comment.')}</div>
-      <div class="review-date">${date}</div>
-    </div>`;
-  }).join('');
-}
+      <div class="rp-sub">Keyword-rich replies posted automatically to every 3+ star review. Both the review + reply get crawled by Google for SEO.</div>
+      <div id="replyLog"><div class="shimmer" style="height:80px"></div></div>
+    </div>
 
-function renderDist(reviews){
-  const el=document.getElementById('starDist');
-  const total=reviews.length||1;
-  const counts={5:0,4:0,3:0,2:0,1:0};
-  reviews.forEach(r=>{counts[r.rating||5]=(counts[r.rating||5]||0)+1;});
-  el.innerHTML=[5,4,3,2,1].map(s=>{
-    const pct=(counts[s]/total)*100;
-    return`<div class="star-row"><span class="label">${s} ★</span><div class="star-bar"><div class="star-bar-fill" style="width:${pct}%;"></div></div><span style="min-width:30px;text-align:right;font-family:var(--font-display);font-size:0.72rem;font-weight:600;">${counts[s]}</span></div>`;
-  }).join('');
-}
-
-async function refreshReviews(){
-  try{await fetch('/api/google-reviews/refresh');showToast('Cache cleared! Reloading...','info');loadReviews();}catch(e){showToast('Failed','error');}
-}
-
-function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-loadReviews();
-</script>
-<script src="../assets/js/admin-nav.js"></script>
-</body>
-</html>
+    <div class="rp-card">
+      <div class="rp-head">
+        <h4>Private Feedback (1-3 stars)</h4>
+        <a href="../review-hub.html" target="_blank" style="font-size:.73rem;color:#E8871E;text-decoration:none">Open Hub</a>
+      </div>
+      <div class="rp-sub">Low-star clients are redirected her

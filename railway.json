@@ -5,7 +5,10 @@
     "buildCommand": "npm install --omit=dev"
   },
   "deploy": {
-    "startCommand": "node server.js",
+    "startCommand": "node server-fixed.js",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 60,
-    "restartPolicyType": "
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5
+  }
+}

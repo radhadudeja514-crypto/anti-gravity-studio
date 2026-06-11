@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const CUSTOM_ASSETS = {
-  radhaadudega: {
+  RadhaDudeja: {
     images: [
       'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop', // luxury wedding event decor
       'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800&auto=format&fit=crop', // bride and sangeet dancing

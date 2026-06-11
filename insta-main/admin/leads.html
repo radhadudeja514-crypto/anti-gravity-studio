@@ -30,7 +30,7 @@
 <div class="scanlines"></div>
 <div class="admin-page">
   <div class="page-header">
-    <div><h1>🎯 Leads CRM</h1><p>All enquiries — Radha · Veronica · Tour</p></div>
+    <div><h1>🎯 Leads CRM</h1><p>All enquiries — Radhaa · Veronica · Tour</p></div>
     <div class="header-actions">
       <input class="search-input" id="searchInput" placeholder="Search name, email..." oninput="renderAll()"/>
       <button class="btn btn-cyan" onclick="openAdd()">+ New Lead</button>
@@ -58,8 +58,9 @@
       <div class="card-title">📋 ALL LEADS</div>
       <div class="filter-group">
         <button class="filter-btn active" onclick="sf('all',this)">All</button>
-        <button class="filter-btn" onclick="sf('radha',this)">💍 Radha</button>
+        <button class="filter-btn" onclick="sf('radha',this)">💍 Radhaa</button>
         <button class="filter-btn" onclick="sf('corporate',this)">🎤 Corporate</button>
+        <button class="filter-btn" onclick="sf('veronica',this)">🎤 Veronica</button>
         <button class="filter-btn" onclick="sf('tour',this)">🧭 Tour</button>
       </div>
     </div>
@@ -114,7 +115,7 @@
     <div class="form-row">
       <div class="form-group"><label class="form-label">Email *</label><input type="email" id="aE" class="form-input" placeholder="email@example.com"/></div>
       <div class="form-group"><label class="form-label">Pillar</label>
-        <select id="aPl" class="form-select"><option value="radha">💍 Radha</option><option value="corporate">🎤 Corporate</option><option value="tour">🧭 Tour</option></select></div>
+        <select id="aPl" class="form-select"><option value="radha">💍 Radhaa</option><option value="corporate">🎤 Corporate</option><option value="tour">🧭 Tour</option></select></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Event Date</label><input type="date" id="aD" class="form-input"/></div>
@@ -143,7 +144,7 @@ async function load(){
 function filtered(){
   const q=(document.getElementById('searchInput').value||'').toLowerCase();
   return leads.filter(l=>{
-    if(filt!=='all'&&(l.pillar||'').toLowerCase()!==filt)return false;
+    if(filt!=='all'&&!(l.pillar||'').toLowerCase().includes(filt))return false;
     if(q&&!`${l.name}${l.email}${l.phone}${l.message||''}`.toLowerCase().includes(q))return false;
     return true;
   });

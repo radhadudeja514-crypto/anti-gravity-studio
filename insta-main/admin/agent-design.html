@@ -329,7 +329,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
     <!-- Pillar Selector -->
     <div class="section">
       <div class="pillar-tabs">
-        <div class="pillar-tab active" onclick="selectPillar('radha',this)">🪔 Radha</div>
+        <div class="pillar-tab active" onclick="selectPillar('radha',this)">🪔 Radhaa</div>
         <div class="pillar-tab" onclick="selectPillar('veronica',this)">🎤 Veronica</div>
         <div class="pillar-tab" onclick="selectPillar('tour',this)">🧭 Tour</div>
       </div>
@@ -496,6 +496,22 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
 
 // ── State ──
 let currentPillar = 'radha';
+
+async function loadSavedTheme(pillar) {
+  try {
+    const r = await fetch('/api/agent/design/theme/' + pillar);
+    const d = await r.json();
+    if (d.success && d.theme) {
+      Object.assign(themes[pillar], d.theme);
+    }
+  } catch(e) {}
+}
+
+// Load saved themes for all pillars on startup
+Promise.all(['radha','veronica','tour'].map(loadSavedTheme)).then(() => {
+  applyTheme(themes[currentPillar]);
+});
+
 let harmonyMode = 'complementary';
 let selectedAnim = 'fade-up';
 let gradStops = [

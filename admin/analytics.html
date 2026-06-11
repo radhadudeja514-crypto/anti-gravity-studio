@@ -112,7 +112,7 @@ function renderViews(){
   const entries=Object.entries(v).sort((a,b)=>b[1]-a[1]);
   if(!entries.length){document.getElementById('viewsChart').innerHTML='<div class="empty-state">No view data yet</div>';return;}
   const max=Math.max(...entries.map(e=>e[1]),1);
-  const colors={Radha:'var(--orange)',Corporate:'#C0C0C0',Tour:'#F2A541',Unknown:'var(--text-dim)'};
+  const colors={Radhaa:'var(--orange)',Corporate:'#C0C0C0',Tour:'#F2A541',Unknown:'var(--text-dim)'};
   document.getElementById('viewsChart').innerHTML=entries.map(([name,count])=>{
     const h=Math.max((count/max)*160,8);
     const c=Object.entries(colors).find(([k])=>name.toLowerCase().includes(k.toLowerCase()));

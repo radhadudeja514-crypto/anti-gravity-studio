@@ -1,10 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function(){
+  var pillar = document.body.dataset.pillar || '';
+  if(!pillar) return;
+  fetch('/api/agent/design/theme/' + pillar)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.success || !d.theme) return;
+      var t = d.theme;
+      var root = document.documentElement;
+      if(t.primary)  root.style.setProperty('--pillar-primary', t.primary);
+      if(t.accent)   root.style.setProperty('--pillar-accent', t.accent);
+      if(t.bg)       document.body.style.background = t.bg;
+    }).catch(function(){});
+})();
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tour — Travel & Events Pillar | Anti Gravity Studio</title>
-  <meta name="description" content="Concert coverage, travel documentaries, and live-event capture. Feel every beat.">
+  <title>Trail Curator — Heritage Travel & Mountain Expeditions India | Anti Gravity Studio</title>
+  <meta name="description" content="Trail Curator by Anti Gravity Studio — immersive heritage expeditions, luxury mountain trails, and cultural deep-dives across India. Corbett, Himalayas, Rajasthan and beyond.">
+  <meta name="keywords" content="Trail Curator, heritage trail India, mountain expedition, luxury travel India, Corbett safari, Himalayan trek, cultural tour India, travel documentary, heritage walk Delhi">
   <meta name="theme-color" content="#0a0a0f">
   <meta name="robots" content="index, follow">
 
@@ -15,19 +33,19 @@
 
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
-  <meta property="og:title"       content="Tour — Travel & Events Pillar | Anti Gravity Studio">
-  <meta property="og:description" content="Concert coverage, travel documentaries, and live-event capture. Feel every beat.">
+  <meta property="og:title"       content="Trail Curator — Heritage Travel & Mountain Expeditions India | Anti Gravity Studio">
+  <meta property="og:description" content="Immersive heritage expeditions, luxury mountain trails, and cultural deep-dives. Corbett, Himalayas, Rajasthan and beyond.">
   <meta property="og:url"         content="https://antigravitystudio.in/pillar-tour.html">
-  <meta property="og:image"       content="/assets/media/og-cover.jpg">
+  <meta property="og:image"       content="/assets/media/gallery/photos/IMG_20181018_165753.jpg">
   <meta property="og:site_name"   content="Anti Gravity Studio">
   <meta property="og:locale"      content="en_IN">
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:site"        content="@AntiGravityStudio">
-  <meta name="twitter:title"       content="Tour — Travel & Events Pillar | Anti Gravity Studio">
-  <meta name="twitter:description" content="Concert coverage, travel documentaries, and live-event capture. Feel every beat.">
-  <meta name="twitter:image"       content="/assets/media/og-cover.jpg">
+  <meta name="twitter:title"       content="Trail Curator — Heritage Travel & Mountain Expeditions India | Anti Gravity Studio">
+  <meta name="twitter:description" content="Immersive heritage expeditions, luxury mountain trails, and cultural deep-dives across India. Corbett, Himalayas, Rajasthan.">
+  <meta name="twitter:image"       content="/assets/media/gallery/photos/IMG_20181018_165753.jpg">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -48,25 +66,46 @@
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">{
   "@context": "https://schema.org",
-  "@type": "Service",
-  "name": "Tour & Events Coverage",
+  "@type": "TouristInformationCenter",
+  "name": "Trail Curator — Anti Gravity Studio",
+  "description": "Immersive heritage expeditions, luxury mountain trails, and high-end cultural deep-dives across India. Meticulously curated by Anti Gravity Studio.",
+  "url": "https://antigravitystudio.in/pillar-tour.html",
   "provider": {
-    "@type": "LocalBusiness",
+    "@type": "Organization",
     "name": "Anti Gravity Studio",
     "url": "https://antigravitystudio.in"
   },
-  "description": "Tour Pillar — premium media services by Anti Gravity Studio.",
-  "areaServed": "IN"
+  "areaServed": ["Uttarakhand", "Rajasthan", "Himachal Pradesh", "Delhi", "India"],
+  "knowsAbout": ["Heritage Trails", "Mountain Expeditions", "Cultural Tours", "Wildlife Safari", "Travel Documentary"]
 }</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+  // Load real Measurement ID from server config
+  fetch('/api/ga4-id').then(r=>r.json()).then(d=>{
+    if(d.id && d.id !== 'G-XXXXXXXXXX') {
+      gtag('config', d.id);
+      document.querySelectorAll('script[src*="gtag/js"]').forEach(s=>{
+        s.src = s.src.replace('G-XXXXXXXXXX', d.id);
+      });
+    }
+  }).catch(()=>{});
+</script>
 </head>
 <body data-pillar="tour" class="tour-theme">
 
 <nav class="site-nav" id="site-nav">
   <a href="index.html" class="nav-logo" style="color:var(--tour-accent);">TC<span style="color:var(--tour-primary)">.</span></a>
   <ul class="nav-links" id="nav-menu">
+    <li><a href="index.html">Home</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#tours">Tours</a></li>
     <li><a href="#gallery">Gallery</a></li>
+    <li><a href="gallery.html?filter=tour">Full Gallery</a></li>
     <li><a href="#enquire">Book a Tour</a></li>
     <li><a href="pillar-radha.html" style="color:var(--radha-primary)">Radha →</a></li>
     <li><a href="pillar-veronica.html" style="color:var(--corp-secondary)">Veronica →</a></li>
@@ -75,6 +114,7 @@
     <a href="#enquire" class="btn btn-tour" style="padding:0.6rem 1.25rem;font-size:0.85rem;">Book a Tour</a>
     <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
   </div>
+<a href="review-hub.html">Review Us</a>
 </nav>
 
 <!-- HERO -->
@@ -101,6 +141,97 @@
     <span>📍 Pan-India &amp; International</span>
   </div>
 </section>
+
+<!-- ── AUTO-CYCLING VIDEO REEL ─────────────────────────────────────── -->
+<section class="section" id="videos" style="padding:0;background:#000;position:relative;overflow:hidden;">
+  <!-- Video container -->
+  <div style="position:relative;width:100%;padding-bottom:56.25%;max-height:80vh;overflow:hidden;">
+    <div id="vreel-tour" style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;"></div>
+    <!-- Overlay gradient -->
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.8) 100%);z-index:2;pointer-events:none;"></div>
+    <!-- Labels -->
+    <div style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+      <div style="font-size:0.7rem;letter-spacing:3px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:0.5rem;">Trail Curator — In Action</div>
+      <div id="vreel-title-tour" style="font-size:1rem;color:#fff;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,0.8);max-width:400px;"></div>
+    </div>
+    <!-- Dot indicators -->
+    <div id="vreel-dots-tour" style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:0.4rem;"></div>
+    <!-- Prev/Next controls -->
+    <button onclick="vreelPrev('tour')" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">‹</button>
+    <button onclick="vreelNext('tour')" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">›</button>
+  </div>
+  <!-- Thumbnail strip -->
+  <div id="vreel-strip-tour" style="display:flex;gap:0.5rem;padding:0.75rem 1rem;background:#111;overflow-x:auto;scrollbar-width:none;"></div>
+</section>
+
+<script>
+(function(){
+  var videos_tour = ["FCGjyfjQ_VI", "7--X_RxyMK8"];
+  var titles_tour = ["FCGjyfjQ_VI", "7--X_RxyMK8"];
+  var cur_tour = 0;
+  var timer_tour = null;
+
+  function initReel_tour(){
+    var strip = document.getElementById('vreel-strip-tour');
+    var dots  = document.getElementById('vreel-dots-tour');
+    videos_tour.forEach(function(id, i){
+      var thumb = document.createElement('img');
+      thumb.src = 'https://i.ytimg.com/vi/'+id+'/mqdefault.jpg';
+      thumb.style.cssText = 'width:100px;height:56px;object-fit:cover;border-radius:0.4rem;cursor:pointer;opacity:'+(i===0?'1':'0.5')+';flex-shrink:0;transition:opacity .3s;border:2px solid '+(i===0?'"#F2A541"':'transparent');
+      thumb.onclick = function(){ playReel_tour(i); };
+      thumb.id = 'vreel-th-tour-'+i;
+      strip.appendChild(thumb);
+      var dot = document.createElement('div');
+      dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:'+(i===0?'"#F2A541"':'rgba(255,255,255,0.3)')+';cursor:pointer;transition:all .3s;';
+      dot.onclick = function(){ playReel_tour(i); };
+      dot.id = 'vreel-dot-tour-'+i;
+      dots.appendChild(dot);
+    });
+    playReel_tour(0);
+  }
+
+  function playReel_tour(idx){
+    if(timer_tour) clearTimeout(timer_tour);
+    cur_tour = idx;
+    var id = videos_tour[idx];
+    var container = document.getElementById('vreel-tour');
+    container.innerHTML = '<iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/'+id+'?autoplay=1&mute=1&rel=0&modestbranding=1&controls=0&showinfo=0&loop=1&playlist='+id+'" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
+    // Update title
+    var titleEl = document.getElementById('vreel-title-tour');
+    if(titleEl) titleEl.textContent = ''; // titles fetched dynamically
+    // Update dots/thumbs
+    videos_tour.forEach(function(_, i){
+      var th  = document.getElementById('vreel-th-tour-'+i);
+      var dot = document.getElementById('vreel-dot-tour-'+i);
+      if(th)  { th.style.opacity  = i===idx?'1':'0.5'; th.style.border='2px solid '+(i===idx?'"#F2A541"':'transparent'); }
+      if(dot) dot.style.background = i===idx?'"#F2A541"':'rgba(255,255,255,0.3)';
+    });
+    // Auto-advance after 45s
+    timer_tour = setTimeout(function(){
+      playReel_tour((idx+1) % videos_tour.length);
+    }, 45000);
+  }
+
+  window.vreelNext = window.vreelNext || function(){};
+  window.vreelPrev = window.vreelPrev || function(){};
+
+  // Override for this pillar
+  var _origNext = window.vreelNext;
+  window.vreelNext = function(p){
+    if(p==='tour') playReel_tour((cur_tour+1) % videos_tour.length);
+    else _origNext(p);
+  };
+  var _origPrev = window.vreelPrev;
+  window.vreelPrev = function(p){
+    if(p==='tour') playReel_tour((cur_tour-1+videos_tour.length) % videos_tour.length);
+    else _origPrev(p);
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initReel_tour);
+  else initReel_tour();
+})();
+</script>
+
 
 <!-- TICKER -->
 <div class="ticker-wrapper" style="background:rgba(242,165,65,0.04);border-color:rgba(242,165,65,0.1);">
@@ -201,15 +332,65 @@
       <a href="https://www.instagram.com/thetrailcurator/" target="_blank" class="btn btn-ghost">Instagram →</a>
     </div>
     <div class="gallery-grid" id="tourGallery">
-      <div class="gallery-item"><img src="assets/media/gallery-tour-1.png" alt="Rajasthan heritage" loading="lazy"/></div>
+      <div class="gallery-item" style="background-image:url('/assets/media/gallery/photos/IMG_20181018_165753.jpg');background-size:cover;background-position:center;"><img src="assets/media/gallery/photos/IMG_20181018_165753.jpg" alt="Trail 2018" loading="lazy" style="opacity:0;"/></div>
       <div class="gallery-item" style="grid-row:span 2"><img src="assets/media/tour-hero.png" alt="Mountain vista" loading="lazy"/></div>
       <div class="gallery-item"><img src="assets/media/gallery-tour-1.png" alt="Cultural walk" loading="lazy" style="object-position:center 30%;"/></div>
       <div class="gallery-item"><img src="assets/media/tour-hero.png" alt="Desert sunset" loading="lazy" style="object-position:center 70%;"/></div>
       <div class="gallery-item"><img src="assets/media/gallery-tour-1.png" alt="Temple visit" loading="lazy" style="object-position:left center;"/></div>
       <div class="gallery-item"><img src="assets/media/tour-hero.png" alt="River landscape" loading="lazy" style="object-position:right center;"/></div>
     </div>
+    <div style="text-align:center;margin-top:2rem;">
+      <a href="gallery.html?filter=tour" class="btn btn-ghost">View Full Trail Gallery →</a>
+    </div>
   </div>
 </section>
+
+<!-- LOCAL VIDEO REEL — Trail Real Moments -->
+<section class="section" id="trail-local-videos" style="background:linear-gradient(180deg,rgba(242,165,65,0.06),rgba(10,10,15,0));padding:4rem 0 2rem;">
+  <div class="container">
+    <div class="reveal text-center" style="margin-bottom:2rem;">
+      <div class="section-label">On the Trail</div>
+      <h2 class="display-sm">Real <span class="gradient-text-tour">Expeditions</span></h2>
+      <p style="color:var(--text-muted);margin-top:0.75rem;">Footage captured in the wild — raw, unfiltered, extraordinary.</p>
+    </div>
+    <div style="position:relative;max-width:900px;margin:0 auto 1.5rem;border-radius:1rem;overflow:hidden;background:#000;box-shadow:0 0 60px rgba(242,165,65,0.15);">
+      <video id="trail-local-vid" autoplay loop muted playsinline style="width:100%;max-height:70vh;object-fit:cover;display:block;"
+        src="/assets/media/gallery/videos/VID20250220124953.mp4"></video>
+      <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:3;text-align:center;">
+        <div id="trail-vid-label" style="font-size:0.8rem;letter-spacing:2px;color:rgba(255,255,255,0.7);text-transform:uppercase;background:rgba(0,0,0,0.5);padding:0.35rem 1rem;border-radius:2rem;">Trail Walk · Feb 2025</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto;" id="trail-vid-strip"></div>
+  </div>
+</section>
+<script>
+(function(){
+  var clips = [
+    { src:'/assets/media/gallery/videos/VID20250220124953.mp4', label:'Trail Walk · Feb 2025' },
+    { src:'/assets/media/gallery/videos/VID20250220123919~2.mp4', label:'Heritage Trail · Feb 2025' }
+  ];
+  var strip = document.getElementById('trail-vid-strip');
+  var mainVid = document.getElementById('trail-local-vid');
+  var label = document.getElementById('trail-vid-label');
+  clips.forEach(function(clip, i){
+    var thumb = document.createElement('div');
+    thumb.style.cssText = 'width:120px;height:68px;border-radius:0.5rem;overflow:hidden;cursor:pointer;border:2px solid '+(i===0?'var(--tour-primary)':'transparent')+';flex-shrink:0;transition:all .3s;position:relative;background:#111;';
+    thumb.id = 'tvth-'+i;
+    var tv = document.createElement('video');
+    tv.src = clip.src; tv.muted = true; tv.preload = 'metadata';
+    tv.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+    tv.onmouseenter = function(){ tv.play(); };
+    tv.onmouseleave = function(){ tv.pause(); };
+    thumb.appendChild(tv);
+    thumb.onclick = function(){
+      mainVid.src = clip.src; mainVid.play();
+      if(label) label.textContent = clip.label;
+      clips.forEach(function(_,j){ var t=document.getElementById('tvth-'+j); if(t) t.style.border='2px solid '+(j===i?'var(--tour-primary)':'transparent'); });
+    };
+    strip.appendChild(thumb);
+  });
+})();
+</script>
 
 <!-- TESTIMONIAL CAROUSEL -->
 <section class="section testimonial-section" style="background:var(--tour-surface);">
@@ -246,6 +427,8 @@
   </div>
 </section>
 
+
+
 <!-- CROSS-PILLAR -->
 <section class="section" style="background:rgba(232,135,30,0.04);border-top:1px solid rgba(232,135,30,0.1);">
   <div class="container text-center reveal">
@@ -253,6 +436,7 @@
     <h2 class="display-md" style="margin-bottom:0.75rem;">Combine with <span class="gradient-text-radha">Radha's Events</span></h2>
     <p style="color:var(--text-muted);margin-bottom:2rem;">Destination sangeet, wedding-tour packages, and cultural celebration travel.</p>
     <div class="flex gap-2 justify-center" style="flex-wrap:wrap;">
+      <a href="booking.html?pillar=tour" class="btn" style="background:var(--tour-primary,#F2A541);color:#000;margin-bottom:0.75rem;">⚡ Book a Tour</a>
       <a href="pillar-radha.html" class="btn btn-radha">Radha — Events →</a>
       <a href="pillar-veronica.html" class="btn btn-ghost">Veronica — Corporate →</a>
     </div>
@@ -540,7 +724,7 @@ async function loadGoogleReviews() {
     
     if (place_id) {
       const ctaLink = document.querySelector('#reviews-cta a');
-      if (ctaLink) ctaLink.href = \`https://search.google.com/local/writereview?placeid=\${place_id}\`;
+      if (ctaLink) ctaLink.href = `https://search.google.com/local/writereview?placeid=${place_id}`;
     }
 
     const overallContainer = document.getElementById('reviews-overall');
@@ -549,13 +733,13 @@ async function loadGoogleReviews() {
                     (overall_rating % 1 >= 0.5 ? '⯨' : '') + 
                     '☆'.repeat(5 - Math.ceil(overall_rating));
       
-      overallContainer.innerHTML = \`
-        <span class="reviews-stars-big">\${stars}</span>
+      overallContainer.innerHTML = `
+        <span class="reviews-stars-big">${stars}</span>
         <span>
-          <span class="reviews-rating-num">\${overall_rating.toFixed(1)}</span>
-          based on \${total_ratings} reviews
+          <span class="reviews-rating-num">${overall_rating.toFixed(1)}</span>
+          based on ${total_ratings} reviews
         </span>
-      \`;
+      `;
     }
 
     const container = document.getElementById('reviews-container');
@@ -581,36 +765,36 @@ async function loadGoogleReviews() {
         .slice(0, 2);
 
       const avatarHTML = review.profile_photo_url 
-        ? \`<img src="\${review.profile_photo_url}" alt="\${review.author_name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-           <div class="review-avatar-fallback" style="display:none;">\${initials}</div>\`
-        : \`<div class="review-avatar-fallback">\${initials}</div>\`;
+        ? `<img src="${review.profile_photo_url}" alt="${review.author_name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="review-avatar-fallback" style="display:none;">${initials}</div>`
+        : `<div class="review-avatar-fallback">${initials}</div>`;
 
-      return \`
+      return `
         <div class="review-card">
           <div class="review-header">
-            \${avatarHTML}
+            ${avatarHTML}
             <div class="review-info">
-              <div class="review-author">\${review.author_name}</div>
-              <div class="review-stars">\${stars}</div>
-              <div class="review-date">\${date}</div>
+              <div class="review-author">${review.author_name}</div>
+              <div class="review-stars">${stars}</div>
+              <div class="review-date">${date}</div>
             </div>
           </div>
-          <p class="review-text">\${review.text || 'Amazing experience!'}</p>
+          <p class="review-text">${review.text || 'Amazing experience!'}</p>
         </div>
-      \`;
+      `;
     }).join('');
 
-    container.innerHTML = \`<div class="reviews-grid">\${reviewsHTML}</div>\`;
+    container.innerHTML = `<div class="reviews-grid">${reviewsHTML}</div>`;
     document.getElementById('reviews-cta').style.display = 'block';
 
   } catch (error) {
     console.error('Failed to load Google reviews:', error);
-    document.getElementById('reviews-container').innerHTML = \`
+    document.getElementById('reviews-container').innerHTML = `
       <div class="reviews-error">
         <p>Unable to load reviews at this time.</p>
-        <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">\${error.message}</p>
+        <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">${error.message}</p>
       </div>
-    \`;
+    `;
   }
 }
 
@@ -644,22 +828,31 @@ if (document.readyState === 'loading') {
 <script src="assets/js/magnetic.js"></script>
 <script src="assets/js/ai-chat-widget.js"></script>
 
-<script>
-initEnquiryForm('tourEnquiryForm','Tour');
-const qr = Config.get('qr_tour');
-if(qr){const img=document.createElement('img');img.src=qr;img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:8px;';document.getElementById('tourQRContainer').innerHTML='';document.getElementById('tourQRContainer').appendChild(img);}
-Media.getByPillar('Tour').then(tourMedia => {
-  if(tourMedia.length){const g=document.getElementById('tourGallery');g.innerHTML='';tourMedia.forEach(m=>{const d=document.createElement('div');d.className='gallery-item';d.innerHTML=`<img src="${m.url}" alt="${m.name}" loading="lazy"/>`;g.appendChild(d);});}
-});
-// Floating particles
-const pc = document.getElementById('tourParticles');
-if(pc){for(let i=0;i<20;i++){const p=document.createElement('div');p.className='tour-particle';p.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*5}s;animation-duration:${3+Math.random()*4}s;`;pc.appendChild(p);}}
 
-// Init Testimonials
-document.addEventListener('DOMContentLoaded', () => {
-  initTestimonials('tourTestimonials');
-});
+<script>
+(function(){
+  var staticPhotos = [
+    '/assets/media/gallery/radha/radha-19.jpg','/assets/media/gallery/radha/radha-20.jpg',
+    '/assets/media/gallery/radha/radha-21.jpg','/assets/media/gallery/radha/radha-22.jpg',
+    '/assets/media/gallery/radha/radha-23.jpg','/assets/media/gallery/radha/radha-24.jpg',
+    '/assets/media/gallery/radha/radha-25.jpg','/assets/media/gallery/radha/radha-26.jpg',
+    '/assets/media/gallery/radha/radha-27.jpg','/assets/media/gallery-tour-1.png'
+  ];
+  function renderGallery(photos){
+    var g = document.getElementById('tourGallery');
+    if(!g) return;
+    g.innerHTML = photos.map(function(src){
+      return '<div class="gallery-item"><img src="'+src+'" alt="Tour Gallery" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:0.75rem;"/></div>';
+    }).join('');
+  }
+  if(typeof Media !== 'undefined'){
+    Media.getByPillar('Tour').then(function(m){
+      renderGallery(m.length ? m.map(function(x){return x.url;}) : staticPhotos);
+    }).catch(function(){ renderGallery(staticPhotos); });
+  } else { renderGallery(staticPhotos); }
+})();
 </script>
+
 
 <!-- STICKY BOOKING BAR -->
 <div class="sticky-booking-bar" id="stickyBookingBar">
@@ -678,13 +871,4 @@ document.addEventListener('DOMContentLoaded', () => {
       body: JSON.stringify({
         page: location.pathname,
         pillar: document.body.dataset.pillar || ''
-      })
-    }).catch(()=>{});
-  } catch(e) {}
-})();
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="/assets/js/three-hero.js"></script>
-</body>
-</html>
+      }

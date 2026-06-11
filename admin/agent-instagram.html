@@ -55,7 +55,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
       <div>
         <div class="glass-card accent-purple">
           <div class="card-header"><div class="card-title" style="color:var(--purple);"><span class="icon">✨</span> NEW POST</div></div>
-          <div class="form-group"><label class="form-label">Pillar</label><select class="form-select" id="iPillar"><option value="radha">🪔 Radha</option><option value="veronica">🎤 Veronica</option><option value="tour">🧭 Tour</option></select></div>
+          <div class="form-group"><label class="form-label">Pillar</label><select class="form-select" id="iPillar"><option value="radha">🪔 Radhaa</option><option value="veronica">🎤 Veronica</option><option value="tour">🧭 Tour</option></select></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
             <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="iDate"/></div>
             <div class="form-group"><label class="form-label">Time</label><input type="time" class="form-input" id="iTime" value="10:00"/></div>
@@ -80,7 +80,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
     <div class="glass-card">
       <div class="card-header"><div class="card-title"><span class="icon">⏰</span> AI-OPTIMIZED POSTING WINDOWS</div></div>
       <div class="tabs" style="margin-bottom:1rem;">
-        <button class="tab active" onclick="loadTimes('radha',this)">🪔 Radha</button>
+        <button class="tab active" onclick="loadTimes('radha',this)">🪔 Radhaa</button>
         <button class="tab" onclick="loadTimes('veronica',this)">🎤 Veronica</button>
         <button class="tab" onclick="loadTimes('tour',this)">🧭 Tour</button>
       </div>
@@ -155,11 +155,11 @@ function loadTimes(pillar,el){
 
 function loadHashtags(){
   const sets={
-    radha:['#SangeetNight','#WeddingHost','#RadhaDudega','#FamilyEvents','#IndianWedding','#MehendiVibes','#SangeetChoreography','#HindiHost','#EventMC','#WeddingCelebration','#TraditionalEvents','#CulturalCelebrations'],
+    radha:['#SangeetNight','#WeddingHost','#RadhaDudeja','#FamilyEvents','#IndianWedding','#MehendiVibes','#SangeetChoreography','#HindiHost','#EventMC','#WeddingCelebration','#TraditionalEvents','#CulturalCelebrations'],
     vero:['#CorporateMC','#EventHost','#ConferenceHost','#TechSummit','#Emcee','#StagePresence','#CorporateEvents','#KeynoteSpeaker','#PanelModerator','#BusinessEvents','#AwardsCeremony','#LeadershipSummit'],
     tour:['#HeritageWalk','#CulturalTour','#TrailCurator','#HiddenGems','#IndiaTravel','#HeritageIndia','#WalkingTour','#OldDelhiWalk','#CulturalExperience','#TravelIndia','#MountainTrails','#HistoryWalk']
   };
-  ['Radha','Vero','Tour'].forEach(p=>{
+  ['Radhaa','Vero','Tour'].forEach(p=>{
     const el=document.getElementById('hash'+p);
     const tags=sets[p.toLowerCase()]||[];
     el.innerHTML=tags.map(t=>`<span class="hashtag" onclick="navigator.clipboard.writeText('${t}');showToast('Copied!','success')">${t}</span>`).join('');

@@ -539,7 +539,7 @@ app.get('/api/media/public', (req, res) => {
 });
 
 app.get('/api/combined-media', (req, res) => {
-  const profiles = ['radhaadudega', 'veronicaemcee', 'thetrailcurator'];
+  const profiles = ['RadhaDudeja', 'veronicaemcee', 'thetrailcurator'];
   const result = {};
   const placeholderImg = 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop';
   const placeholderVid = 'https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-background-1611-large.mp4';

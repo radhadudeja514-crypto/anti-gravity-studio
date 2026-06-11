@@ -18,7 +18,7 @@
         patterns: ['price', 'cost', 'fee', 'rate', 'charge', 'how much', 'budget', 'package', 'affordable'],
         response: (ctx) => {
           const pillar = ctx.pillar;
-          if (pillar === 'radha') return "💍 **Radha (Wedding)** packages start on request for a sangeet night. Full wedding coverage starts at [pricing on request]. Custom packages available! <a href='/booking.html'>Book a free consultation →</a>";
+          if (pillar === 'radha') return "💍 **Radhaa (Wedding)** packages start on request for a sangeet night. Full wedding coverage starts at [pricing on request]. Custom packages available! <a href='/booking.html'>Book a free consultation →</a>";
           if (pillar === 'veronica') return "🎤 **Veronica (Corporate)** hosting starts at [pricing on request]for a half-day event and [pricing on request].5L+ for full-day conferences. <a href='/booking.html'>Get a custom quote →</a>";
           if (pillar === 'tour') return "🧭 **Trail Curator** experiences start at [pricing on request] for heritage walks, going up to [pricing on request]for custom mountain expeditions. <a href='/booking.html'>Plan your trail →</a>";
           return "Our packages vary by service. 💍 Weddings on request · 🎤 Corporate on request · 🧭 Tours on request/person. <a href='/booking.html'>Get a personalised quote →</a>";
@@ -30,7 +30,7 @@
       },
       {
         patterns: ['wedding', 'sangeet', 'mehendi', 'haldi', 'shaadi', 'bride', 'groom', 'radha'],
-        response: () => "💍 **Radha** is our wedding & sangeet pillar — specialising in destination weddings, sangeet nights, and heirloom photo/video coverage. <a href='/pillar-radha.html'>Explore Radha →</a>",
+        response: () => "💍 **Radhaa** is our wedding & sangeet pillar — specialising in destination weddings, sangeet nights, and heirloom photo/video coverage. <a href='/pillar-radha.html'>Explore Radhaa →</a>",
         setPillar: 'radha'
       },
       {
@@ -45,11 +45,11 @@
       },
       {
         patterns: ['whatsapp', 'call', 'contact', 'phone', 'reach', 'talk', 'speak'],
-        response: () => "📱 You can reach Radha directly on WhatsApp: <a href='https://wa.me/918192901515' target='_blank'>+91 81929 01515</a>. We typically respond within 30 minutes! ⚡"
+        response: () => "📱 You can reach Radhaa directly on WhatsApp: <a href='https://wa.me/918192901515' target='_blank'>+91 81929 01515</a>. We typically respond within 30 minutes! ⚡"
       },
       {
         patterns: ['instagram', 'social', 'follow', 'portfolio', 'gallery', 'reels', 'photos'],
-        response: () => "📸 Follow us across our platforms:<br>• <strong>Studio:</strong> @AntiGravityStudio.in<br>• <strong>Weddings:</strong> @RadhaDudega<br>• <strong>Corporate:</strong> @VeronicaEmcee<br>• <strong>Trail:</strong> @TheTrailCurator"
+        response: () => "📸 Follow us across our platforms:<br>• <strong>Studio:</strong> @AntiGravityStudio.in<br>• <strong>Weddings:</strong> @RadhaDudeja<br>• <strong>Corporate:</strong> @VeronicaEmcee<br>• <strong>Trail:</strong> @TheTrailCurator"
       },
       {
         patterns: ['hello', 'hi', 'hey', 'hola', 'namaste', 'good morning', 'good evening', 'sup'],
@@ -78,7 +78,7 @@
     ],
 
     fallback: [
-      "Hmm, I didn't quite catch that 🤔 You can ask me about **pricing**, **booking**, the **Radha** wedding pillar, **Veronica** corporate, or the **Trail Curator** tour experiences!",
+      "Hmm, I didn't quite catch that 🤔 You can ask me about **pricing**, **booking**, the **Radhaa** wedding pillar, **Veronica** corporate, or the **Trail Curator** tour experiences!",
       "Not sure about that one! Try asking me: *'What are your wedding prices?'* or *'How do I book an event?'* 🎯",
       "I'm still learning! For complex queries, WhatsApp us directly: <a href='https://wa.me/918192901515' target='_blank'>+91 81929 01515</a> 📱",
     ]

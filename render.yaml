@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     buildCommand: npm install --omit=dev
-    startCommand: node server.js
+    startCommand: node server-fixed.js
     healthCheckPath: /api/health
     disk:
       name: data
@@ -19,6 +19,29 @@ services:
         value: /opt/render/project/src/data/uploads
       - key: SESSION_SECRET
         value: 23774d2af9a96f63439f3aff4613c98492903b97ba74c5f8bffbabbcf9cae171
+      - key: ADMIN_USER_EMAIL
+        sync: false
       - key: ADMIN_USER_PASSWORD
         sync: false
-      - key: ADMIN_US
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CLOUDINARY_NAME
+        sync: false
+      - key: CLOUDINARY_KEY
+        sync: false
+      - key: CLOUDINARY_SECRET
+        sync: false
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false
+      - key: GOOGLE_PLACE_ID
+        sync: false
+      - key: GA4_MEASUREMENT_ID
+        sync: false
+      - key: GMB_ACCESS_TOKEN
+        sync: false
+      - key: GMB_ACCOUNT_ID
+        sync: false
+      - key: GMB_LOCATION_ID
+        sync: false
