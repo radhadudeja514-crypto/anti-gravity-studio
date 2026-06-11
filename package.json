@@ -13,7 +13,7 @@
   "author": "Anti Gravity Studio",
   "license": "ISC",
   "type": "commonjs",
-  "engines": { "node": ">=18.0.0" },
+  "engines": { "node": "20.x" },
   "dependencies": {
     "cloudinary": "^2.10.0",
     "cors": "^2.8.6",

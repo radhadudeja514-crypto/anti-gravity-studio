@@ -744,7 +744,7 @@ app.post('/api/media/merge', requireAuth, (req, res) => {
 });
 
 // ── Instagram scheduling queue ────────────────────────────────────────────────
-db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
+if (db) db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   mediaId       INTEGER,
   mediaUrl      TEXT,
@@ -755,14 +755,14 @@ db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
   createdAt     TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
 
-app.get('/api/instagram/queue', requireAuth, (req, res) => {
+app.get('/api/instagram/queue', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows.map(r => ({ ...r, accounts: JSON.parse(r.accounts || '[]') })));
   });
 });
 
-app.post('/api/instagram/queue', requireAuth, (req, res) => {
+app.post('/api/instagram/queue', requireAuth, requireDb, (req, res) => {
   const { mediaId, mediaUrl, caption, accounts, scheduledFor } = req.body;
   if (!mediaUrl || !caption)
     return res.status(400).json({ error: 'mediaUrl and caption required' });
@@ -776,7 +776,7 @@ app.post('/api/instagram/queue', requireAuth, (req, res) => {
   );
 });
 
-app.put('/api/instagram/queue/:id', requireAuth, (req, res) => {
+app.put('/api/instagram/queue/:id', requireAuth, requireDb, (req, res) => {
   const { status } = req.body;
   db.run('UPDATE instagram_queue SET status=? WHERE id=?', [status, req.params.id], err => {
     if (err) return res.status(500).json({ error: err.message });
@@ -784,7 +784,7 @@ app.put('/api/instagram/queue/:id', requireAuth, (req, res) => {
   });
 });
 
-app.delete('/api/instagram/queue/:id', requireAuth, (req, res) => {
+app.delete('/api/instagram/queue/:id', requireAuth, requireDb, (req, res) => {
   db.run('DELETE FROM instagram_queue WHERE id=?', [req.params.id], err => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
