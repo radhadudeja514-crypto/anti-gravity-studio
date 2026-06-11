@@ -804,7 +804,7 @@ app.get('/api/public-config', (req, res) => {
 });
 
 // ── PAYMENTS ─────────────────────────────────────────────────────────────────
-db.run(`CREATE TABLE IF NOT EXISTS payments (
+if (db) db.run(`CREATE TABLE IF NOT EXISTS payments (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   leadId      INTEGER,
   amount      REAL,
@@ -814,7 +814,7 @@ db.run(`CREATE TABLE IF NOT EXISTS payments (
   createdAt   TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
 
-app.get('/api/payments', requireAuth, (req, res) => {
+app.get('/api/payments', requireAuth, requireDb, (req, res) => {
   db.all(`SELECT p.*, l.name as clientName, l.eventType
           FROM payments p
           LEFT JOIN leads l ON l.id = p.leadId
@@ -824,7 +824,7 @@ app.get('/api/payments', requireAuth, (req, res) => {
   });
 });
 
-app.post('/api/payments', requireAuth, (req, res) => {
+app.post('/api/payments', requireAuth, requireDb, (req, res) => {
   const { leadId, amount, method, notes, status } = req.body;
   if (!amount) return res.status(400).json({ error: 'amount required' });
   db.run(
