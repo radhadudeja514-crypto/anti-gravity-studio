@@ -123,7 +123,8 @@ function rateLimit(maxReq, windowMs) {
 }
 
 // ── Setup directories ───────────────────────────────────────────────────────
-const uploadsDir = path.join(__dirname, 'uploads');
+// Use UPLOAD_DIR env var (Render persistent disk) if set, else fall back to local uploads/
+const uploadsDir = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 ['corporate', 'sangeet', 'tour', 'main'].forEach(d => {
   const p = path.join(uploadsDir, d);
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
@@ -136,7 +137,7 @@ app.use(express.json({ limit: '2mb' }));
 // Serve static files (except /admin/* which needs auth check)
 
 // ── YOUTUBE THUMBNAIL IMPORT ─────────────────────────────────────────────────
-app.post('/api/media/import-youtube', requireAuth, (req, res) => {
+app.post('/api/media/import-youtube', requireAuth, requireDb, (req, res) => {
   const { url, pillar } = req.body;
   if (!url) return res.status(400).json({ error: 'URL required' });
   const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);
@@ -155,7 +156,7 @@ app.post('/api/media/import-youtube', requireAuth, (req, res) => {
 });
 
 // ── BULK YOUTUBE IMPORT ───────────────────────────────────────────────────────
-app.post('/api/media/import-youtube-bulk', requireAuth, (req, res) => {
+app.post('/api/media/import-youtube-bulk', requireAuth, requireDb, (req, res) => {
   const { urls, pillar } = req.body;
   if (!Array.isArray(urls) || !urls.length) return res.status(400).json({ error: 'urls array required' });
   const results = [];
@@ -185,7 +186,7 @@ app.get('/api/google-photos/callback', (req, res) => {
 });
 
 // ── GOOGLE PHOTOS IMPORT (by access token + media item URLs) ──────────────────
-app.post('/api/media/import-google-photos', requireAuth, async (req, res) => {
+app.post('/api/media/import-google-photos', requireAuth, requireDb, async (req, res) => {
   const { items, pillar } = req.body; // items: [{url, name}]
   if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'items array required' });
   const results = [];
@@ -413,14 +414,14 @@ app.get('/api/admin/check', (req, res) => {
 });
 
 // ── Leads ───────────────────────────────────────────────────────────
-app.get('/api/leads', requireAuth, (req, res) => {
+app.get('/api/leads', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.get('/api/admin/analytics', requireAuth, (req, res) => {
+app.get('/api/admin/analytics', requireAuth, requireDb, (req, res) => {
   db.all('SELECT pillar, budget FROM leads', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     
@@ -456,7 +457,7 @@ app.get('/api/admin/analytics', requireAuth, (req, res) => {
   });
 });
 
-app.get('/api/admin/insights', requireAuth, (req, res) => {
+app.get('/api/admin/insights', requireAuth, requireDb, (req, res) => {
   db.all('SELECT pillar, timestamp, budget FROM leads', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     
@@ -495,7 +496,7 @@ app.get('/api/admin/insights', requireAuth, (req, res) => {
   });
 });
 
-app.post('/api/leads', rateLimit(10, 60_000), (req, res) => {
+app.post('/api/leads', rateLimit(10, 60_000), requireDb, (req, res) => {
   const { name, phone, email, eventType, eventDate, budget, message, pillar, company } = req.body;
   if (!name || !phone) return res.status(400).json({ error: 'Name and phone are required.' });
 
@@ -534,14 +535,14 @@ app.post('/api/leads', rateLimit(10, 60_000), (req, res) => {
   );
 });
 
-app.put('/api/leads/:id', requireAuth, (req, res) => {
+app.put('/api/leads/:id', requireAuth, requireDb, (req, res) => {
   db.run('UPDATE leads SET status=? WHERE id=?', [req.body.status, req.params.id], err => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
 });
 
-app.delete('/api/leads/:id', requireAuth, (req, res) => {
+app.delete('/api/leads/:id', requireAuth, requireDb, (req, res) => {
   db.run('DELETE FROM leads WHERE id=?', [req.params.id], err => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
@@ -549,14 +550,14 @@ app.delete('/api/leads/:id', requireAuth, (req, res) => {
 });
 
 // ── Media ───────────────────────────────────────────────────────────
-app.get('/api/media', requireAuth, (req, res) => {
+app.get('/api/media', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM media ORDER BY timestamp DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.get('/api/media/public', (req, res) => {
+app.get('/api/media/public', requireDb, (req, res) => {
   db.all('SELECT * FROM media ORDER BY timestamp DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
@@ -837,7 +838,7 @@ app.post('/api/payments', requireAuth, requireDb, (req, res) => {
   );
 });
 
-app.put('/api/payments/:id', requireAuth, (req, res) => {
+app.put('/api/payments/:id', requireAuth, requireDb, (req, res) => {
   const { status, amount, method, notes } = req.body;
   db.run(
     'UPDATE payments SET status=COALESCE(?,status), amount=COALESCE(?,amount), method=COALESCE(?,method), notes=COALESCE(?,notes) WHERE id=?',
@@ -846,7 +847,7 @@ app.put('/api/payments/:id', requireAuth, (req, res) => {
   );
 });
 
-app.delete('/api/payments/:id', requireAuth, (req, res) => {
+app.delete('/api/payments/:id', requireAuth, requireDb, (req, res) => {
   db.run('DELETE FROM payments WHERE id=?', [req.params.id], err => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
@@ -854,7 +855,7 @@ app.delete('/api/payments/:id', requireAuth, (req, res) => {
 });
 
 // ── AGENT stubs (read-only analytics endpoints for agent pages) ────────────
-app.get('/api/agent/data/health', requireAuth, (req, res) => {
+app.get('/api/agent/data/health', requireAuth, requireDb, (req, res) => {
   db.get('SELECT COUNT(*) as leads FROM leads', [], (_e, r1) => {
     db.get('SELECT COUNT(*) as media FROM media', [], (_e2, r2) => {
       res.json({ status: 'ok', leads: r1.leads, media: r2.media, uptime: process.uptime() });
@@ -862,28 +863,28 @@ app.get('/api/agent/data/health', requireAuth, (req, res) => {
   });
 });
 
-app.get('/api/agent/data/media-stats', requireAuth, (req, res) => {
+app.get('/api/agent/data/media-stats', requireAuth, requireDb, (req, res) => {
   db.all('SELECT pillar, type, COUNT(*) as count FROM media GROUP BY pillar, type', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.get('/api/agent/data/leads-export', requireAuth, (req, res) => {
+app.get('/api/agent/data/leads-export', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM leads ORDER BY timestamp DESC LIMIT 100', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.get('/api/agent/instagram/scheduled', requireAuth, (req, res) => {
+app.get('/api/agent/instagram/scheduled', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows.map(r => ({ ...r, accounts: JSON.parse(r.accounts || '[]') })));
   });
 });
 
-app.post('/api/agent/instagram/schedule-post', requireAuth, (req, res) => {
+app.post('/api/agent/instagram/schedule-post', requireAuth, requireDb, (req, res) => {
   const { mediaUrl, caption, accounts, scheduledFor } = req.body;
   if (!mediaUrl || !caption) return res.status(400).json({ error: 'mediaUrl and caption required' });
   db.run(
@@ -907,7 +908,7 @@ app.get('/api/agent/instagram/best-times', requireAuth, (_req, res) => {
   ]);
 });
 
-app.get('/api/agent/marketing/all-pillars', requireAuth, (_req, res) => {
+app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) => {
   db.all('SELECT pillar, COUNT(*) as mediaCount FROM media GROUP BY pillar', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     const pillars = [
@@ -927,7 +928,7 @@ app.get('/api/agent/design/theme/:pillar', requireAuth, (req, res) => {
   res.json({ pillar: req.params.pillar, theme: 'default' });
 });
 
-app.post('/api/agent/design/save-theme', requireAuth, (req, res) => {
+app.post('/api/agent/design/save-theme', requireAuth, requireDb, (req, res) => {
   const { pillar, theme } = req.body;
   db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [`theme_${pillar}`, JSON.stringify(theme)], err => {
     if (err) return res.status(500).json({ error: err.message });
@@ -935,7 +936,7 @@ app.post('/api/agent/design/save-theme', requireAuth, (req, res) => {
   });
 });
 
-app.delete('/api/media/:id', requireAuth, (req, res) => {
+app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
   db.get('SELECT url FROM media WHERE id=?', [req.params.id], (err, row) => {
     if (row && row.url.startsWith('/uploads')) {
       const fp = path.join(__dirname, row.url);
@@ -968,14 +969,14 @@ app.post('/api/generate-qr', rateLimit(20, 60_000), (req, res) => {
 });
 
 // ── Schedule ──────────────────────────────────────────────────────────
-app.get('/api/schedule', requireAuth, (req, res) => {
+app.get('/api/schedule', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM schedule ORDER BY date ASC, time ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.post('/api/schedule', requireAuth, (req, res) => {
+app.post('/api/schedule', requireAuth, requireDb, (req, res) => {
   const { date, time, clientName, eventType, pillar, notes } = req.body;
   db.run(
     'INSERT INTO schedule (date,time,clientName,eventType,pillar,notes) VALUES (?,?,?,?,?,?)',
@@ -987,7 +988,7 @@ app.post('/api/schedule', requireAuth, (req, res) => {
   );
 });
 
-app.delete('/api/schedule/:id', requireAuth, (req, res) => {
+app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
   db.run('DELETE FROM schedule WHERE id=?', [req.params.id], err => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
@@ -1007,7 +1008,7 @@ app.post('/api/analytics/event', rateLimit(60, 60_000), (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/analytics/stats', requireAuth, (req, res) => {
+app.get('/api/analytics/stats', requireAuth, requireDb, (req, res) => {
   db.get('SELECT COUNT(*) as total FROM page_views', [], (err, views) => {
     db.get('SELECT COUNT(*) as total FROM events', [], (err2, events) => {
       db.all('SELECT page, COUNT(*) as hits FROM page_views GROUP BY page ORDER BY hits DESC LIMIT 10', [], (err3, top) => {
@@ -1018,7 +1019,7 @@ app.get('/api/analytics/stats', requireAuth, (req, res) => {
 });
 
 // ── Config ───────────────────────────────────────────────────────────
-app.get('/api/config', requireAuth, (req, res) => {
+app.get('/api/config', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM config', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     const cfg = {};
@@ -1027,7 +1028,7 @@ app.get('/api/config', requireAuth, (req, res) => {
   });
 });
 
-app.post('/api/config', requireAuth, (req, res) => {
+app.post('/api/config', requireAuth, requireDb, (req, res) => {
   const { key, value } = req.body;
   db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [key, value], err => {
     if (err) return res.status(500).json({ error: err.message });
@@ -1036,7 +1037,7 @@ app.post('/api/config', requireAuth, (req, res) => {
 });
 
 // ── Backup ───────────────────────────────────────────────────────────
-app.get('/api/backup/leads', requireAuth, (req, res) => {
+app.get('/api/backup/leads', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     const headers = ['id','name','phone','email','eventType','eventDate','budget','pillar','company','status','message','timestamp'];
