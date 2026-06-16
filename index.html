@@ -138,22 +138,18 @@
 
 <!-- HERO -->
 <section class="hero" id="hero">
-<div id="hero-3d" style="position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.45"></div>
-  <!-- THREE.JS 3D CANVAS -->
-  <canvas id="hero-canvas" aria-hidden="true"></canvas>
-  <div class="hero-video-wrap" id="heroCarousel">
-    <video class="hero-vid active" autoplay muted loop playsinline poster="assets/media/hero1-thumb.jpg">
-      <source src="" data-src="assets/media/hero-corporate.mp4" type="video/mp4"/>
-    </video>
-    <video class="hero-vid" muted loop playsinline poster="assets/media/hero2-thumb.jpg">
-      <source src="" data-src="assets/media/hero-sangeet.mp4" type="video/mp4"/>
-    </video>
-    <video class="hero-vid" muted loop playsinline poster="assets/media/hero3-thumb.jpg">
-      <source src="" data-src="assets/media/hero-tour.mp4" type="video/mp4"/>
-    </video>
-    <div class="hero-overlay"></div>
+  <!-- HERO PHOTO SLIDESHOW — 3 photos set from Admin → Settings -->
+  <div id="heroBgSlider" style="position:absolute;inset:0;z-index:0;overflow:hidden">
+    <div class="hbg-slide" id="hbg0" style="position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 1.4s ease;opacity:1;background-color:#0a0a12"></div>
+    <div class="hbg-slide" id="hbg1" style="position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 1.4s ease;opacity:0;background-color:#0a0a12"></div>
+    <div class="hbg-slide" id="hbg2" style="position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 1.4s ease;opacity:0;background-color:#0a0a12"></div>
   </div>
-  <div class="hero-content container">
+  <!-- Dark overlay so text stays readable -->
+  <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.52) 0%,rgba(0,0,0,.68) 60%,rgba(0,0,0,.88) 100%)"></div>
+  <!-- Stars canvas kept subtle -->
+  <canvas id="hero-canvas" aria-hidden="true" style="position:absolute;inset:0;z-index:2;opacity:0.18;pointer-events:none"></canvas>
+  <div class="hero-overlay" style="z-index:3"></div>
+  <div class="hero-content container" style="position:relative;z-index:5">
     <div class="hero-label animate-fade-up">
       <span class="dot"></span> ⚡ AI-Optimized Event MC · Premier Corporate Host · Smart Tour Curator
     </div>
@@ -170,11 +166,11 @@
       <a href="booking.html" class="btn btn-ghost magnetic-btn">⚡ Secure Your Date</a>
     </div>
   </div>
-  <!-- Video dots -->
-  <div class="hero-dots">
-    <button class="hero-dot active" data-index="0" aria-label="Corporate"></button>
-    <button class="hero-dot" data-index="1" aria-label="Sangeet"></button>
-    <button class="hero-dot" data-index="2" aria-label="Tour"></button>
+  <!-- Slide dots -->
+  <div class="hero-dots" style="position:relative;z-index:6">
+    <button class="hero-dot active" data-index="0" aria-label="Photo 1"></button>
+    <button class="hero-dot" data-index="1" aria-label="Photo 2"></button>
+    <button class="hero-dot" data-index="2" aria-label="Photo 3"></button>
   </div>
   <!-- Scroll hint -->
   <div class="scroll-hint">
@@ -341,6 +337,39 @@
   </div>
 </section>
 <script>
+/* ── HERO PHOTO SLIDESHOW ── */
+(function(){
+  var slides = [document.getElementById('hbg0'), document.getElementById('hbg1'), document.getElementById('hbg2')];
+  var dots   = document.querySelectorAll('.hero-dot');
+  var cur    = 0;
+  var imgs   = ['','',''];  // filled from API
+  var timer;
+
+  function showSlide(n){
+    slides.forEach(function(s,i){ s.style.opacity = i===n ? '1':'0'; });
+    dots.forEach(function(d,i){ d.classList.toggle('active', i===n); });
+    cur = n;
+  }
+
+  function autoPlay(){
+    clearInterval(timer);
+    timer = setInterval(function(){ showSlide((cur+1)%3); }, 5000);
+  }
+
+  dots.forEach(function(d,i){
+    d.addEventListener('click', function(){ showSlide(i); autoPlay(); });
+  });
+
+  // Load hero images from server (public endpoint)
+  fetch('/api/hero-images').then(function(r){ return r.json(); }).then(function(d){
+    imgs = [d.hero_bg_1||'', d.hero_bg_2||'', d.hero_bg_3||''];
+    slides.forEach(function(s,i){
+      if(imgs[i]) s.style.backgroundImage = 'url('+imgs[i]+')';
+    });
+    if(imgs.some(function(u){ return !!u; })) autoPlay();
+  }).catch(function(){});
+})();
+
 (function(){
   const PREVIEW = [
     {url:'assets/media/gallery/photos/IMG20260509214426.jpg',type:'image'},

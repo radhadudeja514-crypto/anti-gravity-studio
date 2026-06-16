@@ -146,50 +146,105 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
       </div>
     </div>
   </div>
-</div>
+
+  <!-- HERO BACKGROUND PHOTOS -->
+  <div class="glass-card accent-cyan" style="margin-top:1.25rem">
+    <div class="card-header" style="margin-bottom:.75rem">
+      <div class="card-title">🖼️ HERO BACKGROUND PHOTOS</div>
+      <span style="font-size:.72rem;color:var(--text-muted)">3 photos that rotate on the homepage hero — pick from gallery or paste a URL</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1rem" id="heroPickers">
+      <!-- Slot 1 -->
+      <div>
+        <div style="font-size:.72rem;color:var(--cyan);font-weight:600;margin-bottom:.35rem;letter-spacing:.06em">PHOTO 1</div>
+        <div id="hprev0" style="width:100%;aspect-ratio:16/9;border-radius:8px;border:2px dashed rgba(0,249,255,.25);background:#0a0a12;background-size:cover;background-position:center;margin-bottom:.4rem"></div>
+        <input class="form-input" id="hurl0" placeholder="URL or pick below" style="font-size:.75rem;margin-bottom:.3rem" oninput="previewHero(0)"/>
+        <button class="btn btn-sm" style="width:100%;font-size:.72rem" onclick="openHeroPicker(0)">📷 Pick from Gallery</button>
+      </div>
+      <!-- Slot 2 -->
+      <div>
+        <div style="font-size:.72rem;color:var(--cyan);font-weight:600;margin-bottom:.35rem;letter-spacing:.06em">PHOTO 2</div>
+        <div id="hprev1" style="width:100%;aspect-ratio:16/9;border-radius:8px;border:2px dashed rgba(0,249,255,.25);background:#0a0a12;background-size:cover;background-position:center;margin-bottom:.4rem"></div>
+        <input class="form-input" id="hurl1" placeholder="URL or pick below" style="font-size:.75rem;margin-bottom:.3rem" oninput="previewHero(1)"/>
+        <button class="btn btn-sm" style="width:100%;font-size:.72rem" onclick="openHeroPicker(1)">📷 Pick from Gallery</button>
+      </div>
+      <!-- Slot 3 -->
+      <div>
+        <div style="font-size:.72rem;color:var(--cyan);font-weight:600;margin-bottom:.35rem;letter-spacing:.06em">PHOTO 3</div>
+        <div id="hprev2" style="width:100%;aspect-ratio:16/9;border-radius:8px;border:2px dashed rgba(0,249,255,.25);background:#0a0a12;background-size:cover;background-position:center;margin-bottom:.4rem"></div>
+        <input class="form-input" id="hurl2" placeholder="URL or pick below" style="font-size:.75rem;margin-bottom:.3rem" oninput="previewHero(2)"/>
+        <button class="btn btn-sm" style="width:100%;font-size:.72rem" onclick="openHeroPicker(2)">📷 Pick from Gallery</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveHeroImages()" style="font-size:.82rem">💾 Save Hero Photos</button>
+    <span id="heroSaveMsg" style="font-size:.78rem;color:var(--green);margin-left:.75rem"></span>
+
+    <!-- Gallery picker modal -->
+    <div id="heroPickerModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center">
+      <div style="background:#0d0d14;border:1px solid rgba(0,249,255,.2);border-radius:14px;padding:1.25rem;width:min(660px,95vw);max-height:85vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+          <div style="font-size:.82rem;font-weight:600;color:var(--cyan)">Pick photo for Hero Slot <span id="heroPickSlot"></span></div>
+          <button onclick="document.getElementById('heroPickerModal').style.display='none'" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer">✕</button>
+        </div>
+        <div id="heroGalleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /admin-page -->
 
 <script>
-async function loadData(){
-  try{
-    const cfg=await fetch('/api/config').then(r=>r.json()).catch(()=>({}));
-    Object.entries(cfg).forEach(([k,v])=>{const el=document.getElementById('cfg_'+k);if(el)el.value=v;});
-  }catch(e){}
-  loadHealth(); loadLogs();
+/* ── HERO IMAGE MANAGEMENT ── */
+var heroPickingSlot = 0;
+
+function previewHero(i){
+  var url = document.getElementById('hurl'+i).value.trim();
+  var prev = document.getElementById('hprev'+i);
+  prev.style.backgroundImage = url ? 'url('+url+')' : 'none';
+  prev.style.borderColor = url ? 'rgba(0,249,255,.6)' : 'rgba(0,249,255,.25)';
 }
 
-async function saveKey(key){
-  const el=document.getElementById('cfg_'+key);if(!el)return;
-  try{
-    await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,value:el.value})});
-    showToast(`${key} saved!`,'success');
-  }catch(e){showToast('Save failed','error');}
+function openHeroPicker(slot){
+  heroPickingSlot = slot;
+  document.getElementById('heroPickSlot').textContent = slot+1;
+  document.getElementById('heroPickerModal').style.display = 'flex';
+  var grid = document.getElementById('heroGalleryGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1rem;color:#666;font-size:.82rem">Loading gallery…</div>';
+  fetch('/api/media').then(function(r){return r.json();}).then(function(items){
+    var photos = (items||[]).filter(function(m){return !/video/i.test(m.type||'')&&m.url;});
+    if(!photos.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;color:#666">No photos in gallery yet — upload some first!</div>';return;}
+    grid.innerHTML = photos.map(function(m){
+      return '<div style="aspect-ratio:1;border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .15s" onclick="pickHeroPhoto(\''+m.url.replace(/'/g,"\\'")+'\')" title="'+((m.originalName||m.name||'')).replace(/"/g,'')+'"><img src="'+m.url+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.style.display=\'none\'"/></div>';
+    }).join('');
+  }).catch(function(){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;color:#f66">Could not load gallery</div>';});
 }
 
-async function loadHealth(){
-  try{
-    const h=await fetch('/api/agent/data/health').then(r=>r.json());
-    document.getElementById('healthStatus').innerHTML=`
-      <div style="display:grid;gap:0.5rem;">
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Server Status</span><span class="badge badge-green">ONLINE</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Uptime</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.uptime||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Memory</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.memory||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>DB Tables</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.tables||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Total Leads</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.leads||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;"><span>Total Media</span><span style="font-family:var(--font-display);font-size:0.75rem;font-weight:600;">${h.media||'—'}</span></div>
-      </div>
-    `;
-  }catch(e){document.getElementById('healthStatus').innerHTML='<div class="empty-state">Could not fetch health data</div>';}
+function pickHeroPhoto(url){
+  document.getElementById('hurl'+heroPickingSlot).value = url;
+  previewHero(heroPickingSlot);
+  document.getElementById('heroPickerModal').style.display = 'none';
 }
 
-async function loadLogs(){
+async function saveHeroImages(){
+  var body = {
+    hero_bg_1: document.getElementById('hurl0').value.trim(),
+    hero_bg_2: document.getElementById('hurl1').value.trim(),
+    hero_bg_3: document.getElementById('hurl2').value.trim()
+  };
   try{
-    const d=await fetch('/api/admin/logs').then(r=>r.json());
-    document.getElementById('serverLog').textContent=d.stdout||'No logs available.';
-    document.getElementById('errorLog').textContent=d.stderr||'No errors.';
-  }catch(e){document.getElementById('serverLog').textContent='Failed to load logs.';}
+    var d = await fetch('/api/hero-images',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();});
+    var msg = document.getElementById('heroSaveMsg');
+    if(d.success){ msg.textContent='✅ Saved! Homepage will show new photos.'; setTimeout(function(){msg.textContent='';},3000); }
+    else { msg.style.color='#f66'; msg.textContent='❌ Error saving'; }
+  }catch(e){ document.getElementById('heroSaveMsg').textContent='❌ Network error'; }
 }
 
-loadData();
+// Load current hero images on page load
+fetch('/api/hero-images').then(function(r){return r.json();}).then(function(d){
+  ['hero_bg_1','hero_bg_2','hero_bg_3'].forEach(function(k,i){
+    if(d[k]){ document.getElementById('hurl'+i).value=d[k]; previewHero(i); }
+  });
+}).catch(function(){});
 </script>
 <script src="../assets/js/admin-nav.js"></script>
 </body>

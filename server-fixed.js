@@ -205,6 +205,26 @@ app.post('/api/media/import-google-photos', requireAuth, requireDb, async (req, 
   });
 });
 
+// ── Hero background images (3 photos, admin-controlled) ──────────────────────
+app.get('/api/hero-images', requireDb, (req, res) => {
+  db.all("SELECT key,value FROM config WHERE key IN ('hero_bg_1','hero_bg_2','hero_bg_3')", [], (err, rows) => {
+    const imgs = { hero_bg_1: '', hero_bg_2: '', hero_bg_3: '' };
+    if (rows) rows.forEach(r => (imgs[r.key] = r.value));
+    res.json(imgs);
+  });
+});
+
+app.post('/api/hero-images', requireAuth, requireDb, (req, res) => {
+  const { hero_bg_1, hero_bg_2, hero_bg_3 } = req.body;
+  const pairs = [['hero_bg_1', hero_bg_1 || ''], ['hero_bg_2', hero_bg_2 || ''], ['hero_bg_3', hero_bg_3 || '']];
+  let done = 0;
+  pairs.forEach(([k, v]) => {
+    db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [k, v], () => {
+      if (++done === pairs.length) res.json({ success: true });
+    });
+  });
+});
+
 // ── AI image analysis (Gemini Flash) — suggests pillar from base64 image ──────
 app.post('/api/media/ai-analyze', requireAuth, async (req, res) => {
   const { images } = req.body; // [{base64, mimeType, filename}]

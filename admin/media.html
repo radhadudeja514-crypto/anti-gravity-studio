@@ -463,30 +463,26 @@ async function saveAllYT(){
 
 /* ── GOOGLE PHOTOS ── */
 function connectGooglePhotos(){
-  if(!GOOGLE_CLIENT_ID){showToast('Google Client ID not configured','error');return;}
+  if(!GOOGLE_CLIENT_ID){showToast('Google Client ID not configured — set it in Admin → Settings','error');return;}
   var scope='https://www.googleapis.com/auth/photoslibrary.readonly';
-  var redirect=window.location.origin+'/admin/oauth-callback.html';
+  var redirect=window.location.origin+'/api/google-photos/callback';
   var url='https://accounts.google.com/o/oauth2/v2/auth'
     +'?client_id='+encodeURIComponent(GOOGLE_CLIENT_ID)
     +'&redirect_uri='+encodeURIComponent(redirect)
     +'&response_type=token'
     +'&scope='+encodeURIComponent(scope)
-    +'&prompt=consent'
-    +'&include_granted_scopes=true';
-  var popup=window.open(url,'gpauth','width=520,height=640');
-  var timer=setInterval(function(){
-    try{
-      if(popup.closed){clearInterval(timer);return;}
-      var hash=popup.location.hash;
-      if(hash&&hash.includes('access_token')){
-        clearInterval(timer);
-        var params=new URLSearchParams(hash.substring(1));
-        gpToken=params.get('access_token');
-        popup.close();
-        if(gpToken){gpConnected();loadAlbums();}
-      }
-    }catch(e){}
-  },500);
+    +'&prompt=consent';
+  // Listen for postMessage from callback page
+  function onMsg(e){
+    if(!e.data||e.data.type!=='gp_token')return;
+    window.removeEventListener('message',onMsg);
+    var params=new URLSearchParams((e.data.hash||'').replace(/^#/,''));
+    gpToken=params.get('access_token');
+    if(gpToken){gpConnected();loadAlbums();}
+    else showToast('Google Photos auth failed','error');
+  }
+  window.addEventListener('message',onMsg);
+  window.open(url,'gpauth','width=520,height=640,top=100,left=200');
 }
 function gpConnected(){
   document.getElementById('gpDot').classList.add('connected');
