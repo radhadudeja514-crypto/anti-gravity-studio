@@ -54,30 +54,15 @@ function showToast(msg, type = 'info') {
 
   const sections = [
     { group: 'Core', items: [
-      { href: 'dashboard.html', icon: '🛸', label: 'Dashboard' },
-      { href: 'leads.html',     icon: '🎯', label: 'Leads' },
-      { href: 'schedule.html',  icon: '📅', label: 'Schedule' },
-      { href: 'analytics.html', icon: '📊', label: 'Analytics' },
+      { href: 'dashboard.html',          icon: '🛸', label: 'Dashboard' },
+      { href: 'leads.html',              icon: '🎯', label: 'Leads' },
+      { href: 'schedule.html',           icon: '📅', label: 'Schedule' },
+      { href: 'analytics.html',          icon: '📊', label: 'Analytics' },
+      { href: 'media.html',              icon: '🖼️', label: 'Media' },
+      { href: 'payments.html',           icon: '💳', label: 'Payments' },
+      { href: 'google-my-business.html', icon: '⭐', label: 'Reviews' },
+      { href: 'config.html',             icon: '⚙️', label: 'Settings' },
     ]},
-    { group: 'Assets', items: [
-      { href: 'media.html',    icon: '🖼️', label: 'Media' },
-      { href: 'studio.html',   icon: '🎬', label: 'Studio' },
-      { href: 'payments.html', icon: '💳', label: 'Payments' },
-    ]},
-    { group: 'AI', items: [
-      { href: 'agent-hub.html',       icon: '🤖', label: 'AI Hub', ai: true },
-      { href: 'agent-marketing.html', icon: '📢', label: 'Marketing' },
-      { href: 'agent-instagram.html', icon: '📸', label: 'Instagram' },
-    ]},
-    { group: 'AI', items: [
-      { href: 'agent-design.html',    icon: '🎨', label: 'Design' },
-      { href: 'agent-data.html',      icon: '📈', label: 'Data' },
-      { href: 'bifurcate.html',       icon: '🤖', label: 'AI Sort' },
-      { href: 'google-my-business.html', icon: '📍', label: 'GMB' },
-    ]},
-    { group: 'System', items: [
-      { href: 'config.html', icon: '⚙️', label: 'Settings' },
-    ]}
   ];
 
   const allPages = sections.flatMap(s => s.items);

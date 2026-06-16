@@ -49,7 +49,7 @@ app.use((req, res, next) => {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com",
       "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
       "img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com https://img.youtube.com https://*.unsplash.com https://*.ytimg.com",
-      "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com https://photoslibrary.googleapis.com",
+      "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com https://photoslibrary.googleapis.com https://generativelanguage.googleapis.com https://accounts.google.com",
       "media-src 'self' blob: https://res.cloudinary.com",
       "frame-src 'none'",
     ].join('; ')
@@ -203,6 +203,43 @@ app.post('/api/media/import-google-photos', requireAuth, requireDb, async (req, 
       }
     );
   });
+});
+
+// ── AI image analysis (Gemini Flash) — suggests pillar from base64 image ──────
+app.post('/api/media/ai-analyze', requireAuth, async (req, res) => {
+  const { images } = req.body; // [{base64, mimeType, filename}]
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.json({ error: 'GEMINI_API_KEY not set', results: [] });
+  if (!Array.isArray(images) || !images.length) return res.status(400).json({ error: 'images array required' });
+
+  const PROMPT = `You are helping tag photos for an entertainment professional's website.
+The pillars are:
+- "radha"     → wedding / bride / dance / ceremony / love / romantic
+- "corporate" → office / business / conference / stage / speaking / mic / formal / anchor
+- "tour"      → travel / outdoor / scenic / adventure / city / tourism
+- "main"      → generic / portrait / logo / branding / mixed
+
+For each image provided, reply with ONLY a JSON array like: ["radha","corporate","tour","main"]
+One entry per image in the same order. No explanation.`;
+
+  try {
+    const parts = [{ text: PROMPT }];
+    images.forEach(img => {
+      parts.push({ inlineData: { mimeType: img.mimeType || 'image/jpeg', data: img.base64 } });
+    });
+    const body = { contents: [{ parts }] };
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await response.json();
+    const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+    // Parse JSON array from response
+    const match = text.match(/\[[\s\S]*\]/);
+    const results = match ? JSON.parse(match[0]) : images.map(() => 'main');
+    res.json({ results });
+  } catch (e) {
+    console.error('Gemini analyze error:', e.message);
+    res.json({ error: e.message, results: images.map(() => 'main') });
+  }
 });
 
 app.use(express.static(path.join(__dirname), {
