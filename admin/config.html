@@ -78,6 +78,11 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
         <div class="config-section">
           <h3>📍 GOOGLE</h3>
           <div class="config-row">
+            <span class="config-key">Google Client ID</span>
+            <input type="text" class="form-input" id="cfg_GOOGLE_CLIENT_ID" placeholder="xxxxxxx.apps.googleusercontent.com"/>
+            <button class="btn btn-ghost btn-sm" onclick="saveKey('GOOGLE_CLIENT_ID')">Save</button>
+          </div>
+          <div class="config-row">
             <span class="config-key">Google Places Key</span>
             <input type="text" class="form-input" id="cfg_GOOGLE_PLACES_KEY" placeholder="AIza..."/>
             <button class="btn btn-ghost btn-sm" onclick="saveKey('GOOGLE_PLACES_KEY')">Save</button>

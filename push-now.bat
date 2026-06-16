@@ -5,10 +5,10 @@ del /f /q ".git\index.lock" 2>nul
 del /f /q ".git\HEAD.lock" 2>nul
 
 echo Adding all changed files...
-git add gallery.html server-fixed.js push-now.bat
+git add gallery.html server-fixed.js admin/config.html push-now.bat
 
 echo Committing...
-git commit -m "fix YouTube: hqdefault thumbnails, play button, lightbox embed"
+git commit -m "add Google Client ID field to config, env var fallbacks for settings"
 
 echo Pushing to GitHub...
 git push origin main

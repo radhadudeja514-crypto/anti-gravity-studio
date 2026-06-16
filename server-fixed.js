@@ -1083,6 +1083,17 @@ app.get('/api/config', requireAuth, requireDb, (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     const cfg = {};
     rows.forEach(r => (cfg[r.key] = r.value));
+    // Env var fallbacks — survive Render DB wipes
+    const envFallbacks = {
+      GOOGLE_CLIENT_ID:  process.env.GOOGLE_CLIENT_ID,
+      CLOUDINARY_NAME:   process.env.CLOUDINARY_NAME,
+      CLOUDINARY_KEY:    process.env.CLOUDINARY_KEY,
+      CLOUDINARY_SECRET: process.env.CLOUDINARY_SECRET,
+      GEMINI_API_KEY:    process.env.GEMINI_API_KEY,
+      GOOGLE_PLACES_KEY: process.env.GOOGLE_PLACES_KEY,
+      GOOGLE_PLACE_ID:   process.env.GOOGLE_PLACE_ID,
+    };
+    Object.entries(envFallbacks).forEach(([k, v]) => { if (v && !cfg[k]) cfg[k] = v; });
     res.json(cfg);
   });
 });
