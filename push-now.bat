@@ -5,17 +5,10 @@ del /f /q ".git\index.lock" 2>nul
 del /f /q ".git\HEAD.lock" 2>nul
 
 echo Adding all changed files...
-git add admin/media.html
-git add admin/config.html
-git add admin/google-photos-import.html
-git add admin/gp-bookmarklet.html
-git add admin/oauth-callback.html
-git add index.html
-git add server-fixed.js
-git add push-now.bat
+git add gallery.html server-fixed.js push-now.bat
 
 echo Committing...
-git commit -m "hero slideshow, media 5-tabs, Gemini AI bulk, GP postMessage fix"
+git commit -m "fix YouTube: hqdefault thumbnails, play button, lightbox embed"
 
 echo Pushing to GitHub...
 git push origin main

@@ -143,11 +143,11 @@ app.post('/api/media/import-youtube', requireAuth, requireDb, (req, res) => {
   const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);
   if (!ytMatch) return res.status(400).json({ error: 'Invalid YouTube URL' });
   const videoId = ytMatch[1];
-  const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  const thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   const name = `youtube_${videoId}.jpg`;
   db.run(
     'INSERT INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)',
-    [name, thumbUrl, pillar || 'main', 'image', 0, name],
+    [name, thumbUrl, pillar || 'main', 'youtube', 0, name],
     function(err) {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ id: this.lastID, url: thumbUrl, videoId, name });
@@ -165,11 +165,11 @@ app.post('/api/media/import-youtube-bulk', requireAuth, requireDb, (req, res) =>
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);
     if (!ytMatch) { done++; if (done === urls.length) res.json({ imported: results }); return; }
     const videoId = ytMatch[1];
-    const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    const thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
     const name = `youtube_${videoId}.jpg`;
     db.run(
       'INSERT INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)',
-      [name, thumbUrl, pillar || 'main', 'image', 0, name],
+      [name, thumbUrl, pillar || 'main', 'youtube', 0, name],
       function(err) {
         if (!err) results.push({ id: this.lastID, url: thumbUrl, videoId });
         done++;
