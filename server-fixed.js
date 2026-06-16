@@ -369,10 +369,12 @@ if (db) db.serialize(() => {
 
 // ── DB guard middleware ───────────────────────────────────────────────────
 // If sqlite3 failed to load, DB-dependent API routes return 503
-const requireDb = (req, res, next) => {
+// NOTE: must be a function declaration (hoisted) so it can be referenced
+// before this line in the file.
+function requireDb(req, res, next) {
   if (!db) return res.status(503).json({ error: 'Database unavailable' });
   next();
-};
+}
 
 // ── Multer upload ─────────────────────────────────────────────────────────
 const ALLOWED_MIME = new Set([
