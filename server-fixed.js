@@ -28,11 +28,15 @@ ffmpeg.setFfmpegPath(ffmpegStatic);
 const app  = express();
 const PORT = process.env.PORT || 3005;
 
-// ── CORS Middleware (permissive for development) ────────────────────────
+// ── CORS Middleware ────────────────────────────────────────────────────────
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? [process.env.ALLOWED_ORIGIN]
+  : ['https://anti-gravity-studio.onrender.com', 'http://localhost:3005'];
 app.use(cors({
-  origin: '*',
+  origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,
 }));
 
 // ── Security: Helmet-style CSP header (no extra dep needed) ──────────────────
@@ -51,7 +55,7 @@ app.use((req, res, next) => {
       "img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com https://img.youtube.com https://*.unsplash.com https://*.ytimg.com",
       "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com https://photoslibrary.googleapis.com https://generativelanguage.googleapis.com https://accounts.google.com",
       "media-src 'self' blob: https://res.cloudinary.com",
-      "frame-src 'none'",
+      "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
     ].join('; ')
   );
   next();
@@ -131,8 +135,7 @@ const uploadsDir = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 });
 
 // ── Middleware ──────────────────────────────────────────────────────────
-app.use(cors({ origin: false })); // restrict CORS – adjust for production domain
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 // Serve static files (except /admin/* which needs auth check)
 
@@ -262,18 +265,21 @@ One entry per image in the same order. No explanation.`;
   }
 });
 
+// Block sensitive file access before static serving
+app.use((req, res, next) => {
+  const blocked = /\.(sqlite|db|env|log|json|bat|sh|md)$|server-fixed\.js|node_modules|\.git/i;
+  if (blocked.test(req.path)) return res.status(403).send('Forbidden');
+  next();
+});
 app.use(express.static(path.join(__dirname), {
   setHeaders(res, filePath) {
-    // HTML: never cache — always serve fresh
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     } else if (/\.(css|js)$/.test(filePath)) {
-      // JS/CSS: revalidate each time (etag handles 304)
       res.setHeader('Cache-Control', 'no-cache');
     } else if (/\.(woff2?|ttf|png|jpg|jpeg|webp|svg|mp4|mov)$/.test(filePath)) {
-      // Media & fonts: cache for 1 week
       res.setHeader('Cache-Control', 'public, max-age=604800');
     }
   }
@@ -1077,77 +1083,4 @@ app.get('/api/analytics/stats', requireAuth, requireDb, (req, res) => {
   });
 });
 
-// ── Config ───────────────────────────────────────────────────────────
-app.get('/api/config', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM config', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const cfg = {};
-    rows.forEach(r => (cfg[r.key] = r.value));
-    // Env var fallbacks — survive Render DB wipes
-    const envFallbacks = {
-      GOOGLE_CLIENT_ID:  process.env.GOOGLE_CLIENT_ID,
-      CLOUDINARY_NAME:   process.env.CLOUDINARY_NAME,
-      CLOUDINARY_KEY:    process.env.CLOUDINARY_KEY,
-      CLOUDINARY_SECRET: process.env.CLOUDINARY_SECRET,
-      GEMINI_API_KEY:    process.env.GEMINI_API_KEY,
-      GOOGLE_PLACES_KEY: process.env.GOOGLE_PLACES_KEY,
-      GOOGLE_PLACE_ID:   process.env.GOOGLE_PLACE_ID,
-    };
-    Object.entries(envFallbacks).forEach(([k, v]) => { if (v && !cfg[k]) cfg[k] = v; });
-    res.json(cfg);
-  });
-});
-
-app.post('/api/config', requireAuth, requireDb, (req, res) => {
-  const { key, value } = req.body;
-  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [key, value], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
-
-// ── Backup ───────────────────────────────────────────────────────────
-app.get('/api/backup/leads', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const headers = ['id','name','phone','email','eventType','eventDate','budget','pillar','company','status','message','timestamp'];
-    const csv = [
-      headers.join(','),
-      ...rows.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(',')),
-    ].join('\n');
-    const backupPath = path.join(__dirname, `backup_leads_${Date.now()}.csv`);
-    fs.writeFileSync(backupPath, csv, 'utf8');
-    res.download(backupPath, `Leads_Backup_${new Date().toISOString().split('T')[0]}.csv`, () => {
-      try { fs.unlinkSync(backupPath); } catch (_) {}
-    });
-  });
-});
-
-// ── Logs ─────────────────────────────────────────────────────────────
-app.get('/api/admin/logs', requireAuth, (req, res) => {
-  db.all('SELECT * FROM page_views ORDER BY id DESC LIMIT 200', [], (err, views) => {
-    db.all('SELECT * FROM events ORDER BY id DESC LIMIT 200', [], (err2, events) => {
-      res.json({ views: views || [], events: events || [] });
-    });
-  });
-});
-
-// ── Health ───────────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime(), ts: Date.now() });
-});
-
-// ── Marketing AI generate ─────────────────────────────────────────────
-app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
-  const { pillar, type } = req.body;
-  res.json({
-    pillar: pillar || 'main',
-    type: type || 'caption',
-    result: `Anti Gravity Studio — where every moment becomes timeless. Book your ${pillar || ''} experience today. 📸✨ #AntiGravityStudio #${(pillar||'events').charAt(0).toUpperCase()+(pillar||'events').slice(1)}`,
-  });
-});
-
-// ── Start server ───────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`✅  Anti-Gravity server running → http://localhost:${PORT}`);
-});
+// ── Config ────

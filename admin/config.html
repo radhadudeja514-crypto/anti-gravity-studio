@@ -244,13 +244,4 @@ async function saveHeroImages(){
   }catch(e){ document.getElementById('heroSaveMsg').textContent='❌ Network error'; }
 }
 
-// Load current hero images on page load
-fetch('/api/hero-images').then(function(r){return r.json();}).then(function(d){
-  ['hero_bg_1','hero_bg_2','hero_bg_3'].forEach(function(k,i){
-    if(d[k]){ document.getElementById('hurl'+i).value=d[k]; previewHero(i); }
-  });
-}).catch(function(){});
-</script>
-<script src="../assets/js/admin-nav.js"></script>
-</body>
-</html>
+// Load current hero images

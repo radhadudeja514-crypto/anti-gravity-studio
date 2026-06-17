@@ -373,34 +373,4 @@ function navLightbox(dir, e) {
 document.addEventListener('keydown', e => {
   if (!document.getElementById('lightbox').classList.contains('open')) return;
   if (e.key === 'Escape') closeLightboxBtn();
-  if (e.key === 'ArrowLeft') navLightbox(-1, {stopPropagation:()=>{}});
-  if (e.key === 'ArrowRight') navLightbox(1, {stopPropagation:()=>{}});
-});
-
-// ── FILTER BUTTONS ────────────────────────────────────────────────────────────
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    applyFilter(btn.dataset.filter);
-  });
-});
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
-// Read ?filter= URL param so pillar pages can deep-link into a filtered view
-// e.g. gallery.html?filter=corporate  or  gallery.html?filter=tour
-(function applyUrlFilter() {
-  const param = new URLSearchParams(location.search).get('filter');
-  if (param) {
-    currentFilter = param;
-    // Activate the matching button visually
-    document.querySelectorAll('.filter-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.filter === param);
-    });
-  }
-})();
-
-loadGallery();
-</script>
-</body>
-</html>
+  if (e.key =
