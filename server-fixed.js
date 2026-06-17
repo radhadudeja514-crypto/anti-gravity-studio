@@ -1210,4 +1210,88 @@ app.post('/api/agent/instagram/schedule-post', requireAuth, requireDb, (req, res
   );
 });
 
-app.get('/api/agent/instagram/best-times',
+
+app.get('/api/agent/instagram/best-times', requireAuth, (_req, res) => {
+  // Static best-posting-times — can be replaced with real analytics later
+  res.json([
+    { day: 'Monday',    time: '09:00', score: 82 },
+    { day: 'Wednesday', time: '11:00', score: 91 },
+    { day: 'Friday',    time: '18:00', score: 88 },
+    { day: 'Saturday',  time: '10:00', score: 94 },
+    { day: 'Sunday',    time: '19:00', score: 87 },
+  ]);
+});
+
+app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) => {
+  db.all('SELECT pillar, COUNT(*) as mediaCount FROM media GROUP BY pillar', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const pillars = [
+      { id: 'radha',     name: 'Radhaa (Wedding)', icon: '🤔\uDEEF' },
+      { id: 'corporate', name: 'Corporate',         icon: '🎙️' },
+      { id: 'tour',      name: 'Tour',              icon: '🧭' },
+      { id: 'main',      name: 'Main',              icon: '🌐' },
+    ];
+    res.json(pillars.map(p => ({
+      ...p,
+      mediaCount: (rows.find(r => r.pillar === p.id) || { mediaCount: 0 }).mediaCount,
+    })));
+  });
+});
+
+app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
+  const { pillar = 'radha', type = 'hook' } = req.body || {};
+  const T = {
+    radha: {
+      hook: '✨ Every love story deserves to be told beautifully.\nKartikey Bameta brings your wedding to life with heartfelt hosting, emotional rituals & unforgettable moments.\n💍 Inquire now → antigravitystudio.com/booking\n\n#WeddingMC #KartikeyBameta #WeddingHost #IndianWedding #Sangeet',
+      caption: 'From the first dance to the last toast — every moment curated with love.\nRadhaa by Kartikey Bameta is where emotions meet elegance.\n\n📲 DM to check availability!\n\n#WeddingCeremony #MCKartikey #WeddingIndia #SangeetNight',
+      story: '💕 Your wedding deserves a storyteller.\nNot just an MC — an experience architect.\nSwipe up to see how we transform your big day. ✨',
+      reel: '🎬 POV: Your wedding MC just made everyone cry (happy tears) 😭✨\nThe moments that matter — curated by Kartikey Bameta\n💍 Link in bio!\n\n#WeddingReel #MCLife #WeddingMagic',
+    },
+    corporate: {
+      hook: '🎤 Your event is only as good as the energy in the room.\nVeronica — Corporate MC — keeps your audience engaged, energised & entertained.\n📩 Let\'s talk: antigravitystudio.com/booking\n\n#CorporateMC #EventHost #Emcee',
+      caption: 'From product launches to leadership summits — Veronica has hosted them all.\nSharp, bilingual, high-energy stage presence.\n\n📲 DM for event packages!\n\n#CorporateHost #EventEmcee #Veronica',
+      story: '🏢 Your next corporate event needs the right voice.\nVeronica delivers professionalism + energy every time. 🎤',
+      reel: '🎬 When your conference needs that energy boost 🔥\nVeronica — Corporate MC who owns the stage.\n📩 Link in bio!\n\n#EventReel #CorporateMC',
+    },
+    tour: {
+      hook: '🌍 Not all who wander are lost — some are just with the wrong guide.\nThe Trail Curator takes you beyond the tourist trail.\n🧭 Book: antigravitystudio.com/booking\n\n#TrailCurator #HeritageTours #ExperientialTravel',
+      caption: 'Every city has a soul. We help you find it.\nHidden alleys, untold stories, forgotten flavours — curated for the curious traveller.\n\n📲 DM to plan your trail!\n\n#CityWalk #HeritageTour #TravelIndia',
+      story: '🏛️ The best travel memories aren\'t from tourist spots.\nThey\'re from the stories in between.\nSwipe up! 🧭',
+      reel: '🎬 When you thought you knew the city… 😮\nThe Trail Curator shows you what maps don\'t.\n🌍 Link in bio!\n\n#TrailReel #CityWalk #TravelReels',
+    },
+  };
+  const pk = pillar === 'main' ? 'radha' : pillar;
+  const pt = T[pk] || T.radha;
+  const fullCaption = pt[type] || pt.hook;
+  res.json({ fullCaption, content: fullCaption, text: fullCaption });
+});
+
+app.get('/api/agent/design/theme/:pillar', requireAuth, requireDb, (req, res) => {
+  db.get('SELECT value FROM config WHERE key=?', ['theme_' + req.params.pillar], (err, row) => {
+    if (row && row.value) {
+      try {
+        const theme = JSON.parse(row.value);
+        return res.json({ pillar: req.params.pillar, success: true, theme });
+      } catch (_) {}
+    }
+    res.json({ pillar: req.params.pillar, theme: null });
+  });
+});
+
+app.post('/api/agent/design/save-theme', requireAuth, requireDb, (req, res) => {
+  const { pillar, ...theme } = req.body;
+  if (!pillar) return res.status(400).json({ error: 'pillar required' });
+  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)',
+    ['theme_' + pillar, JSON.stringify(theme)],
+    err => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+// ── START SERVER ──────────────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`Anti-Gravity Studio server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
