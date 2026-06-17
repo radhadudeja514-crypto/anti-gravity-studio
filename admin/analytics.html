@@ -167,4 +167,10 @@ function renderInsights(){
   el.innerHTML=ins.map(t=>`<div class="insight-item"><span class="insight-icon">${t.icon||'💡'}</span><div>${esc(t.text||t)}</div></div>`).join('');
 }
 
-function esc(s){const d=document.createElement('div');d.textConten
+function esc(s){const d=document.createElement('div');d.textContent = s; return d.textContent; }
+
+loadData();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

@@ -1801,4 +1801,12 @@ document.querySelectorAll('.section-tab').forEach(tab => {
 document.addEventListener('keydown', e => {
   if (e.ctrlKey && e.key === 'k') {
     e.preventDefault();
-   
+   document.querySelector('.search-input')?.focus();
+  }
+});
+
+loadAll();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>
