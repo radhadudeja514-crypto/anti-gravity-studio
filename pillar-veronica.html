@@ -805,4 +805,33 @@ async function loadGoogleReviews() {
     const cta2 = document.getElementById('reviews-cta'); if (cta2) cta2.style.display = 'block';
 
   } catch (error) {
-    console.error('Failed to load Google reviews:', err
+    console.error('Failed to load Google reviews:', error);
+    if (container) container.innerHTML = '<div class="reviews-loading"><p>Reviews temporarily unavailable.</p></div>';
+  }
+}
+loadGoogleReviews();
+</script>
+
+<!-- STICKY BOOKING BAR -->
+<div class="sticky-booking-bar" id="stickyBookingBar">
+  <span class="sticky-bar-text">Elevate your next corporate event</span>
+  <a href="#enquire" class="btn btn-corporate sticky-bar-btn magnetic-btn" style="padding:0.5rem 1.5rem;">Book Veronica</a>
+</div>
+
+<script>
+(function(){
+  try {
+    fetch('/api/analytics/view', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        page: location.pathname,
+        pillar: document.body.dataset.pillar || ''
+      })
+    });
+  } catch(e) {}
+})();
+</script>
+
+</body>
+</html>

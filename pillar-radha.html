@@ -946,4 +946,29 @@ async function loadGoogleReviews() {
     if (container) container.innerHTML = '<div class="reviews-loading"><p>Reviews temporarily unavailable.</p></div>';
   }
 }
-loadGoogleReviews();                                              
+loadGoogleReviews();
+</script>
+
+<!-- STICKY BOOKING BAR -->
+<div class="sticky-booking-bar" id="stickyBookingBar">
+  <span class="sticky-bar-text">Make your celebration unforgettable</span>
+  <a href="#enquire" class="btn btn-radha sticky-bar-btn magnetic-btn" style="padding:0.5rem 1.5rem;">Book Radhaa</a>
+</div>
+
+<script>
+(function(){
+  try {
+    fetch('/api/analytics/view', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        page: location.pathname,
+        pillar: document.body.dataset.pillar || ''
+      })
+    });
+  } catch(e) {}
+})();
+</script>
+
+</body>
+</html>
