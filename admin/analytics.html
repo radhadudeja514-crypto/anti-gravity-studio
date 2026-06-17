@@ -155,7 +155,8 @@ function renderEvents(){
 }
 
 function renderInsights(){
-  const ins=insightsData.insights||[];
+  // server returns plain array; fallback handles {insights:[]} shape too
+  const ins=Array.isArray(insightsData)?insightsData:(insightsData.insights||[]);
   const el=document.getElementById('insights');
   if(!ins.length){
     el.innerHTML=`
@@ -166,9 +167,4 @@ function renderInsights(){
   el.innerHTML=ins.map(t=>`<div class="insight-item"><span class="insight-icon">${t.icon||'💡'}</span><div>${esc(t.text||t)}</div></div>`).join('');
 }
 
-function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-loadData();
-</script>
-<script src="../assets/js/admin-nav.js"></script>
-</body>
-</html>
+function esc(s){const d=document.createElement('div');d.textConten

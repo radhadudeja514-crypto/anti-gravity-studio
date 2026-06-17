@@ -535,6 +535,27 @@ app.post('/api/admin/logout', (req, res) => {
   res.json({ success: true });
 });
 
+// ── Google Reviews (public read, admin write) ────────────────────────────────
+app.get('/api/google-reviews', requireDb, (req, res) => {
+  db.all('SELECT * FROM google_reviews ORDER BY time DESC LIMIT 50', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows || []);
+  });
+});
+
+app.post('/api/google-reviews', requireAuth, requireDb, (req, res) => {
+  const reviews = Array.isArray(req.body) ? req.body : [req.body];
+  let done = 0;
+  if (!reviews.length) return res.json({ success: true, count: 0 });
+  reviews.forEach(r => {
+    db.run(
+      'INSERT OR IGNORE INTO google_reviews (place_id,author_name,rating,text,time,profile_photo_url) VALUES (?,?,?,?,?,?)',
+      [r.place_id || '', r.author_name || '', r.rating || 5, r.text || '', r.time || Date.now(), r.profile_photo_url || ''],
+      () => { if (++done === reviews.length) res.json({ success: true, count: done }); }
+    );
+  });
+});
+
 app.get('/api/admin/check', (req, res) => {
   res.json({ authenticated: !!getSession(req) });
 });
@@ -1198,27 +1219,4 @@ app.get('/api/analytics/stats', requireAuth, requireDb, (req, res) => {
     db.all('SELECT pillar, eventName, COUNT(*) as cnt FROM events GROUP BY pillar, eventName', [], (err2, evRows) => {
       const events = {};
       (evRows || []).forEach(r => {
-        const p = r.pillar || 'Unknown';
-        if (!events[p]) events[p] = {};
-        events[p][r.eventName || 'unknown'] = r.cnt;
-      });
-
-      // top pages by url
-      db.all('SELECT url, COUNT(*) as hits FROM page_views GROUP BY url ORDER BY hits DESC LIMIT 10', [], (err3, top) => {
-        res.json({ views, events, topPages: top || [] });
-      });
-    });
-  });
-});
-
-// ── Config ───────────────────────────────────────────────────────────
-app.get('/api/config', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM config', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const cfg = {};
-    rows.forEach(r => (cfg[r.key] = r.value));
-    // Env var fallbacks — survive Render DB wipes
-    const envFallbacks = {
-      GOOGLE_CLIENT_ID:  process.env.GOOGLE_CLIENT_ID,
-      CLOUDINARY_NAME:   process.env.CLOUDINARY_NAME,
-      CLOUDINARY_KEY:    
+        const p = r.pi
