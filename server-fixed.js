@@ -52,7 +52,7 @@ app.use((req, res, next) => {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://upload-widget.cloudinary.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com",
       "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
-      "img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com https://img.youtube.com https://*.unsplash.com https://*.ytimg.com",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com https://img.youtube.com https://*.unsplash.com https://*.ytimg.com https://api.qrserver.com",
       "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com https://photoslibrary.googleapis.com https://generativelanguage.googleapis.com https://accounts.google.com",
       "media-src 'self' blob: https://res.cloudinary.com",
       "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
@@ -325,6 +325,18 @@ app.use((req, res, next) => {
 // ── GA4 Measurement ID (safe to expose — it's public) ──────────────────────
 app.get('/api/ga4-id', (req, res) => {
   res.json({ id: process.env.GA4_MEASUREMENT_ID || 'G-XXXXXXXXXX' });
+});
+
+// ── UPI QR code generator ─────────────────────────────────────────────────────
+app.post('/api/generate-qr', rateLimit(20, 60_000), (req, res) => {
+  const { upiId, amount, name } = req.body || {};
+  if (!upiId || !/^[\w.\-]+@[\w]+$/.test(upiId)) {
+    return res.status(400).json({ error: 'Invalid UPI ID' });
+  }
+  const uri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name || '')}&am=${amount || ''}&cu=INR`;
+  // Use public QR API — no server-side library needed
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(uri)}&size=240x240&ecc=M`;
+  res.json({ qrUrl, uri, upiUrl: uri, qrData: uri });
 });
 app.use(express.static(path.join(__dirname), {
   setHeaders(res, filePath) {
@@ -1198,20 +1210,4 @@ app.post('/api/agent/instagram/schedule-post', requireAuth, requireDb, (req, res
   );
 });
 
-app.get('/api/agent/instagram/best-times', requireAuth, (_req, res) => {
-  // Static best-posting-times recommendation — can be replaced with real analytics
-  res.json([
-    { day: 'Monday',    time: '09:00', score: 82 },
-    { day: 'Wednesday', time: '11:00', score: 91 },
-    { day: 'Friday',    time: '18:00', score: 88 },
-    { day: 'Saturday',  time: '10:00', score: 94 },
-    { day: 'Sunday',    time: '19:00', score: 87 },
-  ]);
-});
-
-app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) => {
-  db.all('SELECT pillar, COUNT(*) as mediaCount FROM media GROUP BY pillar', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const pillars = [
-      { id: 'radha',     name: 'Radhaa (Wedding)',  icon: '🪔' },
-      { id: 'corporate', name: 'Corporate',          icon: '🎤
+app.get('/api/agent/instagram/best-times',
