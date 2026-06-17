@@ -317,9 +317,14 @@ One entry per image in the same order. No explanation.`;
 
 // Block sensitive file access before static serving
 app.use((req, res, next) => {
-  const blocked = /\.(sqlite|db|env|log|json|bat|sh|md)$|server-fixed\.js|node_modules|\.git/i;
+  const blocked = /\.(sqlite|db|env|log|bat|sh|md)$|server-fixed\.js|node_modules|\.git|package(-lock)?\.json$/i;
   if (blocked.test(req.path)) return res.status(403).send('Forbidden');
   next();
+});
+
+// ── GA4 Measurement ID (safe to expose — it's public) ──────────────────────
+app.get('/api/ga4-id', (req, res) => {
+  res.json({ id: process.env.GA4_MEASUREMENT_ID || 'G-XXXXXXXXXX' });
 });
 app.use(express.static(path.join(__dirname), {
   setHeaders(res, filePath) {
@@ -421,6 +426,9 @@ if (db) db.serialize(() => {
   addCol('leads',    'company',      'TEXT');
   addCol('leads',    'status',       "TEXT DEFAULT 'New'");
   addCol('schedule', 'timestamp',    'DATETIME DEFAULT CURRENT_TIMESTAMP');
+  addCol('schedule', 'clientName',   'TEXT');
+  addCol('schedule', 'eventType',    'TEXT');
+  addCol('schedule', 'notes',        'TEXT');
 });
 
 // ── DB guard middleware ───────────────────────────────────────────────────
@@ -724,7 +732,7 @@ app.get('/api/google-photos-media', (req, res) => {
   }
 });
 
-app.post('/api/media', requireAuth, upload.single('file'), (req, res) => {
+app.post('/api/media', requireAuth, requireDb, upload.single('file'), (req, res) => {
   const { pillar, type } = req.body;
   let folder = 'tour';
   const p = (pillar || '').toLowerCase();
@@ -777,7 +785,7 @@ app.post('/api/media', requireAuth, upload.single('file'), (req, res) => {
   }
 });
 
-app.post('/api/media/trim', requireAuth, (req, res) => {
+app.post('/api/media/trim', requireAuth, requireDb, (req, res) => {
   const { id, startTime, endTime } = req.body;
   if (!id || startTime === undefined || endTime === undefined)
     return res.status(400).json({ error: 'Missing parameters' });
@@ -814,7 +822,7 @@ app.post('/api/media/trim', requireAuth, (req, res) => {
 });
 
 // ── MERGE videos (FFmpeg concat) ─────────────────────────────────────────────
-app.post('/api/media/merge', requireAuth, (req, res) => {
+app.post('/api/media/merge', requireAuth, requireDb, (req, res) => {
   const { ids, outputName, pillar } = req.body;
   if (!Array.isArray(ids) || ids.length < 2)
     return res.status(400).json({ error: 'Need at least 2 video IDs' });
@@ -1113,13 +1121,13 @@ app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
 // ── Analytics ────────────────────────────────────────────────────────
 app.post('/api/analytics/view', rateLimit(120, 60_000), (req, res) => {
   const { page, referrer } = req.body;
-  db.run('INSERT INTO page_views (page,referrer) VALUES (?,?)', [page || '/', referrer || ''], () => {});
+  if (db) db.run('INSERT INTO page_views (url,pillar) VALUES (?,?)', [page || '/', referrer || ''], () => {});
   res.json({ ok: true });
 });
 
 app.post('/api/analytics/event', rateLimit(60, 60_000), (req, res) => {
   const { event, data } = req.body;
-  db.run('INSERT INTO events (event,data) VALUES (?,?)', [event || 'unknown', JSON.stringify(data || {})], () => {});
+  if (db) db.run('INSERT INTO events (eventName,pillar) VALUES (?,?)', [event || 'unknown', JSON.stringify(data || {})], () => {});
   res.json({ ok: true });
 });
 
@@ -1180,7 +1188,7 @@ app.get('/api/backup/leads', requireAuth, requireDb, (req, res) => {
 });
 
 // ── Logs ─────────────────────────────────────────────────────────────
-app.get('/api/admin/logs', requireAuth, (req, res) => {
+app.get('/api/admin/logs', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM page_views ORDER BY id DESC LIMIT 200', [], (err, views) => {
     db.all('SELECT * FROM events ORDER BY id DESC LIMIT 200', [], (err2, events) => {
       res.json({ views: views || [], events: events || [] });
@@ -1199,11 +1207,4 @@ app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
   res.json({
     pillar: pillar || 'main',
     type: type || 'caption',
-    result: `Anti Gravity Studio — where every moment becomes timeless. Book your ${pillar || ''} experience today. 📸✨ #AntiGravityStudio #${(pillar||'events').charAt(0).toUpperCase()+(pillar||'events').slice(1)}`,
-  });
-});
-
-// ── Start server ───────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`✅  Anti-Gravity server running → http://localhost:${PORT}`);
-});
+    result: `Anti Gravity Studio — where every moment becomes timel

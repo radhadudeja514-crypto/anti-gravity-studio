@@ -552,12 +552,12 @@ async function loadAlbumPhotos(albumId,albumTitle){
   document.getElementById('albumGrid').innerHTML='<div class="gp-placeholder">Loading photos…</div>';
   gpSelectedPhotos.clear();gpCurrentAlbumPhotos=[];
   try{
-    var data=await gp('/mediaItems:search?pageSize=100');
-    // Use POST for album search
+    // POST is required for album search — GET /mediaItems:search does not support albumId
     var r=await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:search',{
       method:'POST',headers:{'Authorization':'Bearer '+gpToken,'Content-Type':'application/json'},
       body:JSON.stringify({albumId:albumId,pageSize:100})
     });
+    if(!r.ok)throw new Error('API error '+r.status);
     var d=await r.json();
     gpCurrentAlbumPhotos=(d.mediaItems||[]).filter(function(i){return!i.mediaMetadata||!i.mediaMetadata.video;});
     renderGPPhotos();
@@ -708,4 +708,67 @@ function renderAiBulkGrid(){
     return'<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;overflow:hidden">'
       +'<div style="aspect-ratio:1;overflow:hidden;position:relative"><img src="'+item.previewUrl+'" style="width:100%;height:100%;object-fit:cover"/></div>'
       +'<div style="padding:.3rem .4rem">'
-      +'<div style="font-size:.6rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom
+      +'<div style="font-size:.6rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">'+item.file.name+'</div>'
+      +'<select class="form-select" style="font-size:.7rem;padding:2px 4px;height:26px" onchange="aiBulkFiles['+i+'].pillar=this.value">'
+      +PILLAR_OPTIONS.map(function(p){return'<option value="'+p+'"'+(p===item.pillar?' selected':'')+'>'+PILLAR_LABELS[p]+'</option>';}).join('')
+      +'</select>'
+      +'<div class="ai-tag-badge" id="aitag'+i+'" style="font-size:.6rem;color:#c084fc;margin-top:2px;min-height:.9rem"></div>'
+      +'</div></div>';
+  }).join('');
+  document.getElementById('aiBulkStatus').textContent='Review pillar for each photo, or click 🤖 AI Auto-Tag';
+}
+
+async function aiAnalyzeAll(){
+  if(!aiBulkFiles.length)return;
+  var btn=document.getElementById('aiBulkAnalyzeBtn');btn.disabled=true;btn.textContent='⏳ Analyzing…';
+  document.getElementById('aiBulkStatus').textContent='Sending to Gemini AI…';
+  // Send up to 10 at a time (Gemini multi-image limit)
+  var images=aiBulkFiles.slice(0,10).map(function(f){return{base64:f.b64,mimeType:f.mime,filename:f.file.name};});
+  try{
+    var data=await fetch('/api/media/ai-analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({images:images})}).then(function(r){return r.json();});
+    if(data.results&&Array.isArray(data.results)){
+      data.results.forEach(function(pillar,i){
+        if(aiBulkFiles[i]&&PILLAR_OPTIONS.includes(pillar)){
+          aiBulkFiles[i].pillar=pillar;
+          // Update the select + badge
+          var grid=document.getElementById('aiBulkGrid');
+          var sel=grid.querySelectorAll('select')[i];
+          if(sel)sel.value=pillar;
+          var badge=document.getElementById('aitag'+i);
+          if(badge){badge.textContent='🤖 → '+PILLAR_LABELS[pillar];}
+        }
+      });
+      document.getElementById('aiBulkStatus').textContent='✅ AI tagged '+Math.min(data.results.length,aiBulkFiles.length)+' photos. Review and upload!';
+    }else if(data.error&&data.error.includes('GEMINI_API_KEY')){
+      document.getElementById('aiBulkStatus').textContent='⚠️ Set GEMINI_API_KEY in Render env vars to enable AI tagging.';
+    }else{
+      document.getElementById('aiBulkStatus').textContent='⚠️ AI error — pillars kept as-is. Upload manually.';
+    }
+  }catch(e){document.getElementById('aiBulkStatus').textContent='⚠️ Network error — upload manually.';}
+  btn.disabled=false;btn.textContent='🤖 AI Auto-Tag';
+}
+
+async function aiBulkUploadAll(){
+  if(!aiBulkFiles.length)return;
+  var btn=document.getElementById('aiBulkUploadBtn');btn.disabled=true;
+  var ok=0,fail=0;
+  document.getElementById('aiBulkStatus').textContent='Uploading…';
+  for(var i=0;i<aiBulkFiles.length;i++){
+    var item=aiBulkFiles[i];
+    document.getElementById('aiBulkStatus').textContent='Uploading '+(i+1)+'/'+aiBulkFiles.length+'…';
+    var form=new FormData();form.append('file',item.file);form.append('pillar',item.pillar);form.append('type','photo');
+    try{
+      var d=await fetch('/api/media',{method:'POST',body:form}).then(function(r){return r.json();});
+      if(d.error)fail++;else ok++;
+    }catch(e){fail++;}
+  }
+  btn.disabled=false;
+  document.getElementById('aiBulkStatus').textContent='✅ '+ok+' uploaded'+(fail?' · ❌ '+fail+' failed':'')+'!';
+  if(ok){aiBulkFiles=[];setTimeout(function(){document.getElementById('aiBulkReview').style.display='none';},2000);loadMedia();showToast(ok+' photos uploaded!','success');}
+}
+
+loadMedia();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>
