@@ -183,7 +183,7 @@ function renderAll(){
       <td style="font-size:.73rem">${l.eventDate||'—'}</td>
       <td style="font-family:var(--font-display);font-size:.78rem;color:var(--cyan)">${l.budget?'₹'+e(l.budget):'—'}</td>
       <td><span class="badge ${sc}">${e(l.status||'New')}</span></td>
-      <td style="font-size:.7rem;color:var(--text-dim)">${new Date(l.createdAt||Date.now()).toLocaleDateString('en-IN')}</td>
+      <td style="font-size:.7rem;color:var(--text-dim)">${new Date(l.timestamp||l.createdAt||Date.now()).toLocaleDateString('en-IN')}</td>
       <td style="display:flex;gap:.3rem;flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" onclick="openD(${l.id})">📋</button>
         ${ph?`<a class="wa" href="https://wa.me/91${ph}?text=Hi+${encodeURIComponent(l.name)}!+This+is+Anti+Gravity+Studio." target="_blank" style="padding:.2rem .5rem;font-size:.6rem">💬</a>`:''}

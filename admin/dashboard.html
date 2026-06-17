@@ -1046,14 +1046,14 @@ async function loadAllData() {
     const [leadsRes, healthRes, schedRes, mediaRes, analyticsRes] = await Promise.all([
       fetch('/api/leads').then(r => r.json()).catch(() => []),
       fetch('/api/agent/data/health').then(r => r.json()).catch(() => null),
-      fetch('/api/agent/instagram/scheduled').then(r => r.json()).catch(() => ({ posts: [] })),
+      fetch('/api/schedule').then(r => r.json()).catch(() => []),
       fetch('/api/media').then(r => r.json()).catch(() => []),
       fetch('/api/admin/analytics').then(r => r.json()).catch(() => ({})),
     ]);
 
     allLeads = Array.isArray(leadsRes) ? leadsRes : [];
     healthData = healthRes;
-    allSchedule = schedRes.posts || [];
+    allSchedule = Array.isArray(schedRes) ? schedRes : (schedRes.posts || []);
     allMedia = Array.isArray(mediaRes) ? mediaRes : (mediaRes.media || []);
 
     updateHealthBadge();
@@ -1521,7 +1521,7 @@ function renderCalendar() {
 
     let eventsHtml = dayEvents.slice(0, 3).map(e => {
       const cls = 'cal-event-' + (e.pillar || 'tour').toLowerCase();
-      return `<div class="cal-event ${cls}" title="${escapeHtml(e.topic || e.caption || '')}">${escapeHtml(e.topic || e.pillar || '•')}</div>`;
+      return `<div class="cal-event ${cls}" title="${escapeHtml(e.title || e.topic || e.caption || '')}">${escapeHtml(e.title || e.topic || e.pillar || '•')}</div>`;
     }).join('');
     if (dayEvents.length > 3) eventsHtml += `<div class="cal-event" style="color:var(--text-muted);">+${dayEvents.length - 3} more</div>`;
 

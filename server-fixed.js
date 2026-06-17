@@ -112,7 +112,7 @@ setInterval(() => {
 const rateLimitMap = new Map();
 function rateLimit(maxReq, windowMs) {
   return (req, res, next) => {
-    const ip  = req.ip || req.connection.remoteAddress;
+    const ip  = req.ip || req.socket?.remoteAddress;
     const now = Date.now();
     const entry = rateLimitMap.get(ip) || { count: 0, start: now };
     if (now - entry.start > windowMs) { entry.count = 0; entry.start = now; }
@@ -429,6 +429,9 @@ if (db) db.serialize(() => {
   addCol('schedule', 'clientName',   'TEXT');
   addCol('schedule', 'eventType',    'TEXT');
   addCol('schedule', 'notes',        'TEXT');
+  addCol('schedule', 'title',        'TEXT');
+  addCol('schedule', 'content',      'TEXT');
+  addCol('schedule', 'platform',     'TEXT');
 });
 
 // ── DB guard middleware ───────────────────────────────────────────────────
@@ -545,38 +548,36 @@ app.get('/api/leads', requireAuth, requireDb, (req, res) => {
 });
 
 app.get('/api/admin/analytics', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT pillar, budget FROM leads', [], (err, rows) => {
+  db.all('SELECT pillar, budget, status FROM leads', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    
-    let totalLeads = rows.length;
-    let leadsByPillar = { radha: 0, corporate: 0, tour: 0, other: 0 };
-    let estimatedRevenue = 0;
+
+    const budgetMap = {
+      'Under': 15000,
+      '25,000': 50000,
+      '75,000': 137500,
+      '2L': 350000,
+      '5L': 600000,
+    };
+    const revenueByPillar = { Radhaa: 0, Corporate: 0, Tour: 0 };
+    let booked = 0;
 
     rows.forEach(r => {
-      let p = (r.pillar || '').toLowerCase();
-      if (p.includes('radha') || p.includes('sangeet')) leadsByPillar.radha++;
-      else if (p.includes('corporate') || p.includes('veronica')) leadsByPillar.corporate++;
-      else if (p.includes('tour')) leadsByPillar.tour++;
-      else leadsByPillar.other++;
+      const p = (r.pillar || '').toLowerCase();
+      let pillarKey = p.includes('radha') || p.includes('sangeet') ? 'Radhaa'
+        : p.includes('corp') || p.includes('veronica') ? 'Corporate'
+        : p.includes('tour') ? 'Tour' : null;
 
+      let rev = 0;
       if (r.budget) {
-        const budgetMap = {
-          'Under ₹25,000': 15000,
-          '₹25,000 – ₹75,000': 50000,
-          '₹75,000 – ₹2,00,000': 137500,
-          '₹2L – ₹5L': 350000,
-          'Above ₹5L': 600000,
-        };
-        const matched = Object.entries(budgetMap).find(([k]) => r.budget.includes(k.replace(/₹/g, '₹')));
-        estimatedRevenue += matched ? matched[1] : 0;
+        const matched = Object.entries(budgetMap).find(([k]) => r.budget.includes(k));
+        rev = matched ? matched[1] : 0;
       }
+      if (pillarKey) revenueByPillar[pillarKey] += rev;
+      if ((r.status || '').toLowerCase() === 'booked') booked++;
     });
 
-    res.json({
-      totalLeads,
-      leadsByPillar,
-      estimatedRevenue: estimatedRevenue > 0 ? `₹${estimatedRevenue.toLocaleString('en-IN')}` : '₹0'
-    });
+    const conversionRate = rows.length > 0 ? Math.round((booked / rows.length) * 100) : 0;
+    res.json({ revenue: revenueByPillar, conversion: conversionRate });
   });
 });
 
@@ -979,12 +980,40 @@ app.delete('/api/payments/:id', requireAuth, requireDb, (req, res) => {
 
 // ── AGENT stubs (read-only analytics endpoints for agent pages) ────────────
 app.get('/api/agent/data/health', requireAuth, requireDb, (req, res) => {
-  db.get('SELECT COUNT(*) as leads FROM leads', [], (_e, r1) => {
-    db.get('SELECT COUNT(*) as media FROM media', [], (_e2, r2) => {
-      res.json({ status: 'ok', leads: r1.leads, media: r2.media, uptime: process.uptime() });
+  const t0 = Date.now();
+  db.get('SELECT COUNT(*) as total FROM leads', [], (_e, r1) => {
+    db.get("SELECT COUNT(*) as newLeads FROM leads WHERE status='New' OR status IS NULL", [], (_e1b, r1b) => {
+      db.get('SELECT COUNT(*) as total FROM media', [], (_e2, r2) => {
+        db.get('SELECT COUNT(*) as total FROM schedule', [], (_e3, r3) => {
+          db.get("SELECT COUNT(*) as upcoming FROM schedule WHERE date >= date('now')", [], (_e4, r4) => {
+            res.json({
+              success: true,
+              health: {
+                server: {
+                  status: 'running',
+                  uptime: formatUptime(process.uptime()),
+                  port: PORT,
+                  nodeVersion: process.version,
+                },
+                database: { status: 'connected' },
+                leads: { total: (r1 && r1.total) || 0, new: (r1b && r1b.newLeads) || 0 },
+                media: { total: (r2 && r2.total) || 0, localStorageMB: '0.0' },
+                schedule: { total: (r3 && r3.total) || 0, upcoming: (r4 && r4.upcoming) || 0 },
+                responseTimeMs: Date.now() - t0,
+                timestamp: Date.now(),
+              }
+            });
+          });
+        });
+      });
     });
   });
 });
+
+function formatUptime(s) {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return `${h}h ${m}m`;
+}
 
 app.get('/api/agent/data/media-stats', requireAuth, requireDb, (req, res) => {
   db.all('SELECT pillar, type, COUNT(*) as count FROM media GROUP BY pillar, type', [], (err, rows) => {
@@ -1100,15 +1129,23 @@ app.get('/api/schedule', requireAuth, requireDb, (req, res) => {
 });
 
 app.post('/api/schedule', requireAuth, requireDb, (req, res) => {
-  const { date, time, clientName, eventType, pillar, notes } = req.body;
+  const { title, content, platform, pillar, date, time } = req.body;
   db.run(
-    'INSERT INTO schedule (date,time,clientName,eventType,pillar,notes) VALUES (?,?,?,?,?,?)',
-    [date, time, clientName, eventType, pillar, notes || ''],
+    'INSERT INTO schedule (title,content,platform,pillar,date,time,status) VALUES (?,?,?,?,?,?,?)',
+    [title || '', content || '', platform || 'instagram', pillar || 'main', date, time || '19:00', 'Scheduled'],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ id: this.lastID });
     }
   );
+});
+
+app.put('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
+  const { status } = req.body;
+  db.run('UPDATE schedule SET status=? WHERE id=?', [status || 'Posted', req.params.id], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
 });
 
 app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
@@ -1132,10 +1169,23 @@ app.post('/api/analytics/event', rateLimit(60, 60_000), (req, res) => {
 });
 
 app.get('/api/analytics/stats', requireAuth, requireDb, (req, res) => {
-  db.get('SELECT COUNT(*) as total FROM page_views', [], (err, views) => {
-    db.get('SELECT COUNT(*) as total FROM events', [], (err2, events) => {
-      db.all('SELECT page, COUNT(*) as hits FROM page_views GROUP BY page ORDER BY hits DESC LIMIT 10', [], (err3, top) => {
-        res.json({ pageViews: views.total, events: events.total, topPages: top });
+  // views: { pillar: count } object
+  db.all('SELECT pillar, COUNT(*) as cnt FROM page_views GROUP BY pillar', [], (err, viewRows) => {
+    const views = {};
+    (viewRows || []).forEach(r => { views[r.pillar || 'Unknown'] = r.cnt; });
+
+    // events: { pillar: { eventName: count } } nested object
+    db.all('SELECT pillar, eventName, COUNT(*) as cnt FROM events GROUP BY pillar, eventName', [], (err2, evRows) => {
+      const events = {};
+      (evRows || []).forEach(r => {
+        const p = r.pillar || 'Unknown';
+        if (!events[p]) events[p] = {};
+        events[p][r.eventName || 'unknown'] = r.cnt;
+      });
+
+      // top pages by url
+      db.all('SELECT url, COUNT(*) as hits FROM page_views GROUP BY url ORDER BY hits DESC LIMIT 10', [], (err3, top) => {
+        res.json({ views, events, topPages: top || [] });
       });
     });
   });
@@ -1172,39 +1222,4 @@ app.post('/api/config', requireAuth, requireDb, (req, res) => {
 
 // ── Backup ───────────────────────────────────────────────────────────
 app.get('/api/backup/leads', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const headers = ['id','name','phone','email','eventType','eventDate','budget','pillar','company','status','message','timestamp'];
-    const csv = [
-      headers.join(','),
-      ...rows.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(',')),
-    ].join('\n');
-    const backupPath = path.join(__dirname, `backup_leads_${Date.now()}.csv`);
-    fs.writeFileSync(backupPath, csv, 'utf8');
-    res.download(backupPath, `Leads_Backup_${new Date().toISOString().split('T')[0]}.csv`, () => {
-      try { fs.unlinkSync(backupPath); } catch (_) {}
-    });
-  });
-});
-
-// ── Logs ─────────────────────────────────────────────────────────────
-app.get('/api/admin/logs', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM page_views ORDER BY id DESC LIMIT 200', [], (err, views) => {
-    db.all('SELECT * FROM events ORDER BY id DESC LIMIT 200', [], (err2, events) => {
-      res.json({ views: views || [], events: events || [] });
-    });
-  });
-});
-
-// ── Health ───────────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime(), ts: Date.now() });
-});
-
-// ── Marketing AI generate ─────────────────────────────────────────────
-app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
-  const { pillar, type } = req.body;
-  res.json({
-    pillar: pillar || 'main',
-    type: type || 'caption',
-    result: `Anti Gravity Studio — where every moment becomes timel
+  db.all('SEL
