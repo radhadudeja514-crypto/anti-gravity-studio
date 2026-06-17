@@ -883,67 +883,51 @@ async function loadGoogleReviews() {
     const response = await fetch('/api/google-reviews');
     const data = await response.json();
 
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to load reviews');
-    }
-
-    const { reviews, overall_rating, total_ratings, business_name, place_id } = data;
-    
-    // Update review link if place_id exists
-    if (place_id) {
-      const ctaLink = document.querySelector('#reviews-cta a');
-      if (ctaLink) ctaLink.href = `https://search.google.com/local/writereview?placeid=${place_id}`;
-    }
+    // Server returns {reviews:[], avgRating, totalReviews, rating, total}
+    const reviews = Array.isArray(data) ? data : (data.reviews || []);
+    const avgRating = data.avgRating || data.rating || null;
+    const totalReviews = data.totalReviews || data.total || 0;
 
     const overallContainer = document.getElementById('reviews-overall');
-    if (overall_rating && total_ratings) {
-      const stars = '★'.repeat(Math.floor(overall_rating)) + 
-                    (overall_rating % 1 >= 0.5 ? '⯨' : '') + 
-                    '☆'.repeat(5 - Math.ceil(overall_rating));
-      
+    if (avgRating && totalReviews) {
+      const stars = '★'.repeat(Math.floor(avgRating)) +
+                    (avgRating % 1 >= 0.5 ? '½' : '') +
+                    '☆'.repeat(5 - Math.ceil(avgRating));
       overallContainer.innerHTML = `
         <span class="reviews-stars-big">${stars}</span>
         <span>
-          <span class="reviews-rating-num">${overall_rating.toFixed(1)}</span>
-          based on ${total_ratings} reviews
+          <span class="reviews-rating-num">${avgRating.toFixed(1)}</span>
+          based on ${totalReviews} reviews
         </span>
       `;
     }
 
     const container = document.getElementById('reviews-container');
-    
-    if (reviews.length === 0) {
+
+    if (!reviews.length) {
       container.innerHTML = '<div class="reviews-loading"><p>No reviews yet. Be the first to leave a review!</p></div>';
       document.getElementById('reviews-cta').style.display = 'block';
       return;
     }
 
     const reviewsHTML = reviews.map(review => {
-      const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-      const date = new Date(review.time * 1000).toLocaleDateString('en-IN', { 
-        year: 'numeric', 
-        month: 'short' 
-      });
-      
-      const initials = review.author_name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-
-      const avatarHTML = review.profile_photo_url 
-        ? `<img src="${review.profile_photo_url}" alt="${review.author_name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      const rating = review.rating || 0;
+      const stars = '★'.repeat(rating) + '☆'.repeat(Math.max(0, 5 - rating));
+      const name = review.author_name || 'Guest';
+      const date = review.time
+        ? new Date(review.time * 1000).toLocaleDateString('en-IN', { year: 'numeric', month: 'short' })
+        : '';
+      const initials = name.split(' ').map(n => n[0] || '').join('').toUpperCase().slice(0, 2) || '?';
+      const avatarHTML = review.profile_photo_url
+        ? `<img src="${review.profile_photo_url}" alt="${name}" class="review-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
            <div class="review-avatar-fallback" style="display:none;">${initials}</div>`
-        : `<div class="review-avatar-fallback">${initils}</div>`
         : `<div class="review-avatar-fallback">${initials}</div>`;
-
       return `
         <div class="review-card">
           <div class="review-header">
             ${avatarHTML}
             <div class="review-info">
-              <div class="review-author">${review.author_name}</div>
+              <div class="review-author">${name}</div>
               <div class="review-stars">${stars}</div>
               <div class="review-date">${date}</div>
             </div>
@@ -958,4 +942,8 @@ async function loadGoogleReviews() {
 
   } catch (error) {
     console.error('Failed to load Google reviews:', error);
-    document
+    const container = document.getElementById('reviews-container');
+    if (container) container.innerHTML = '<div class="reviews-loading"><p>Reviews temporarily unavailable.</p></div>';
+  }
+}
+loadGoogleReviews();                                              
