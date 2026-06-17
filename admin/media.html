@@ -375,17 +375,28 @@ function renderGallery(){
   if(!list.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🖼️</div>No media yet</div>';return;}
   el.innerHTML=list.map(function(m){
     var vid=isVideo(m),name=m.originalName||m.name||'',pages=pillarPages(m.pillar);
-    var thumb=vid?'<div class="vid-placeholder">🎬</div>':'<img src="'+safeAttr(m.url)+'" alt="" loading="lazy" onerror="this.style.opacity=.3"/>';
-    return'<div class="media-item" data-id="'+m.id+'" data-url="'+safeAttr(m.url)+'" data-vid="'+(vid?'1':'0')+'" data-name="'+safeAttr(name)+'">'+thumb+'<div class="where-badge">'+pages+'</div><div class="pillar-dot" style="background:'+pillarColor(m.pillar)+'"></div><div class="media-name">'+name+'</div><div class="hover-actions"><button class="btn btn-cyan btn-sm action-view">👁️ View</button><button class="btn btn-cyan btn-sm action-crop" '+(vid?'style="display:none"':'')+'>✂️ Crop</button><button class="btn btn-cyan btn-sm action-copy">📋 Copy URL</button><button class="btn btn-danger btn-sm action-delete">🗑️ Delete</button></div></div>';
+    var ytMatch=m.type==='youtube'||(m.name&&/^youtube_([a-zA-Z0-9_-]{11})/.test(m.name));
+    var ytId=ytMatch?(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1]:'';
+    var thumb;
+    if(ytMatch&&ytId){
+      thumb='<div style="position:relative;width:100%;height:100%"><img src="https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.opacity=.3"/><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2rem;text-shadow:0 0 8px #000">▶️</div><div style="position:absolute;bottom:4px;right:4px;background:#ff0000;color:#fff;font-size:0.6rem;padding:2px 5px;border-radius:3px">YouTube</div></div>';
+    }else if(vid){
+      thumb='<div class="vid-placeholder">🎬</div>';
+    }else{
+      thumb='<img src="'+safeAttr(m.url)+'" alt="" loading="lazy" onerror="this.style.opacity=.3"/>';
+    }
+    return'<div class="media-item" data-id="'+m.id+'" data-url="'+safeAttr(m.url)+'" data-vid="'+(vid?'1':'0')+'" data-ytid="'+ytId+'" data-name="'+safeAttr(name)+'">'+thumb+'<div class="where-badge">'+pages+'</div><div class="pillar-dot" style="background:'+pillarColor(m.pillar)+'"></div><div class="media-name">'+name+'</div><div class="hover-actions"><button class="btn btn-cyan btn-sm action-view">👁️ View</button><button class="btn btn-cyan btn-sm action-crop" '+(vid||ytMatch?'style="display:none"':'')+'>✂️ Crop</button><button class="btn btn-cyan btn-sm action-copy">📋 Copy URL</button><button class="btn btn-danger btn-sm action-delete">🗑️ Delete</button></div></div>';
   }).join('');
 }
 document.getElementById('gallery').addEventListener('click',function(e){
   var item=e.target.closest('.media-item');if(!item)return;
   var id=item.dataset.id,url=item.dataset.url,vid=item.dataset.vid;
-  if(e.target.closest('.action-view')){openViewer(url,vid==='1');return;}
+  var ytid=item.dataset.ytid;
+  if(e.target.closest('.action-view')){if(ytid){window.open('https://youtube.com/watch?v='+ytid,'_blank');return;}openViewer(url,vid==='1');return;}
   if(e.target.closest('.action-crop')){openCropFromGallery(Number(id),url);return;}
   if(e.target.closest('.action-copy')){copyUrl(url);return;}
   if(e.target.closest('.action-delete')){deleteItem(Number(id));return;}
+  if(ytid){window.open('https://youtube.com/watch?v='+ytid,'_blank');return;}
   openViewer(url,vid==='1');
 });
 document.getElementById('filterGroup').addEventListener('click',function(e){
@@ -713,25 +724,4 @@ async function aiAnalyzeAll(){
 
 async function aiBulkUploadAll(){
   if(!aiBulkFiles.length)return;
-  var btn=document.getElementById('aiBulkUploadBtn');btn.disabled=true;
-  var ok=0,fail=0;
-  document.getElementById('aiBulkStatus').textContent='Uploading…';
-  for(var i=0;i<aiBulkFiles.length;i++){
-    var item=aiBulkFiles[i];
-    document.getElementById('aiBulkStatus').textContent='Uploading '+(i+1)+'/'+aiBulkFiles.length+'…';
-    var form=new FormData();form.append('file',item.file);form.append('pillar',item.pillar);form.append('type','photo');
-    try{
-      var d=await fetch('/api/media',{method:'POST',body:form}).then(function(r){return r.json();});
-      if(d.error)fail++;else ok++;
-    }catch(e){fail++;}
-  }
-  btn.disabled=false;
-  document.getElementById('aiBulkStatus').textContent='✅ '+ok+' uploaded'+(fail?' · ❌ '+fail+' failed':'')+'!';
-  if(ok){aiBulkFiles=[];setTimeout(function(){document.getElementById('aiBulkReview').style.display='none';},2000);loadMedia();showToast(ok+' photos uploaded!','success');}
-}
-
-loadMedia();
-</script>
-<script src="../assets/js/admin-nav.js"></script>
-</body>
-</html>
+  var btn=document.getElementById('aiBu
