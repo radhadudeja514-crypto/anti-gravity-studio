@@ -115,10 +115,14 @@ function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.cla
 async function loadData(){
   try{
     const [sched,times]=await Promise.all([
-      fetch('/api/agent/instagram/scheduled').then(r=>r.json()).catch(()=>({posts:[]})),
-      fetch('/api/agent/instagram/best-times').then(r=>r.json()).catch(()=>({bestTimes:{}}))
+      fetch('/api/agent/instagram/scheduled').then(r=>r.json()).catch(()=>[]),
+      fetch('/api/agent/instagram/best-times').then(r=>r.json()).catch(()=>[])
     ]);
-    allPosts=sched.posts||[];bestTimesData=times.bestTimes||{};
+    // Server returns plain arrays
+    allPosts=Array.isArray(sched)?sched:(sched.posts||[]);
+    // best-times returns a flat array — use same for all pillars
+    const flatTimes=Array.isArray(times)?times:(times.bestTimes||[]);
+    bestTimesData={radha:flatTimes,veronica:flatTimes,tour:flatTimes};
     document.getElementById('postBadge').textContent=allPosts.length+' scheduled';
     renderQueue();loadTimes('radha',document.querySelector('#tab-bestTimes .tab.active'));loadHashtags();
   }catch(e){console.error(e);}
@@ -159,7 +163,7 @@ function loadHashtags(){
     vero:['#CorporateMC','#EventHost','#ConferenceHost','#TechSummit','#Emcee','#StagePresence','#CorporateEvents','#KeynoteSpeaker','#PanelModerator','#BusinessEvents','#AwardsCeremony','#LeadershipSummit'],
     tour:['#HeritageWalk','#CulturalTour','#TrailCurator','#HiddenGems','#IndiaTravel','#HeritageIndia','#WalkingTour','#OldDelhiWalk','#CulturalExperience','#TravelIndia','#MountainTrails','#HistoryWalk']
   };
-  ['Radhaa','Vero','Tour'].forEach(p=>{
+  ['Radha','Vero','Tour'].forEach(p=>{
     const el=document.getElementById('hash'+p);
     const tags=sets[p.toLowerCase()]||[];
     el.innerHTML=tags.map(t=>`<span class="hashtag" onclick="navigator.clipboard.writeText('${t}');showToast('Copied!','success')">${t}</span>`).join('');
@@ -172,7 +176,7 @@ async function schedPost(){
   if(!date||!time){showToast('Date & time required','error');return;}
   try{
     const r=await fetch('/api/agent/instagram/schedule-post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,date,time,topic,caption,mediaUrl})});
-    const d=await r.json();if(d.success){showToast('Scheduled!','success');document.getElementById('iTopic').value='';document.getElementById('iCaption').value='';loadData();}
+    const d=await r.json();if(d.success||d.id){showToast('Scheduled!','success');document.getElementById('iTopic').value='';document.getElementById('iCaption').value='';loadData();}
     else showToast(d.error||'Failed','error');
   }catch(e){showToast('Error','error');}
 }

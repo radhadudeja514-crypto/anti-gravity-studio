@@ -879,6 +879,8 @@ if (db) db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
   status        TEXT DEFAULT 'pending',
   createdAt     TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
+addCol('instagram_queue', 'pillar', 'TEXT DEFAULT ""');
+addCol('instagram_queue', 'topic',  'TEXT DEFAULT ""');
 
 app.get('/api/instagram/queue', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
@@ -1029,6 +1031,14 @@ app.get('/api/agent/data/leads-export', requireAuth, requireDb, (req, res) => {
   });
 });
 
+// Alias: agent-instagram.html uses this path for DELETE
+app.delete('/api/agent/instagram/post/:id', requireAuth, requireDb, (req, res) => {
+  db.run('DELETE FROM instagram_queue WHERE id=?', [req.params.id], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
 app.get('/api/agent/instagram/scheduled', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -1037,14 +1047,16 @@ app.get('/api/agent/instagram/scheduled', requireAuth, requireDb, (req, res) => 
 });
 
 app.post('/api/agent/instagram/schedule-post', requireAuth, requireDb, (req, res) => {
-  const { mediaUrl, caption, accounts, scheduledFor } = req.body;
-  if (!mediaUrl || !caption) return res.status(400).json({ error: 'mediaUrl and caption required' });
+  const { mediaUrl, caption, accounts, scheduledFor, pillar, date, time, topic } = req.body;
+  if (!caption) return res.status(400).json({ error: 'caption required' });
+  // Support both old format (mediaUrl, scheduledFor) and new format (date, time)
+  const sf = scheduledFor || (date ? `${date}T${time || '10:00'}:00` : new Date().toISOString());
   db.run(
-    'INSERT INTO instagram_queue (mediaUrl,caption,accounts,scheduledFor) VALUES (?,?,?,?)',
-    [mediaUrl, caption, JSON.stringify(accounts || []), scheduledFor || new Date().toISOString()],
+    'INSERT INTO instagram_queue (mediaUrl,caption,accounts,scheduledFor,pillar,topic) VALUES (?,?,?,?,?,?)',
+    [mediaUrl || '', caption, JSON.stringify(accounts || []), sf, pillar || '', topic || ''],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID });
+      res.json({ success: true, id: this.lastID });
     }
   );
 });
@@ -1076,8 +1088,16 @@ app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) 
   });
 });
 
-app.get('/api/agent/design/theme/:pillar', requireAuth, (req, res) => {
-  res.json({ pillar: req.params.pillar, theme: 'default' });
+app.get('/api/agent/design/theme/:pillar', requireAuth, requireDb, (req, res) => {
+  db.get('SELECT value FROM config WHERE key=?', [`theme_${req.params.pillar}`], (err, row) => {
+    if (row && row.value) {
+      try {
+        const theme = JSON.parse(row.value);
+        return res.json({ pillar: req.params.pillar, success: true, theme });
+      } catch (_) {}
+    }
+    res.json({ pillar: req.params.pillar, theme: null });
+  });
 });
 
 app.post('/api/agent/design/save-theme', requireAuth, requireDb, (req, res) => {
@@ -1201,25 +1221,4 @@ app.get('/api/config', requireAuth, requireDb, (req, res) => {
     const envFallbacks = {
       GOOGLE_CLIENT_ID:  process.env.GOOGLE_CLIENT_ID,
       CLOUDINARY_NAME:   process.env.CLOUDINARY_NAME,
-      CLOUDINARY_KEY:    process.env.CLOUDINARY_KEY,
-      CLOUDINARY_SECRET: process.env.CLOUDINARY_SECRET,
-      GEMINI_API_KEY:    process.env.GEMINI_API_KEY,
-      GOOGLE_PLACES_KEY: process.env.GOOGLE_PLACES_KEY,
-      GOOGLE_PLACE_ID:   process.env.GOOGLE_PLACE_ID,
-    };
-    Object.entries(envFallbacks).forEach(([k, v]) => { if (v && !cfg[k]) cfg[k] = v; });
-    res.json(cfg);
-  });
-});
-
-app.post('/api/config', requireAuth, requireDb, (req, res) => {
-  const { key, value } = req.body;
-  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [key, value], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
-
-// ── Backup ───────────────────────────────────────────────────────────
-app.get('/api/backup/leads', requireAuth, requireDb, (req, res) => {
-  db.all('SEL
+      CLOUDINARY_KEY:    

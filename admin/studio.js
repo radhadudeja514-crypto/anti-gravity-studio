@@ -26,13 +26,21 @@ async function refreshStats() {
     document.getElementById('s-veronica').textContent = d.filter(i=>i.pillar==='corporate').length;
     document.getElementById('s-tour').textContent = d.filter(i=>i.pillar==='tour').length;
 
-    const r2 = await fetch('/api/admin/analytics');
+    // /api/admin/analytics now returns {revenue:{Radhaa,Corporate,Tour}, conversion}
+    // Get lead counts from /api/leads directly
+    const [r2, rLeads] = await Promise.all([
+      fetch('/api/admin/analytics'),
+      fetch('/api/leads')
+    ]);
     if (r2.ok) {
       const a = await r2.json();
-      document.getElementById('a-leads').textContent = a.totalLeads;
-      document.getElementById('a-radha').textContent = a.leadsByPillar.radha;
-      document.getElementById('a-veronica').textContent = a.leadsByPillar.corporate;
-      document.getElementById('a-rev').textContent = a.estimatedRevenue;
+      const rev = a.revenue || {};
+      const totalRev = Object.values(rev).reduce((s,v)=>s+v,0);
+      const leadsArr = rLeads.ok ? await rLeads.json() : [];
+      document.getElementById('a-leads').textContent = leadsArr.length || 0;
+      document.getElementById('a-radha').textContent = leadsArr.filter(l=>/(radha|sangeet)/i.test(l.pillar||'')).length;
+      document.getElementById('a-veronica').textContent = leadsArr.filter(l=>/(corp|veronica)/i.test(l.pillar||'')).length;
+      document.getElementById('a-rev').textContent = '₹' + (totalRev >= 100000 ? (totalRev/100000).toFixed(1)+'L' : totalRev.toLocaleString('en-IN'));
     }
 
     const r3 = await fetch('/api/admin/insights');
@@ -524,13 +532,4 @@ async function fetchLogs() {
     for (const [file, content] of Object.entries(logs)) {
       html += `
         <div style="background:#050505;border:1px solid rgba(255,255,255,0.1);border-radius:0.5rem;overflow:hidden;">
-          <div style="background:rgba(255,255,255,0.05);padding:0.5rem 1rem;font-family:'Orbitron',sans-serif;font-size:0.8rem;color:var(--c);border-bottom:1px solid rgba(255,255,255,0.1);">${file}</div>
-          <pre style="padding:1rem;font-size:0.75rem;color:rgba(255,255,255,0.7);max-height:300px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;">${content || 'File is empty.'}</pre>
-        </div>
-      `;
-    }
-    container.innerHTML = html;
-  } catch (e) {
-    container.innerHTML = `<div style="color:#ff8080">❌ Error: ${e.message}</div>`;
-  }
-}
+          <div style="background:rgba(255,

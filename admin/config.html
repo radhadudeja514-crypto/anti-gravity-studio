@@ -244,4 +244,93 @@ async function saveHeroImages(){
   }catch(e){ document.getElementById('heroSaveMsg').textContent='❌ Network error'; }
 }
 
-// Load current hero images
+// Load current hero images on page load
+fetch('/api/hero-images').then(function(r){return r.json();}).then(function(d){
+  ['hero_bg_1','hero_bg_2','hero_bg_3'].forEach(function(k,i){
+    if(d[k]){ document.getElementById('hurl'+i).value=d[k]; previewHero(i); }
+  });
+}).catch(function(){});
+</script>
+<script>
+/* ── CONFIG KEY SAVE ── */
+async function saveKey(key){
+  var input = document.getElementById('cfg_' + key);
+  if(!input){ alert('Input not found: ' + key); return; }
+  var value = input.value.trim();
+  try{
+    var d = await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,value})}).then(function(r){return r.json();});
+    if(d.success){
+      var btn = input.nextElementSibling;
+      var orig = btn.textContent;
+      btn.textContent='✓ Saved';
+      btn.style.color='var(--green)';
+      setTimeout(function(){btn.textContent=orig;btn.style.color='';},2000);
+    } else {
+      alert('Error: ' + (d.error||'Unknown'));
+    }
+  } catch(e){ alert('Network error: ' + e.message); }
+}
+
+/* ── LOAD CONFIG VALUES ── */
+async function loadData(){
+  try{
+    var cfg = await fetch('/api/config').then(function(r){return r.json();});
+    Object.keys(cfg).forEach(function(k){
+      var el = document.getElementById('cfg_'+k);
+      if(el) el.value = cfg[k] || '';
+    });
+  } catch(e){ console.warn('Config load error',e); }
+
+  // Load health
+  try{
+    var h = await fetch('/api/agent/data/health').then(function(r){return r.json();});
+    var info = (h && h.health) ? h.health : null;
+    var el = document.getElementById('healthStatus');
+    if(!el) return;
+    if(!info){ el.innerHTML='<div style="color:var(--red);padding:.75rem">Could not load health data</div>'; return; }
+    el.innerHTML = [
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;font-size:.78rem">',
+      '<div><span style="color:var(--text-dim)">Server</span><br><span style="color:var(--green);font-weight:600">'+(info.server&&info.server.status||'?')+'</span> &nbsp; <span style="color:var(--text-dim)">'+(info.server&&info.server.uptime||'')+'</span></div>',
+      '<div><span style="color:var(--text-dim)">DB</span><br><span style="color:var(--green);font-weight:600">'+(info.database&&info.database.status||'?')+'</span></div>',
+      '<div><span style="color:var(--text-dim)">Leads</span><br><span style="color:var(--cyan);font-weight:700">'+(info.leads&&info.leads.total||0)+'</span> total &nbsp; <span style="color:var(--orange)">'+(info.leads&&info.leads.new||0)+'</span> new</div>',
+      '<div><span style="color:var(--text-dim)">Media</span><br><span style="color:var(--cyan);font-weight:700">'+(info.media&&info.media.total||0)+'</span> files</div>',
+      '<div><span style="color:var(--text-dim)">Schedule</span><br><span style="color:var(--cyan);font-weight:700">'+(info.schedule&&info.schedule.total||0)+'</span> total &nbsp; <span style="color:var(--green)">'+(info.schedule&&info.schedule.upcoming||0)+'</span> upcoming</div>',
+      '<div><span style="color:var(--text-dim)">Response</span><br><span style="color:var(--purple);font-weight:600">'+(info.responseTimeMs||0)+'ms</span></div>',
+      '</div>'
+    ].join('');
+  } catch(e){ document.getElementById('healthStatus').innerHTML='<div style="color:var(--red);padding:.75rem">Health check failed</div>'; }
+
+  await loadLogs();
+}
+
+/* ── LOAD SERVER LOGS ── */
+async function loadLogs(){
+  try{
+    var d = await fetch('/api/admin/logs').then(function(r){return r.json();});
+    var views = d.views || [];
+    var events = d.events || [];
+    var logEl = document.getElementById('serverLog');
+    var errEl = document.getElementById('errorLog');
+    if(logEl){
+      logEl.textContent = views.length
+        ? views.map(function(v){ return '[PAGE] '+v.url+' | pillar='+v.pillar+' | '+(v.timestamp||v.ts||''); }).join('\n')
+        : 'No page view logs yet.';
+    }
+    if(errEl){
+      var errorEvents = events.filter(function(e){ return /error/i.test(e.eventName||''); });
+      errEl.textContent = errorEvents.length
+        ? errorEvents.map(function(e){ return '[EVENT] '+e.eventName+' | pillar='+e.pillar+' | '+(e.timestamp||e.ts||''); }).join('\n')
+        : 'No error events logged.';
+    }
+  } catch(e){
+    var logEl2 = document.getElementById('serverLog');
+    if(logEl2) logEl2.textContent = 'Failed to load logs: ' + e.message;
+  }
+}
+
+// Auto-load on page ready
+loadData();
+</script>
+<script src="../assets/js/admin-nav.js"></script>
+</body>
+</html>

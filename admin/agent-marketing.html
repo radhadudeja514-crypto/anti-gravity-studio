@@ -108,7 +108,7 @@ async function generate(){
   try{
     const r=await fetch('/api/agent/marketing/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,type:contentType})});
     const d=await r.json();
-    const text=d.content||d.text||JSON.stringify(d);
+    const text=d.fullCaption||d.content||d.text||(typeof d==='object'?JSON.stringify(d):'');
     typewriter(out,text);
     history.unshift({pillar,type:contentType,text:text.substring(0,80)+'...',time:new Date().toLocaleTimeString()});
     renderHistory();
@@ -138,13 +138,13 @@ function renderHistory(){
 
 // Load pillar template stats
 fetch('/api/agent/marketing/all-pillars').then(r=>r.json()).then(d=>{
-  const pillars=d.pillars||[];
-  document.getElementById('pillarStats').innerHTML=pillars.map(p=>`
+  const pillars=Array.isArray(d)?d:(d.pillars||[]);
+  document.getElementById('pillarStats').innerHTML=pillars.length?pillars.map(p=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.8rem;">
-      <span>${p.emoji||'🎯'} ${p.name||p.id}</span>
-      <span class="badge badge-ghost">${p.hooks||0} hooks · ${p.upsells||0} upsells · ${p.ctas||0} CTAs</span>
+      <span>${p.icon||p.emoji||'🎯'} ${p.name||p.id}</span>
+      <span class="badge badge-ghost">${p.mediaCount||0} media files</span>
     </div>
-  `).join('');
+  `).join(''):'<div class="empty-state" style="padding:1rem">No pillars found</div>';
 }).catch(()=>{document.getElementById('pillarStats').innerHTML='<div class="empty-state">Could not load</div>';});
 </script>
 <script src="../assets/js/admin-nav.js"></script>

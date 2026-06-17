@@ -97,29 +97,39 @@ async function loadAll(){
   }catch(e){console.error(e);}
 }
 
-function renderHealth(h){
-  document.getElementById('kStatus').textContent=h.status==='ok'?'ONLINE':'OFFLINE';
-  document.getElementById('kUptime').textContent=h.uptime||'—';
-  document.getElementById('kLeads').textContent=h.leads||0;
-  document.getElementById('kMedia').textContent=h.media||0;
+function renderHealth(raw){
+  // Server returns {success, health:{server,database,leads,media,schedule,responseTimeMs}}
+  const h = (raw && raw.health) ? raw.health : raw || {};
+  const srv = h.server || {};
+  const db2 = h.database || {};
+  const leads = h.leads || {};
+  const media = h.media || {};
+  const sched = h.schedule || {};
 
-  const el=document.getElementById('healthDetails');
+  const online = srv.status === 'running' || srv.status === 'ok';
+  document.getElementById('kStatus').textContent = online ? 'ONLINE' : 'OFFLINE';
+  document.getElementById('kUptime').textContent = srv.uptime || '—';
+  document.getElementById('kLeads').textContent = leads.total || 0;
+  document.getElementById('kMedia').textContent = media.total || 0;
+
+  const el = document.getElementById('healthDetails');
   const items=[
-    ['Server Status',h.status==='ok'?'🟢 Online':'🔴 Offline'],
-    ['Uptime',h.uptime||'—'],
-    ['Memory Usage',h.memory||'—'],
-    ['Node Version',h.nodeVersion||'—'],
-    ['Database',h.dbStatus||'Connected'],
-    ['Tables',h.tables||'—'],
-    ['Total Leads',h.leads||0],
-    ['Total Media',h.media||0],
-    ['Scheduled Posts',h.scheduled||0],
+    ['Server Status', online ? '🟢 Running' : '🔴 Offline'],
+    ['Uptime', srv.uptime || '—'],
+    ['Node Version', srv.nodeVersion || '—'],
+    ['Port', srv.port || '—'],
+    ['Database', db2.status || 'Connected'],
+    ['Total Leads', leads.total || 0],
+    ['New Leads', leads.new || 0],
+    ['Total Media', media.total || 0],
+    ['Upcoming Posts', sched.upcoming || 0],
+    ['Response Time', (h.responseTimeMs || 0) + 'ms'],
   ];
   el.innerHTML=items.map(([k,v])=>`<div class="health-item"><span>${k}</span><span class="health-val">${v}</span></div>`).join('');
 
   document.getElementById('dbInfo').innerHTML=`
-    <div class="health-item"><span>Engine</span><span class="health-val">SQLite (WAL)</span></div>
-    <div class="health-item"><span>Tables</span><span class="health-val">${h.tables||7}</span></div>
+    <div class="health-item"><span>Engine</span><span class="health-val">SQLite</span></div>
+    <div class="health-item"><span>Status</span><span class="health-val" style="color:var(--green)">${db2.status||'Connected'}</span></div>
     <div class="health-item"><span>Location</span><span class="health-val" style="font-size:0.68rem;">./database.sqlite</span></div>
   `;
 }
