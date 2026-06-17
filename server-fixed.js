@@ -669,10 +669,42 @@ app.get('/api/admin/insights', requireAuth, requireDb, (req, res) => {
   });
 });
 
+// ── ANALYTICS ─────────────────────────────────────────────────────────────────
+app.post('/api/analytics/view', rateLimit(120, 60_000), requireDb, (req, res) => {
+  const { page, pillar } = req.body || {};
+  db.run('INSERT INTO page_views (url, pillar) VALUES (?, ?)', [page || req.path, pillar || ''], () => {});
+  res.json({ ok: true });
+});
+
+app.post('/api/analytics/event', rateLimit(60, 60_000), requireDb, (req, res) => {
+  const { event, eventName, page, pillar } = req.body || {};
+  const name = eventName || event || 'unknown';
+  db.run('INSERT INTO events (eventName, pillar) VALUES (?, ?)', [name, pillar || ''], () => {});
+  res.json({ ok: true });
+});
+
+app.get('/api/analytics/stats', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT pillar, COUNT(*) as cnt FROM page_views GROUP BY pillar', [], (errV, viewRows) => {
+    db.all('SELECT pillar, eventName, COUNT(*) as cnt FROM events GROUP BY pillar, eventName', [], (errE, eventRows) => {
+      // views: {pillar: count}
+      const views = {};
+      (viewRows || []).forEach(r => { views[r.pillar || 'Unknown'] = r.cnt; });
+      // events: {pillar: {eventName: count}}
+      const events = {};
+      (eventRows || []).forEach(r => {
+        const p = r.pillar || 'Unknown';
+        if (!events[p]) events[p] = {};
+        events[p][r.eventName || 'unknown'] = r.cnt;
+      });
+      res.json({ views, events });
+    });
+  });
+});
+
 // ── Admin logs ────────────────────────────────────────────────────────────────
 app.get('/api/admin/logs', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM analytics_views ORDER BY timestamp DESC LIMIT 200', [], (errV, views) => {
-    db.all('SELECT * FROM analytics_events ORDER BY timestamp DESC LIMIT 200', [], (errE, events) => {
+  db.all('SELECT * FROM page_views ORDER BY timestamp DESC LIMIT 200', [], (errV, views) => {
+    db.all('SELECT * FROM events ORDER BY timestamp DESC LIMIT 200', [], (errE, events) => {
       res.json({
         views:  (views  || []).map(v => ({ url: v.page || v.url || '', pillar: v.pillar || '', timestamp: v.timestamp })),
         events: (events || []).map(e => ({ eventName: e.eventName || e.event_name || '', pillar: e.pillar || '', timestamp: e.timestamp })),
@@ -1182,25 +1214,4 @@ app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) 
     if (err) return res.status(500).json({ error: err.message });
     const pillars = [
       { id: 'radha',     name: 'Radhaa (Wedding)',  icon: '🪔' },
-      { id: 'corporate', name: 'Corporate',          icon: '🎤' },
-      { id: 'tour',      name: 'Tour',               icon: '🧭' },
-      { id: 'main',      name: 'Main',               icon: '🌐' },
-    ];
-    res.json(pillars.map(p => ({
-      ...p,
-      mediaCount: (rows.find(r => r.pillar === p.id) || { mediaCount: 0 }).mediaCount,
-    })));
-  });
-});
-
-app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
-  const { pillar = 'radha', type = 'hook' } = req.body || {};
-  const templates = {
-    radha: {
-      hook: `✨ Every love story deserves to be told beautifully.\nKartikey Bameta brings your wedding to life with heartfelt hosting, emotional rituals & unforgettable moments.\n💍 Inquire now → antigravitystudio.com/booking\n\n#WeddingMC #KartikeyBameta #WeddingHost #IndianWedding #Sangeet #BridalVibes #WeddingVibes`,
-      caption: `From the first dance to the last toast — every moment curated with love.\nRadhaa by Kartikey Bameta is where emotions meet elegance.\n\n📲 DM to check availability for your date!\n\n#WeddingCeremony #MCKartikey #WeddingIndia #SangeetNight #BridalDreams`,
-      story: `💕 Your wedding deserves a storyteller.\nNot just an MC — an experience architect.\nSwipe up to see how we transform your big day. ✨`,
-      reel: `🎬 POV: Your wedding MC just made everyone cry (happy tears) 😭✨\nThe moments that matter — curated by Kartikey Bameta\n💍 Link in bio to book!\n\n#WeddingReel #MCLife #WeddingMagic #KartikeyBameta`,
-    },
-    corporate: {
-      hook: `🎤 Your event is only as good as the
+      { id: 'corporate', name: 'Corporate',          icon: '🎤
