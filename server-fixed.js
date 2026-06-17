@@ -416,6 +416,15 @@ if (db) db.serialize(() => {
     fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(place_id, time)
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    email TEXT,
+    message TEXT,
+    rating INTEGER,
+    type TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
 
   // ── Migrations: safely add columns missing in older DB schemas ──────────
   const addCol = (tbl, col, def) => db.run(`ALTER TABLE ${tbl} ADD COLUMN ${col} ${def}`, () => {});
@@ -539,8 +548,27 @@ app.post('/api/admin/logout', (req, res) => {
 app.get('/api/google-reviews', requireDb, (req, res) => {
   db.all('SELECT * FROM google_reviews ORDER BY time DESC LIMIT 50', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(rows || []);
+    const reviews = rows || [];
+    // Compute aggregate stats so badge widgets can use d.rating / d.total
+    const total = reviews.length;
+    const avgRating = total ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / total : null;
+    const fiveStarCount = reviews.filter(r => r.rating === 5).length;
+    res.json({ reviews, avgRating, totalReviews: total, fiveStarCount, rating: avgRating, total });
   });
+});
+
+// ── Feedback (private low-rating feedback from review-hub.html) ────────────
+app.post('/api/feedback', requireDb, (req, res) => {
+  const { name, email, message, rating, type } = req.body;
+  if (!message) return res.status(400).json({ error: 'message required' });
+  db.run(
+    'INSERT INTO feedback (name,email,message,rating,type) VALUES (?,?,?,?,?)',
+    [name || '', email || '', message, rating || 0, type || ''],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, id: this.lastID });
+    }
+  );
 });
 
 app.post('/api/google-reviews', requireAuth, requireDb, (req, res) => {
@@ -1196,27 +1224,4 @@ app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
   });
 });
 
-// ── Analytics ────────────────────────────────────────────────────────
-app.post('/api/analytics/view', rateLimit(120, 60_000), (req, res) => {
-  const { page, referrer } = req.body;
-  if (db) db.run('INSERT INTO page_views (url,pillar) VALUES (?,?)', [page || '/', referrer || ''], () => {});
-  res.json({ ok: true });
-});
-
-app.post('/api/analytics/event', rateLimit(60, 60_000), (req, res) => {
-  const { event, data } = req.body;
-  if (db) db.run('INSERT INTO events (eventName,pillar) VALUES (?,?)', [event || 'unknown', JSON.stringify(data || {})], () => {});
-  res.json({ ok: true });
-});
-
-app.get('/api/analytics/stats', requireAuth, requireDb, (req, res) => {
-  // views: { pillar: count } object
-  db.all('SELECT pillar, COUNT(*) as cnt FROM page_views GROUP BY pillar', [], (err, viewRows) => {
-    const views = {};
-    (viewRows || []).forEach(r => { views[r.pillar || 'Unknown'] = r.cnt; });
-
-    // events: { pillar: { eventName: count } } nested object
-    db.all('SELECT pillar, eventName, COUNT(*) as cnt FROM events GROUP BY pillar, eventName', [], (err2, evRows) => {
-      const events = {};
-      (evRows || []).forEach(r => {
-        const p = r.pi
+// ── Analytics ─────────────────
