@@ -669,6 +669,18 @@ app.get('/api/admin/insights', requireAuth, requireDb, (req, res) => {
   });
 });
 
+// ── Admin logs ────────────────────────────────────────────────────────────────
+app.get('/api/admin/logs', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT * FROM analytics_views ORDER BY timestamp DESC LIMIT 200', [], (errV, views) => {
+    db.all('SELECT * FROM analytics_events ORDER BY timestamp DESC LIMIT 200', [], (errE, events) => {
+      res.json({
+        views:  (views  || []).map(v => ({ url: v.page || v.url || '', pillar: v.pillar || '', timestamp: v.timestamp })),
+        events: (events || []).map(e => ({ eventName: e.eventName || e.event_name || '', pillar: e.pillar || '', timestamp: e.timestamp })),
+      });
+    });
+  });
+});
+
 app.post('/api/leads', rateLimit(10, 60_000), requireDb, (req, res) => {
   const { name, phone, email, eventType, eventDate, budget, message, pillar, company } = req.body;
   if (!name || !phone) return res.status(400).json({ error: 'Name and phone are required.' });
@@ -979,6 +991,35 @@ app.get('/api/public-config', (req, res) => {
   });
 });
 
+// ── DB config key/value store ─────────────────────────────────────────────────
+// GET /api/config — public read (values are non-sensitive URLs/IDs)
+app.get('/api/config', requireDb, (req, res) => {
+  db.all('SELECT key, value FROM config', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const cfg = {};
+    (rows || []).forEach(r => { cfg[r.key] = r.value; });
+    // Also expose env-based GOOGLE_CLIENT_ID if not in DB
+    if (!cfg.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID) {
+      cfg.GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    }
+    res.json(cfg);
+  });
+});
+
+// POST /api/config — admin only, upsert one key/value
+app.post('/api/config', requireAuth, requireDb, (req, res) => {
+  const { key, value } = req.body;
+  if (!key) return res.status(400).json({ error: 'key required' });
+  db.run(
+    'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+    [key, value || ''],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
 // ── PAYMENTS ─────────────────────────────────────────────────────────────────
 if (db) db.run(`CREATE TABLE IF NOT EXISTS payments (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1069,14 +1110,29 @@ function formatUptime(s) {
 app.get('/api/agent/data/media-stats', requireAuth, requireDb, (req, res) => {
   db.all('SELECT pillar, type, COUNT(*) as count FROM media GROUP BY pillar, type', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+    // Frontend expects {stats: {pillar: {type: count, ...}}}
+    const stats = {};
+    (rows || []).forEach(r => {
+      if (!stats[r.pillar]) stats[r.pillar] = {};
+      stats[r.pillar][r.type || 'image'] = r.count;
+    });
+    res.json({ stats });
   });
 });
 
 app.get('/api/agent/data/leads-export', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM leads ORDER BY timestamp DESC LIMIT 100', [], (err, rows) => {
+  const { pillar, status, from, to } = req.query;
+  let sql = 'SELECT * FROM leads WHERE 1=1';
+  const params = [];
+  if (pillar) { sql += ' AND pillar=?'; params.push(pillar); }
+  if (status) { sql += ' AND status=?'; params.push(status); }
+  if (from)   { sql += ' AND timestamp>=?'; params.push(from); }
+  if (to)     { sql += ' AND timestamp<=?'; params.push(to); }
+  sql += ' ORDER BY timestamp DESC LIMIT 500';
+  db.all(sql, params, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+    // Frontend reads d.leads
+    res.json({ leads: rows || [] });
   });
 });
 
@@ -1137,91 +1193,14 @@ app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) 
   });
 });
 
-app.get('/api/agent/design/theme/:pillar', requireAuth, requireDb, (req, res) => {
-  db.get('SELECT value FROM config WHERE key=?', [`theme_${req.params.pillar}`], (err, row) => {
-    if (row && row.value) {
-      try {
-        const theme = JSON.parse(row.value);
-        return res.json({ pillar: req.params.pillar, success: true, theme });
-      } catch (_) {}
-    }
-    res.json({ pillar: req.params.pillar, theme: null });
-  });
-});
-
-app.post('/api/agent/design/save-theme', requireAuth, requireDb, (req, res) => {
-  const { pillar, theme } = req.body;
-  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [`theme_${pillar}`, JSON.stringify(theme)], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
-
-app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
-  db.get('SELECT url FROM media WHERE id=?', [req.params.id], (err, row) => {
-    if (row && row.url.startsWith('/uploads')) {
-      const fp = path.join(__dirname, row.url);
-      if (fs.existsSync(fp)) fs.unlinkSync(fp);
-    }
-    db.run('DELETE FROM media WHERE id=?', [req.params.id], e => {
-      if (e) return res.status(500).json({ error: e.message });
-      res.json({ success: true });
-    });
-  });
-});
-
-// ── UPI QR Validation (server-side) ──────────────────────────────────────────
-const UPI_REGEX  = /^[a-zA-Z0-9._-]+@[a-zA-Z]{2,}$/;
-const AMOUNT_MAX = 1_000_000;
-app.post('/api/generate-qr', rateLimit(20, 60_000), (req, res) => {
-  const { upiId, amount, name } = req.body;
-  if (!upiId || !UPI_REGEX.test(upiId))
-    return res.status(400).json({ error: 'Invalid UPI ID format.' });
-  const amt = parseFloat(amount);
-  if (isNaN(amt) || amt <= 0 || amt > AMOUNT_MAX)
-    return res.status(400).json({ error: `Amount must be between 1 and ${AMOUNT_MAX}.` });
-
-  const pa   = encodeURIComponent(upiId);
-  const pn   = encodeURIComponent((name || 'Anti Gravity Studio').slice(0, 50));
-  const am   = amt.toFixed(2);
-  const tn   = encodeURIComponent('Booking Advance');
-  const uri  = `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-  res.json({ uri, qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(uri)}` });
-});
-
-// ── Schedule ──────────────────────────────────────────────────────────
-app.get('/api/schedule', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM schedule ORDER BY date ASC, time ASC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-app.post('/api/schedule', requireAuth, requireDb, (req, res) => {
-  const { title, content, platform, pillar, date, time } = req.body;
-  db.run(
-    'INSERT INTO schedule (title,content,platform,pillar,date,time,status) VALUES (?,?,?,?,?,?,?)',
-    [title || '', content || '', platform || 'instagram', pillar || 'main', date, time || '19:00', 'Scheduled'],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID });
-    }
-  );
-});
-
-app.put('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
-  const { status } = req.body;
-  db.run('UPDATE schedule SET status=? WHERE id=?', [status || 'Posted', req.params.id], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
-
-app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
-  db.run('DELETE FROM schedule WHERE id=?', [req.params.id], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
-
-// ── Analytics ─────────────────
+app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
+  const { pillar = 'radha', type = 'hook' } = req.body || {};
+  const templates = {
+    radha: {
+      hook: `✨ Every love story deserves to be told beautifully.\nKartikey Bameta brings your wedding to life with heartfelt hosting, emotional rituals & unforgettable moments.\n💍 Inquire now → antigravitystudio.com/booking\n\n#WeddingMC #KartikeyBameta #WeddingHost #IndianWedding #Sangeet #BridalVibes #WeddingVibes`,
+      caption: `From the first dance to the last toast — every moment curated with love.\nRadhaa by Kartikey Bameta is where emotions meet elegance.\n\n📲 DM to check availability for your date!\n\n#WeddingCeremony #MCKartikey #WeddingIndia #SangeetNight #BridalDreams`,
+      story: `💕 Your wedding deserves a storyteller.\nNot just an MC — an experience architect.\nSwipe up to see how we transform your big day. ✨`,
+      reel: `🎬 POV: Your wedding MC just made everyone cry (happy tears) 😭✨\nThe moments that matter — curated by Kartikey Bameta\n💍 Link in bio to book!\n\n#WeddingReel #MCLife #WeddingMagic #KartikeyBameta`,
+    },
+    corporate: {
+      hook: `🎤 Your event is only as good as the
