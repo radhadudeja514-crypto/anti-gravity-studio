@@ -188,24 +188,74 @@ app.get('/api/google-photos/callback', (req, res) => {
   res.send('<script>window.opener && window.opener.postMessage({type:"gp_token",hash:location.hash},"*");window.close();</script>');
 });
 
-// ── GOOGLE PHOTOS IMPORT (by access token + media item URLs) ──────────────────
+// ── GOOGLE PHOTOS IMPORT (download → Cloudinary → DB) ────────────────────────
+// Google Photos baseUrls are TEMPORARY (~60 min). We must re-upload to Cloudinary
+// for a permanent URL; fall back to local disk only when Cloudinary is not configured.
 app.post('/api/media/import-google-photos', requireAuth, requireDb, async (req, res) => {
   const { items, pillar } = req.body; // items: [{url, name}]
   if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'items array required' });
+
+  const hasCloudinary = process.env.CLOUDINARY_NAME && process.env.CLOUDINARY_KEY && process.env.CLOUDINARY_SECRET;
+  if (hasCloudinary) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_NAME,
+      api_key:    process.env.CLOUDINARY_KEY,
+      api_secret: process.env.CLOUDINARY_SECRET,
+    });
+  }
+
   const results = [];
-  let done = 0;
-  items.forEach((item, i) => {
-    const name = item.name || `gp_${Date.now()}_${i}.jpg`;
+  const folder  = pillar || 'main';
+
+  const saveToDb = (name, permanentUrl, cb) => {
     db.run(
       'INSERT INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)',
-      [name, item.url, pillar || 'main', 'image', 0, name],
-      function(err) {
-        if (!err) results.push({ id: this.lastID, url: item.url });
-        done++;
-        if (done === items.length) res.json({ imported: results });
-      }
+      [name, permanentUrl, folder, 'image', 0, name],
+      function(err) { cb(err, this ? this.lastID : null); }
     );
-  });
+  };
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const name = item.name || `gp_${Date.now()}_${i}.jpg`;
+    // Append =d to get full-resolution download from Google Photos
+    const downloadUrl = item.url.replace(/=d$/, '') + '=d';
+
+    try {
+      if (hasCloudinary) {
+        // Upload directly from URL to Cloudinary — no local disk needed
+        const result = await cloudinary.uploader.upload(downloadUrl, {
+          folder:        `gig_portfolio/${folder}`,
+          resource_type: 'image',
+          public_id:     name.replace(/\.[^.]+$/, ''),
+          overwrite:     false,
+        });
+        await new Promise((resolve, reject) => {
+          saveToDb(name, result.secure_url, (err) => err ? reject(err) : resolve());
+        });
+        results.push({ url: result.secure_url });
+      } else {
+        // No Cloudinary — download to local uploads (ephemeral on Render)
+        const response = await fetch(downloadUrl);
+        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+        const buffer   = Buffer.from(await response.arrayBuffer());
+        const localDir = path.join(uploadsDir, folder);
+        if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true });
+        const localPath = path.join(localDir, name);
+        fs.writeFileSync(localPath, buffer);
+        const localUrl = `/uploads/${folder}/${name}`;
+        await new Promise((resolve, reject) => {
+          saveToDb(name, localUrl, (err) => err ? reject(err) : resolve());
+        });
+        results.push({ url: localUrl });
+      }
+    } catch (e) {
+      console.error('GP import error:', name, e.message);
+      // Skip this photo but continue with the rest
+    }
+  }
+
+  res.json({ imported: results });
 });
 
 // ── Hero background images (3 photos, admin-controlled) ──────────────────────
@@ -1083,4 +1133,77 @@ app.get('/api/analytics/stats', requireAuth, requireDb, (req, res) => {
   });
 });
 
-// ── Config ────
+// ── Config ───────────────────────────────────────────────────────────
+app.get('/api/config', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT * FROM config', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const cfg = {};
+    rows.forEach(r => (cfg[r.key] = r.value));
+    // Env var fallbacks — survive Render DB wipes
+    const envFallbacks = {
+      GOOGLE_CLIENT_ID:  process.env.GOOGLE_CLIENT_ID,
+      CLOUDINARY_NAME:   process.env.CLOUDINARY_NAME,
+      CLOUDINARY_KEY:    process.env.CLOUDINARY_KEY,
+      CLOUDINARY_SECRET: process.env.CLOUDINARY_SECRET,
+      GEMINI_API_KEY:    process.env.GEMINI_API_KEY,
+      GOOGLE_PLACES_KEY: process.env.GOOGLE_PLACES_KEY,
+      GOOGLE_PLACE_ID:   process.env.GOOGLE_PLACE_ID,
+    };
+    Object.entries(envFallbacks).forEach(([k, v]) => { if (v && !cfg[k]) cfg[k] = v; });
+    res.json(cfg);
+  });
+});
+
+app.post('/api/config', requireAuth, requireDb, (req, res) => {
+  const { key, value } = req.body;
+  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)', [key, value], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+// ── Backup ───────────────────────────────────────────────────────────
+app.get('/api/backup/leads', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const headers = ['id','name','phone','email','eventType','eventDate','budget','pillar','company','status','message','timestamp'];
+    const csv = [
+      headers.join(','),
+      ...rows.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(',')),
+    ].join('\n');
+    const backupPath = path.join(__dirname, `backup_leads_${Date.now()}.csv`);
+    fs.writeFileSync(backupPath, csv, 'utf8');
+    res.download(backupPath, `Leads_Backup_${new Date().toISOString().split('T')[0]}.csv`, () => {
+      try { fs.unlinkSync(backupPath); } catch (_) {}
+    });
+  });
+});
+
+// ── Logs ─────────────────────────────────────────────────────────────
+app.get('/api/admin/logs', requireAuth, (req, res) => {
+  db.all('SELECT * FROM page_views ORDER BY id DESC LIMIT 200', [], (err, views) => {
+    db.all('SELECT * FROM events ORDER BY id DESC LIMIT 200', [], (err2, events) => {
+      res.json({ views: views || [], events: events || [] });
+    });
+  });
+});
+
+// ── Health ───────────────────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), ts: Date.now() });
+});
+
+// ── Marketing AI generate ─────────────────────────────────────────────
+app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
+  const { pillar, type } = req.body;
+  res.json({
+    pillar: pillar || 'main',
+    type: type || 'caption',
+    result: `Anti Gravity Studio — where every moment becomes timeless. Book your ${pillar || ''} experience today. 📸✨ #AntiGravityStudio #${(pillar||'events').charAt(0).toUpperCase()+(pillar||'events').slice(1)}`,
+  });
+});
+
+// ── Start server ───────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`✅  Anti-Gravity server running → http://localhost:${PORT}`);
+});
