@@ -1290,6 +1290,47 @@ app.post('/api/agent/design/save-theme', requireAuth, requireDb, (req, res) => {
   );
 });
 
+// ── SCHEDULE ──────────────────────────────────────────────────────────────────
+app.get('/api/schedule', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT * FROM schedule ORDER BY date ASC, time ASC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows || []);
+  });
+});
+
+app.post('/api/schedule', requireAuth, requireDb, (req, res) => {
+  const { pillar, date, time, topic, caption, mediaUrl, status } = req.body;
+  if (!date) return res.status(400).json({ error: 'date required' });
+  db.run(
+    'INSERT INTO schedule (pillar,date,time,topic,caption,mediaUrl,status) VALUES (?,?,?,?,?,?,?)',
+    [pillar||'', date, time||'', topic||'', caption||'', mediaUrl||'', status||'Scheduled'],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, id: this.lastID });
+    }
+  );
+});
+
+app.put('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
+  const { pillar, date, time, topic, caption, mediaUrl, status } = req.body;
+  db.run(
+    'UPDATE schedule SET pillar=?, date=?, time=?, topic=?, caption=?, mediaUrl=?, status=? WHERE id=?',
+    [pillar||'', date||'', time||'', topic||'', caption||'', mediaUrl||'', status||'Scheduled', req.params.id],
+    err => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
+  db.run('DELETE FROM schedule WHERE id=?', [req.params.id], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+
 // ── START SERVER ──────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Anti-Gravity Studio server running on port ${PORT}`);
