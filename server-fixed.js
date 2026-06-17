@@ -1266,7 +1266,7 @@ app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
   res.json({ fullCaption, content: fullCaption, text: fullCaption });
 });
 
-app.get('/api/agent/design/theme/:pillar', requireAuth, requireDb, (req, res) => {
+app.get('/api/agent/design/theme/:pillar', requireDb, (req, res) => {
   db.get('SELECT value FROM config WHERE key=?', ['theme_' + req.params.pillar], (err, row) => {
     if (row && row.value) {
       try {
