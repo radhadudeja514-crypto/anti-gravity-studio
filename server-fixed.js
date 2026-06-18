@@ -461,6 +461,8 @@ if (db) db.serialize(() => {
   addCol('schedule', 'title',        'TEXT');
   addCol('schedule', 'content',      'TEXT');
   addCol('schedule', 'platform',     'TEXT');
+  addCol('instagram_queue', 'pillar', 'TEXT DEFAULT ""');
+  addCol('instagram_queue', 'topic',  'TEXT DEFAULT ""');
 });
 
 // ── DB guard middleware ───────────────────────────────────────────────────
@@ -992,9 +994,6 @@ if (db) db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
   status        TEXT DEFAULT 'pending',
   createdAt     TEXT DEFAULT CURRENT_TIMESTAMP
 )`);
-addCol('instagram_queue', 'pillar', 'TEXT DEFAULT ""');
-addCol('instagram_queue', 'topic',  'TEXT DEFAULT ""');
-
 // ── Delete media item ──────────────────────────────────────────────────────────
 app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
   const id = parseInt(req.params.id, 10);
