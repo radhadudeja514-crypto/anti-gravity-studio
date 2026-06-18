@@ -117,7 +117,7 @@ input[type=range]{width:100%;accent-color:var(--c)}
 }
 </style>
 <script>
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
   if(!d.authenticated) window.location='/admin/login.html';
 }).catch(()=>{});
 </script>

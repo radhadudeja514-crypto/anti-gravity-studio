@@ -75,7 +75,7 @@ const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 async function load(){
-  const r=await fetch('/api/schedule').catch(()=>({json:()=>[]}));
+  const r=await fetch('/api/schedule',{credentials:'include'}).catch(()=>({json:()=>[]}));
   posts=await r.json().catch(()=>[]);if(!Array.isArray(posts))posts=[];
   const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay());
   const we=new Date(ws);we.setDate(ws.getDate()+7);
@@ -131,7 +131,7 @@ function closeAdd(){document.getElementById('modal').classList.remove('open');}
 async function save(){
   const title=document.getElementById('fTitle').value.trim(),date=document.getElementById('fDate').value;
   if(!title||!date){alert('Title and date required');return;}
-  await fetch('/api/schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+  await fetch('/api/schedule', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     title,content:document.getElementById('fContent').value,
     pillar:document.getElementById('fPillar').value,
     platform:document.getElementById('fPlatform').value,
@@ -142,7 +142,7 @@ async function save(){
 async function markPosted(id){await fetch(`/api/schedule/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Posted'})});load();}
 async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/schedule/${id}`,{method:'DELETE'});load();}
 function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
 load();
 </script>
 <script src="../assets/js/admin-nav.js"></script>

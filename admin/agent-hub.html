@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../assets/css/admin-futuristic.css"/>
 <script>
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
   if(!d.authenticated) window.location='/admin/login.html';
 }).catch(()=>{});
 </script>
@@ -90,11 +90,11 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
 
 <script>
 // Load real counts
-fetch('/api/agent/instagram/scheduled').then(r=>r.json()).then(d=>{
+fetch('/api/agent/instagram/scheduled',{credentials:'include'}).then(r=>r.json()).then(d=>{
   const posts=Array.isArray(d)?d:(d.posts||[]);
   document.getElementById('schedCount').textContent=posts.length+' posts scheduled';
 }).catch(()=>{});
-fetch('/api/agent/data/health').then(r=>r.json()).then(d=>{
+fetch('/api/agent/data/health',{credentials:'include'}).then(r=>r.json()).then(d=>{
   const h=d&&d.health?d.health:d||{};
   const srv=h.server||{};
   const leads=h.leads||{};

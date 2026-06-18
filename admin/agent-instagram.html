@@ -28,7 +28,7 @@
 .post-card .date-month{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);}
 </style>
 <script>
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
   if(!d.authenticated) window.location='/admin/login.html';
 }).catch(()=>{});
 </script>
@@ -115,8 +115,8 @@ function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.cla
 async function loadData(){
   try{
     const [sched,times]=await Promise.all([
-      fetch('/api/agent/instagram/scheduled').then(r=>r.json()).catch(()=>[]),
-      fetch('/api/agent/instagram/best-times').then(r=>r.json()).catch(()=>[])
+      fetch('/api/agent/instagram/scheduled',{credentials:'include'}).then(r=>r.json()).catch(()=>[]),
+      fetch('/api/agent/instagram/best-times',{credentials:'include'}).then(r=>r.json()).catch(()=>[])
     ]);
     // Server returns plain arrays
     allPosts=Array.isArray(sched)?sched:(sched.posts||[]);
@@ -175,7 +175,7 @@ async function schedPost(){
   const topic=document.getElementById('iTopic').value,caption=document.getElementById('iCaption').value,mediaUrl=document.getElementById('iMedia').value;
   if(!date||!time){showToast('Date & time required','error');return;}
   try{
-    const r=await fetch('/api/agent/instagram/schedule-post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,date,time,topic,caption,mediaUrl})});
+    const r=await fetch('/api/agent/instagram/schedule-post', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,date,time,topic,caption,mediaUrl})});
     const d=await r.json();if(d.success||d.id){showToast('Scheduled!','success');document.getElementById('iTopic').value='';document.getElementById('iCaption').value='';loadData();}
     else showToast(d.error||'Failed','error');
   }catch(e){showToast('Error','error');}

@@ -19,7 +19,7 @@ export async function generateQR(upiId, amount, name, container) {
     </div>`;
 
   try {
-    const res = await fetch('/api/generate-qr', {
+    const res = await fetch('/api/generate-qr', {credentials:'include', 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ upiId, amount, name }),

@@ -912,7 +912,7 @@ body{
 // ── AUTH CHECK ─────────────────────────────────────────────
 async function checkAuth() {
   try {
-    const r = await fetch('/api/admin/check');
+    const r = await fetch('/api/admin/check',{credentials:'include'});
     const d = await r.json();
     if (!d.authenticated) window.location.href = 'login.html';
   } catch (e) { window.location.href = 'login.html'; }
@@ -920,7 +920,7 @@ async function checkAuth() {
 checkAuth();
 
 function logoutAdmin() {
-  fetch('/api/admin/logout', { method: 'POST' }).then(() => {
+  fetch('/api/admin/logout', {credentials:'include',  method: 'POST' }).then(() => {
     window.location.href = 'login.html';
   });
 }
@@ -1044,11 +1044,11 @@ function getScoreColor(score) {
 async function loadAllData() {
   try {
     const [leadsRes, healthRes, schedRes, mediaRes, analyticsRes] = await Promise.all([
-      fetch('/api/leads').then(r => r.json()).catch(() => []),
-      fetch('/api/agent/data/health').then(r => r.json()).catch(() => null),
-      fetch('/api/schedule').then(r => r.json()).catch(() => []),
-      fetch('/api/media').then(r => r.json()).catch(() => []),
-      fetch('/api/admin/analytics').then(r => r.json()).catch(() => ({})),
+      fetch('/api/leads',{credentials:'include'}).then(r => r.json()).catch(() => []),
+      fetch('/api/agent/data/health',{credentials:'include'}).then(r => r.json()).catch(() => null),
+      fetch('/api/schedule',{credentials:'include'}).then(r => r.json()).catch(() => []),
+      fetch('/api/media',{credentials:'include'}).then(r => r.json()).catch(() => []),
+      fetch('/api/admin/analytics',{credentials:'include'}).then(r => r.json()).catch(() => ({})),
     ]);
 
     allLeads = Array.isArray(leadsRes) ? leadsRes : [];
@@ -1550,7 +1550,7 @@ async function generateMarketing(type) {
   output.innerHTML = '<button class="copy-btn" onclick="copyMarketing()">📋 Copy</button><span style="color:var(--cyan);">⚡ Generating...</span>';
 
   try {
-    const res = await fetch('/api/agent/marketing/generate', {
+    const res = await fetch('/api/agent/marketing/generate', {credentials:'include', 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pillar, type })

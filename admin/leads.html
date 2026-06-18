@@ -135,7 +135,7 @@ const SC={New:'cyan',Warm:'yellow',Hot:'red',Booked:'green',Lost:'ghost'};
 const PIPES=[{s:'New',id:'p0',ci:'cn0'},{s:'Warm',id:'p1',ci:'cn1'},{s:'Hot',id:'p2',ci:'cn2'},{s:'Booked',id:'p3',ci:'cn3'}];
 
 async function load(){
-  const r=await fetch('/api/leads').catch(()=>({json:()=>[]}));
+  const r=await fetch('/api/leads',{credentials:'include'}).catch(()=>({json:()=>[]}));
   leads=await r.json().catch(()=>[]);
   if(!Array.isArray(leads))leads=[];
   renderAll();
@@ -233,7 +233,7 @@ function closeAdd(){document.getElementById('addM').classList.remove('open');}
 async function addLead(){
   const name=document.getElementById('aN').value.trim(),email=document.getElementById('aE').value.trim();
   if(!name||!email){alert('Name and email required');return;}
-  const r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone:document.getElementById('aP').value,pillar:document.getElementById('aPl').value,eventDate:document.getElementById('aD').value,budget:document.getElementById('aB').value,message:document.getElementById('aM').value})});
+  const r=await fetch('/api/leads', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone:document.getElementById('aP').value,pillar:document.getElementById('aPl').value,eventDate:document.getElementById('aD').value,budget:document.getElementById('aB').value,message:document.getElementById('aM').value})});
   const d=await r.json();
   if(d.id||d.success){closeAdd();load();toast('Lead added!','success');}
   else toast(d.error||'Failed','error');
@@ -241,7 +241,7 @@ async function addLead(){
 
 function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 function toast(msg,t='info'){const el=document.createElement('div');const c=t==='success'?'rgba(34,197,94,.15)':t==='error'?'rgba(239,68,68,.15)':'rgba(0,249,255,.15)';const b=t==='success'?'rgba(34,197,94,.3)':t==='error'?'rgba(239,68,68,.3)':'rgba(0,249,255,.3)';el.style.cssText=`position:fixed;bottom:1.5rem;right:1.5rem;background:${c};border:1px solid ${b};color:#fff;padding:.75rem 1.25rem;border-radius:8px;font-size:.8rem;z-index:9999;backdrop-filter:blur(10px)`;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
 load();
 </script>
 <script src="../assets/js/admin-nav.js"></script>

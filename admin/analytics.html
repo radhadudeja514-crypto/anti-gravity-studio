@@ -28,7 +28,7 @@
 .insight-icon{font-size:1rem;flex-shrink:0;margin-top:2px;}
 </style>
 <script>
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
   if(!d.authenticated) window.location='/admin/login.html';
 }).catch(()=>{});
 </script>
@@ -86,9 +86,9 @@ let statsData={},analyticsData={},insightsData={};
 async function loadData(){
   try{
     const [stats,ana,ins]=await Promise.all([
-      fetch('/api/analytics/stats').then(r=>r.json()).catch(()=>({views:{},events:{}})),
-      fetch('/api/admin/analytics').then(r=>r.json()).catch(()=>({revenue:{},conversion:0})),
-      fetch('/api/admin/insights').then(r=>r.json()).catch(()=>({insights:[]}))
+      fetch('/api/analytics/stats',{credentials:'include'}).then(r=>r.json()).catch(()=>({views:{},events:{}})),
+      fetch('/api/admin/analytics',{credentials:'include'}).then(r=>r.json()).catch(()=>({revenue:{},conversion:0})),
+      fetch('/api/admin/insights',{credentials:'include'}).then(r=>r.json()).catch(()=>({insights:[]}))
     ]);
     statsData=stats; analyticsData=ana; insightsData=ins;
     renderKPIs(); renderViews(); renderRevenue(); renderEvents(); renderInsights();

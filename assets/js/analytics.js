@@ -10,7 +10,7 @@ export function initAnalytics() {
 }
 
 export function trackEvent(eventName, pillar) {
-  fetch('/api/analytics/event', {
+  fetch('/api/analytics/event', {credentials:'include', 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ eventName, pillar: pillar || detectPillar() }),
@@ -18,7 +18,7 @@ export function trackEvent(eventName, pillar) {
 }
 
 function sendView(url, pillar) {
-  fetch('/api/analytics/view', {
+  fetch('/api/analytics/view', {credentials:'include', 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url, pillar }),

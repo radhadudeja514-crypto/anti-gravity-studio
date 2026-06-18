@@ -6,7 +6,7 @@
 <title>Admin — Anti-Gravity</title>
 <script>window.location.href='dashboard.html';</script>
 <script>
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
   if(!d.authenticated) window.location='/admin/login.html';
 }).catch(()=>{});
 </script>

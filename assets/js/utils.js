@@ -46,7 +46,7 @@ async function checkAdminAuth() {
   }
   // Also verify backend session is still valid (prevents stale localStorage)
   try {
-    const r = await fetch('/api/admin/check');
+    const r = await fetch('/api/admin/check',{credentials:'include'});
     const data = await r.json();
     if (!data.authenticated) {
       localStorage.removeItem('admin_auth');
@@ -59,7 +59,7 @@ async function checkAdminAuth() {
   return true;
 }
 function logoutAdmin() {
-  fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
+  fetch('/api/admin/logout', {credentials:'include',  method: 'POST' }).catch(() => {});
   localStorage.removeItem('admin_auth');
   localStorage.removeItem('admin_auth_expiry');
   window.location.href = '/index.html';
