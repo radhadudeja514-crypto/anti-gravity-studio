@@ -532,4 +532,19 @@ async function fetchLogs() {
     for (const [file, content] of Object.entries(logs)) {
       html += `
         <div style="background:#050505;border:1px solid rgba(255,255,255,0.1);border-radius:0.5rem;overflow:hidden;">
-          <div style="background:rgba(255,
+          <div style="background:rgba(255,255,255,0.05);padding:0.5rem 1rem;font-size:0.75rem;font-weight:600;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);">${file.toUpperCase()}</div>
+          <div style="padding:0.75rem;font-size:0.72rem;font-family:monospace;max-height:200px;overflow-y:auto;color:rgba(255,255,255,0.6);">
+            ${Array.isArray(content) ? content.slice(0,50).map(row => {
+              const time = row.timestamp ? new Date(row.timestamp).toLocaleString('en-IN') : '';
+              const label = row.url || row.eventName || '';
+              const pillar = row.pillar ? ` [${row.pillar}]` : '';
+              return `<div>${time} — ${label}${pillar}</div>`;
+            }).join('') : JSON.stringify(content).slice(0,500)}
+          </div>
+        </div>`;
+    }
+    container.innerHTML = html || '<div style="color:rgba(255,255,255,0.4);">No logs found.</div>';
+  } catch(e) {
+    if (container) container.innerHTML = `<div style="color:#ff6b6b;">Error: ${e.message}</div>`;
+  }
+}
