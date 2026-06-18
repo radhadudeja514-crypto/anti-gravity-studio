@@ -955,6 +955,27 @@ loadGoogleReviews();
   <a href="#enquire" class="btn btn-radha sticky-bar-btn magnetic-btn" style="padding:0.5rem 1.5rem;">Book Radhaa</a>
 </div>
 
+
+<script>
+(function(){
+  function playVoice(lang){
+    var el=document.getElementById('voice-'+lang);
+    if(!el)return;
+    if(!el.src||el.src===window.location.href){
+      el.src=el.getAttribute('data-src');
+    }
+    el.currentTime=0;
+    el.play().catch(function(){});
+  }
+  function stopVoice(lang){
+    var el=document.getElementById('voice-'+lang);
+    if(el){el.pause();el.currentTime=0;}
+  }
+  window.playVoice=playVoice;
+  window.stopVoice=stopVoice;
+})();
+</script>
+
 <script>
 (function(){
   try {
