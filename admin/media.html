@@ -258,27 +258,6 @@
       <div id="trimStatus" style="margin-top:.5rem;font-size:.78rem;color:var(--cyan)"></div>
     </div>
   </div>
-</div>
-
-<!-- ══ GALLERY ══════════════════════════════════════════════════ -->
-<div class="glass-card" style="margin-top:1.25rem">
-  <div class="toolbar" style="flex-wrap:wrap;gap:.5rem;align-items:center">
-    <div class="card-title">📁 GALLERY</div>
-    <div style="font-size:.7rem;color:#555;flex:1">Colour dot = pillar · badge = appears on website pages</div>
-    <div class="filter-group" id="filterGroup">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="radha">💍 Radhaa</button>
-      <button class="filter-btn" data-filter="corporate">🎤 Corp</button>
-      <button class="filter-btn" data-filter="tour">🌍 Tour</button>
-      <button class="filter-btn" data-filter="main">🌐 Main</button>
-    </div>
-  </div>
-  <div class="media-grid" id="gallery">
-    <div class="shimmer" style="aspect-ratio:1"></div>
-    <div class="shimmer" style="aspect-ratio:1"></div>
-    <div class="shimmer" style="aspect-ratio:1"></div>
-  </div>
-</div>
 
   <!-- ── AI BULK ── -->
   <div class="section-panel" id="panel-aibulk">
@@ -306,7 +285,28 @@
     </div>
   </div>
 
-</div><!-- end glass-card -->
+</div><!-- end ADD MEDIA glass-card -->
+
+<!-- ══ GALLERY ══════════════════════════════════════════════════ -->
+<div class="glass-card" style="margin-top:1.25rem">
+  <div class="toolbar" style="flex-wrap:wrap;gap:.5rem;align-items:center">
+    <div class="card-title">📁 GALLERY</div>
+    <div style="font-size:.7rem;color:#555;flex:1">Colour dot = pillar · badge = appears on website pages</div>
+    <div class="filter-group" id="filterGroup">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="radha">💍 Radhaa</button>
+      <button class="filter-btn" data-filter="corporate">🎤 Corp</button>
+      <button class="filter-btn" data-filter="tour">🌍 Tour</button>
+      <button class="filter-btn" data-filter="main">🌐 Main</button>
+    </div>
+  </div>
+  <div class="media-grid" id="gallery">
+    <div class="shimmer" style="aspect-ratio:1"></div>
+    <div class="shimmer" style="aspect-ratio:1"></div>
+    <div class="shimmer" style="aspect-ratio:1"></div>
+  </div>
+</div>
+
 </div><!-- /admin-page -->
 
 <!-- CROP MODAL -->
@@ -453,7 +453,7 @@ async function uploadFiles(files){
     var file=files[i],line=document.createElement('div');
     line.className='log-line';line.textContent='⏳ '+file.name+'…';logEl.appendChild(line);
     var form=new FormData();form.append('file',file);form.append('pillar',pillar);form.append('type',type);
-    try{var data=await fetch('/api/media',{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});if(data.error){line.className='log-err';line.textContent='❌ '+file.name+': '+data.error;}else{line.className='log-ok';line.textContent='✅ '+file.name;}}
+    try{var data=await fetch('/api/media?pillar='+encodeURIComponent(pillar),{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});if(data.error){line.className='log-err';line.textContent='❌ '+file.name+': '+data.error;}else{line.className='log-ok';line.textContent='✅ '+file.name;}}
     catch(e){line.className='log-err';line.textContent='❌ '+file.name+': network error';}
   }
   document.getElementById('fileInput').value='';
@@ -536,7 +536,7 @@ async function gp(path){
   }
   return r.json();
 }
-async async function loadAlbums(){
+async function loadAlbums(){
   document.getElementById('albumGrid').innerHTML='<div class="gp-placeholder">Loading albums…</div>';
   document.getElementById('photosSection').style.display='none';
   document.getElementById('albumBack').style.display='none';
@@ -649,7 +649,7 @@ async function saveCrop(){
     var fname='crop_'+(selectedCropId||Date.now())+'.jpg';
     var form=new FormData();form.append('file',blob,fname);form.append('pillar',pillar);form.append('type','photo');
     try{
-      var data=await fetch('/api/media',{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});
+      var data=await fetch('/api/media?pillar='+encodeURIComponent(pillar),{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});
       if(data.error){document.getElementById('cropStatus').textContent='❌ '+data.error;}
       else{document.getElementById('cropStatus').textContent='✅ Saved!';setTimeout(closeCropModal,1500);loadMedia();showToast('Cropped image saved!','success');}
     }catch(e){document.getElementById('cropStatus').textContent='❌ Network error';}
@@ -764,7 +764,7 @@ async function aiBulkUploadAll(){
     document.getElementById('aiBulkStatus').textContent='Uploading '+(i+1)+'/'+aiBulkFiles.length+'…';
     var form=new FormData();form.append('file',item.file);form.append('pillar',item.pillar);form.append('type','photo');
     try{
-      var d=await fetch('/api/media',{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});
+      var d=await fetch('/api/media?pillar='+encodeURIComponent(item.pillar),{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});
       if(d.error)fail++;else ok++;
     }catch(e){fail++;}
   }

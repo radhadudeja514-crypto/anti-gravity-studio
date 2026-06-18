@@ -529,12 +529,16 @@ const ALLOWED_MIME = new Set([
 ]);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // NOTE: req.body is NOT reliable here — multipart fields after the file aren't parsed yet.
+    // We use req.query.pillar (passed as ?pillar=xxx in the upload URL) as the reliable source.
     let folder = 'tour';
-    const p = (req.body.pillar || '').toLowerCase();
+    const p = (req.query.pillar || req.body.pillar || '').toLowerCase();
     if (p === 'corporate') folder = 'corporate';
     if (p === 'radha')     folder = 'sangeet';
     if (p === 'main')      folder = 'main';
-    cb(null, path.join(uploadsDir, folder));
+    const dir = path.join(uploadsDir, folder);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const ext  = path.extname(file.originalname).toLowerCase();
@@ -899,16 +903,22 @@ app.get('/api/google-photos-media', (req, res) => {
 });
 
 app.post('/api/media', requireAuth, requireDb, upload.single('file'), (req, res) => {
-  const { pillar, type } = req.body;
+  // pillar/type come from body (reliably available after multer finishes)
+  // query.pillar was used by multer destination; body.pillar used here
+  const pillar = req.body.pillar || req.query.pillar || 'main';
+  const type   = req.body.type   || 'photo';
   let folder = 'tour';
-  const p = (pillar || '').toLowerCase();
+  const p = pillar.toLowerCase();
   if (p === 'corporate') folder = 'corporate';
   if (p === 'radha')     folder = 'sangeet';
   if (p === 'main')      folder = 'main';
 
   if (req.file) {
-    const url = `/uploads/${folder}/${req.file.filename}`;
-    const localFilePath = path.join(__dirname, url);
+    // req.file.path is the ACTUAL path where multer saved the file (uses uploadsDir, not __dirname)
+    const actualFilePath = req.file.path;
+    // Derive a served URL relative to uploadsDir: /uploads/folder/filename
+    const relFromUploads = path.relative(uploadsDir, actualFilePath).replace(/\\/g, '/');
+    const url = '/uploads/' + relFromUploads;
 
     const hasCloudinary = process.env.CLOUDINARY_NAME && process.env.CLOUDINARY_KEY && process.env.CLOUDINARY_SECRET;
 
@@ -929,9 +939,10 @@ app.post('/api/media', requireAuth, requireDb, upload.single('file'), (req, res)
         api_key:    process.env.CLOUDINARY_KEY,
         api_secret: process.env.CLOUDINARY_SECRET,
       });
-      cloudinary.uploader.upload(localFilePath, { folder: `gig_portfolio/${folder}`, resource_type: 'auto' }, (error, result) => {
+      // Use actualFilePath (correct disk path) for Cloudinary upload
+      cloudinary.uploader.upload(actualFilePath, { folder: `gig_portfolio/${folder}`, resource_type: 'auto' }, (error, result) => {
         if (error) return res.status(500).json({ error: error.message });
-        if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+        try { if (fs.existsSync(actualFilePath)) fs.unlinkSync(actualFilePath); } catch(_) {}
         saveToDb(result.secure_url);
       });
     } else {
@@ -962,7 +973,9 @@ app.post('/api/media/trim', requireAuth, requireDb, (req, res) => {
     if (media.type !== 'video' || !media.url.startsWith('/uploads/'))
       return res.status(400).json({ error: 'Invalid video file' });
 
-    const inputPath    = path.join(__dirname, media.url);
+    // media.url = /uploads/folder/filename — resolve against uploadsDir (persistent disk)
+    const relFromUploads = media.url.replace(/^\/uploads\//, '');
+    const inputPath    = path.join(uploadsDir, relFromUploads);
     const parsedPath   = path.parse(inputPath);
     const outputName   = `trimmed_${Date.now()}_${parsedPath.name}.mp4`;
     const outputPath   = path.join(parsedPath.dir, outputName);
@@ -1000,12 +1013,12 @@ app.post('/api/media/merge', requireAuth, requireDb, (req, res) => {
     if (ordered.some(r => !r || !r.url.startsWith('/uploads/')))
       return res.status(400).json({ error: 'One or more clips are not local uploads' });
 
-    const listPath   = path.join(__dirname, 'uploads', `concat_${Date.now()}.txt`);
-    const listLines  = ordered.map(r => `file '${path.join(__dirname, r.url)}'`).join('\n');
+    const listPath   = path.join(uploadsDir, `concat_${Date.now()}.txt`);
+    const listLines  = ordered.map(r => `file '${path.join(uploadsDir, r.url.replace(/^\/uploads\//, ''))}'`).join('\n');
     fs.writeFileSync(listPath, listLines, 'utf8');
 
     const mergedName = `merged_${Date.now()}.mp4`;
-    const mergedPath = path.join(__dirname, 'uploads', mergedName);
+    const mergedPath = path.join(uploadsDir, mergedName);
     const mergedUrl  = `/uploads/${mergedName}`;
 
     ffmpeg()
@@ -1054,8 +1067,11 @@ app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
       if (err2) return res.status(500).json({ error: err2.message });
       // Best-effort local file delete (won't fail if Cloudinary or missing)
       try {
-        const localPath = require('path').join(__dirname, row.url);
-        if (require('fs').existsSync(localPath)) require('fs').unlinkSync(localPath);
+        // row.url = /uploads/folder/filename — resolve against uploadsDir (persistent disk)
+        if (row.url && row.url.startsWith('/uploads/')) {
+          const localPath = path.join(uploadsDir, row.url.replace(/^\/uploads\//, ''));
+          if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+        }
       } catch (_) {}
       res.json({ success: true, id });
     });
