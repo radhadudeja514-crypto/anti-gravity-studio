@@ -214,17 +214,17 @@ async async function closeD(){document.getElementById('detailM').classList.remov
 
 async function setS(s){
   if(!cur)return;
-  await fetch(`/api/leads/${cur.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s,notes:document.getElementById('dNotes').value})});
+  await fetch(`/api/leads/${cur.id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s,notes:document.getElementById('dNotes').value})});
   cur.status=s;load();toast('→ '+s,'success');
 }
 async function saveD(){
   if(!cur)return;
-  await fetch(`/api/leads/${cur.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:cur.status||'New',notes:document.getElementById('dNotes').value})});
+  await fetch(`/api/leads/${cur.id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:cur.status||'New',notes:document.getElementById('dNotes').value})});
   load();toast('Saved','success');
 }
 async function delD(){
   if(!cur||!confirm('Delete this lead?'))return;
-  await fetch(`/api/leads/${cur.id}`,{method:'DELETE'});
+  await fetch(`/api/leads/${cur.id}`,{credentials:'include',method:'DELETE'});
   closeD();load();toast('Deleted');
 }
 

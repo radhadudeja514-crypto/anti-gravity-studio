@@ -1465,7 +1465,7 @@ document.getElementById('leadSearch').addEventListener('input', () => renderLead
 
 async function updateLeadStatus(id, status) {
   try {
-    await fetch(`/api/leads/${id}`, {
+    await fetch(`/api/leads/${id}`,{credentials:'include',
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
@@ -1482,7 +1482,7 @@ async function updateLeadStatus(id, status) {
 async function deleteLead(id) {
   if (!confirm('Delete this lead permanently?')) return;
   try {
-    await fetch(`/api/leads/${id}`, { method: 'DELETE' });
+    await fetch(`/api/leads/${id}`,{credentials:'include', method: 'DELETE' });
     allLeads = allLeads.filter(l => l.id !== id);
     renderLeadsTable();
     showToast('Lead deleted', 'success');

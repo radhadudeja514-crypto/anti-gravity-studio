@@ -5,7 +5,7 @@
 
 export function initAdminToggle() {
   // Check if admin session is active
-  fetch('/api/admin/check')
+  fetch('/api/admin/check',{credentials:'include'})
     .then(r => r.json())
     .then(data => {
       const adminBtn = document.getElementById('admin-btn');

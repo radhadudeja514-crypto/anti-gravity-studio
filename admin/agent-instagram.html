@@ -110,7 +110,7 @@ fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
 <script>
 let allPosts=[],bestTimesData={};
 
-function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+async function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
 
 async function loadData(){
   try{
@@ -181,7 +181,7 @@ async function schedPost(){
   }catch(e){showToast('Error','error');}
 }
 
-async function delPost(id){if(!confirm('Delete?'))return;try{await fetch(`/api/agent/instagram/post/${id}`,{method:'DELETE'});showToast('Deleted','success');loadData();}catch(e){showToast('Error','error');}}
+async function delPost(id){if(!confirm('Delete?'))return;try{await fetch(`/api/agent/instagram/post/${id}`,{credentials:'include',method:'DELETE'});showToast('Deleted','success');loadData();}catch(e){showToast('Error','error');}}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
 const tmrw=new Date();tmrw.setDate(tmrw.getDate()+1);document.getElementById('iDate').value=tmrw.toISOString().split('T')[0];

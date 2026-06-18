@@ -99,7 +99,7 @@ fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
 <script>
 let contentType='hook', history=[];
 
-function setType(t,el){contentType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+async function setType(t,el){contentType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 
 async function generate(){
   const pillar=document.getElementById('gPillar').value;

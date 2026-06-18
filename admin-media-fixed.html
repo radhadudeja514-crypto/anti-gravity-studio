@@ -639,7 +639,7 @@ function viewFull(url,vid){
   document.getElementById('fullView').classList.add('active');
 }
 function copyUrl(url){navigator.clipboard.writeText(url).then(()=>showToast('URL copied!','success')).catch(()=>showToast('Copy failed','error'));}
-async function del(id){if(!confirm('Delete this media?'))return;try{await fetch(`/api/media/${id}`,{method:'DELETE'});media=media.filter(m=>m.id!==id);updateKPIs();render();showToast('Deleted','success');}catch(e){showToast('Failed','error');}}
+async function del(id){if(!confirm('Delete this media?'))return;try{await fetch(`/api/media/${id}`,{credentials:'include',method:'DELETE'});media=media.filter(m=>m.id!==id);updateKPIs();render();showToast('Deleted','success');}catch(e){showToast('Failed','error');}}
 
 async function handleFiles(files){
   const pillar=document.getElementById('uPillar').value;

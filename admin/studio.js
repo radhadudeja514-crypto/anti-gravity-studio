@@ -29,8 +29,8 @@ async function refreshStats() {
     // /api/admin/analytics now returns {revenue:{Radhaa,Corporate,Tour}, conversion}
     // Get lead counts from /api/leads directly
     const [r2, rLeads] = await Promise.all([
-      fetch('/api/admin/analytics'),
-      fetch('/api/leads')
+      fetch('/api/admin/analytics',{credentials:'include'}),
+      fetch('/api/leads',{credentials:'include'})
     ]);
     if (r2.ok) {
       const a = await r2.json();
@@ -444,7 +444,7 @@ async function deleteMedia(id, btn) {
   if (!confirm('Delete this media?')) return;
   btn.textContent = '⏳'; btn.disabled = true;
   try {
-    await fetch(`/api/media/${id}`,{method:'DELETE'});
+    await fetch(`/api/media/${id}`,{credentials:'include',method:'DELETE'});
     btn.closest('.m-card').remove();
     refreshStats();
   } catch(e){ btn.textContent='❌'; }

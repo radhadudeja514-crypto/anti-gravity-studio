@@ -139,8 +139,8 @@ async function save(){
   })});
   closeAdd();load();
 }
-async function markPosted(id){await fetch(`/api/schedule/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Posted'})});load();}
-async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/schedule/${id}`,{method:'DELETE'});load();}
+async function markPosted(id){await fetch(`/api/schedule/${id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Posted'})});load();}
+async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/schedule/${id}`,{credentials:'include',method:'DELETE'});load();}
 function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
 load();

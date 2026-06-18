@@ -1126,6 +1126,27 @@ app.post('/api/payments', requireAuth, requireDb, (req, res) => {
 });
 
 app.put('/api/payments/:id', requireAuth, requireDb, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { amount, method, notes, status } = req.body;
+  db.run(
+    'UPDATE payments SET amount=COALESCE(?,amount), method=COALESCE(?,method), notes=COALESCE(?,notes), status=COALESCE(?,status) WHERE id=?',
+    [amount, method, notes, status, id],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+app.delete('/api/payments/:id', requireAuth, requireDb, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  db.run('DELETE FROM payments WHERE id=?', [id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.put('/api/payments/:id', requireAuth, requireDb, (req, res) => {
   const { status, amount, method, notes } = req.body;
   db.run(
     'UPDATE payments SET status=COALESCE(?,status), amount=COALESCE(?,amount), method=COALESCE(?,method), notes=COALESCE(?,notes) WHERE id=?',

@@ -1009,7 +1009,7 @@ async function saveAllThemes(){
 async function loadServerThemes(){
   for(const pillar of ['radha','veronica','tour']){
     try{
-      const r=await fetch(`/api/agent/design/theme/${pillar}`);
+      const r=await fetch(`/api/agent/design/theme/${pillar}`,{credentials:'include'});
       const d=await r.json();
       if(d.theme) themes[pillar]={...themes[pillar],...d.theme};
     }catch(e){}
