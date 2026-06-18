@@ -995,6 +995,25 @@ if (db) db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
 addCol('instagram_queue', 'pillar', 'TEXT DEFAULT ""');
 addCol('instagram_queue', 'topic',  'TEXT DEFAULT ""');
 
+// ── Delete media item ──────────────────────────────────────────────────────────
+app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  db.get('SELECT url FROM media WHERE id=?', [id], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'Not found' });
+    db.run('DELETE FROM media WHERE id=?', [id], function(err2) {
+      if (err2) return res.status(500).json({ error: err2.message });
+      // Best-effort local file delete (won't fail if Cloudinary or missing)
+      try {
+        const localPath = require('path').join(__dirname, row.url);
+        if (require('fs').existsSync(localPath)) require('fs').unlinkSync(localPath);
+      } catch (_) {}
+      res.json({ success: true, id });
+    });
+  });
+});
+
+
 app.get('/api/instagram/queue', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
