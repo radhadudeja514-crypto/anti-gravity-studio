@@ -62,25 +62,47 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Session management (signed cookie, no extra dep) ─────────────────────────
+// ── Session management — SQLite-backed (survives Render restarts/redeploys) ──
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-const sessions = new Map(); // sessionId -> { ip, created }
+// In-memory fallback Map used ONLY before DB is ready (first few ms of startup)
+const sessions = new Map(); // sessionId -> { ip, created } — pre-DB fallback only
+let dbReady = false; // set to true once DB block completes
 
 function createSession(ip) {
   const id = crypto.randomBytes(32).toString('hex');
-  sessions.set(id, { ip, created: Date.now() });
+  const created = Date.now();
+  // Always write to in-memory Map as immediate fallback
+  sessions.set(id, { ip, created });
+  // Persist to SQLite if available
+  if (dbReady && db) {
+    db.run(
+      'INSERT OR REPLACE INTO sessions (id, ip, created) VALUES (?,?,?)',
+      [id, ip || '', created],
+      (err) => { if (err) console.error('Session insert error:', err.message); }
+    );
+  }
   return id;
 }
+
 function getSession(req) {
   const raw = req.headers.cookie || '';
   const match = raw.match(/admin_session=([a-f0-9]{64})/);
   if (!match) return null;
-  const sess = sessions.get(match[1]);
-  if (!sess) return null;
-  // Expire after 8 hours
-  if (Date.now() - sess.created > 8 * 3600 * 1000) { sessions.delete(match[1]); return null; }
-  return sess;
+  const sid = match[1];
+  const EXPIRE = 8 * 3600 * 1000; // 8 hours
+  // Check in-memory first (fastest path, covers pre-DB startup)
+  const memSess = sessions.get(sid);
+  if (memSess) {
+    if (Date.now() - memSess.created > EXPIRE) { sessions.delete(sid); return null; }
+    return memSess;
+  }
+  // NOTE: getSession is called synchronously in middleware — we can't await here.
+  // SQLite sessions are loaded into memory at startup (see 'Load active sessions' below).
+  // If a session isn't in memory it either expired or this is a fresh boot
+  // and the load hasn't completed yet — treat as unauthenticated.
+  return null;
 }
+
 function requireAuth(req, res, next) {
   if (getSession(req)) return next();
   res.status(401).json({ error: 'Unauthorised – please login at /admin/login.html' });
@@ -100,11 +122,18 @@ function validateCSRF(token) {
   csrfTokens.delete(token); // one-use
   return true;
 }
-// Clean expired tokens + rate limit map every 10 min (prevents memory leak)
+// Clean expired tokens, sessions + rate limit map every 10 min (prevents memory leak)
 setInterval(() => {
   const now = Date.now();
+  const EXPIRE = 8 * 3600 * 1000;
   csrfTokens.forEach((exp, tok) => { if (now > exp) csrfTokens.delete(tok); });
-  sessions.forEach((sess, id) => { if (now - sess.created > 8 * 3600 * 1000) sessions.delete(id); });
+  sessions.forEach((sess, id) => { if (now - sess.created > EXPIRE) sessions.delete(id); });
+  // Prune expired SQLite sessions
+  if (dbReady && db) {
+    db.run('DELETE FROM sessions WHERE created < ?', [now - EXPIRE], (err) => {
+      if (err) console.error('Session cleanup error:', err.message);
+    });
+  }
   // Prune stale rate limit entries
   rateLimitMap.forEach((entry, ip) => { if (now - entry.start > 5 * 60 * 1000) rateLimitMap.delete(ip); });
 }, 600_000);
@@ -463,6 +492,24 @@ if (db) db.serialize(() => {
   addCol('schedule', 'platform',     'TEXT');
   addCol('instagram_queue', 'pillar', 'TEXT DEFAULT ""');
   addCol('instagram_queue', 'topic',  'TEXT DEFAULT ""');
+
+  // ── Sessions table (persistent login across Render restarts) ─────────────
+  db.run(`CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    ip TEXT,
+    created INTEGER
+  )`);
+
+  // Pre-load active sessions into memory so getSession() works synchronously
+  setTimeout(() => {
+    const EXPIRE = 8 * 3600 * 1000;
+    db.all('SELECT id, ip, created FROM sessions WHERE created > ?', [Date.now() - EXPIRE], (err, rows) => {
+      if (err) { console.error('Session pre-load error:', err.message); return; }
+      (rows || []).forEach(r => sessions.set(r.id, { ip: r.ip, created: r.created }));
+      console.log(`[sessions] Loaded ${(rows||[]).length} active session(s) from DB`);
+    });
+    dbReady = true;
+  }, 200); // tiny delay so all CREATE TABLE/ALTER TABLE ops finish first
 });
 
 // ── DB guard middleware ───────────────────────────────────────────────────
@@ -561,7 +608,10 @@ app.post('/api/admin/login', rateLimit(5, 60_000), (req, res) => {
 app.post('/api/admin/logout', (req, res) => {
   const raw   = req.headers.cookie || '';
   const match = raw.match(/admin_session=([a-f0-9]{64})/);
-  if (match) sessions.delete(match[1]);
+  if (match) {
+    sessions.delete(match[1]);
+    if (dbReady && db) db.run('DELETE FROM sessions WHERE id=?', [match[1]]);
+  }
   res.setHeader('Set-Cookie', 'admin_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
   res.json({ success: true });
 });
@@ -1145,21 +1195,9 @@ app.delete('/api/payments/:id', requireAuth, requireDb, (req, res) => {
   });
 });
 
-app.put('/api/payments/:id', requireAuth, requireDb, (req, res) => {
-  const { status, amount, method, notes } = req.body;
-  db.run(
-    'UPDATE payments SET status=COALESCE(?,status), amount=COALESCE(?,amount), method=COALESCE(?,method), notes=COALESCE(?,notes) WHERE id=?',
-    [status || null, amount || null, method || null, notes || null, req.params.id],
-    err => { if (err) return res.status(500).json({ error: err.message }); res.json({ success: true }); }
-  );
-});
 
-app.delete('/api/payments/:id', requireAuth, requireDb, (req, res) => {
-  db.run('DELETE FROM payments WHERE id=?', [req.params.id], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
+
+
 
 // ── AGENT stubs (read-only analytics endpoints for agent pages) ────────────
 app.get('/api/agent/data/health', requireAuth, requireDb, (req, res) => {

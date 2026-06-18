@@ -434,7 +434,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
 async function copyUrl(url){navigator.clipboard.writeText(url).then(function(){showToast('URL copied!','success');}).catch(function(){});}
 async function deleteItem(id){
   if(!confirm('Delete permanently?'))return;
-  try{await fetch('/api/media/'+id,{method:'DELETE'});allMedia=allMedia.filter(function(m){return m.id!==id;});updateStats();renderGallery();buildCropPicker();buildTrimList();showToast('Deleted','success');}
+  try{await fetch('/api/media/'+id,{method:'DELETE',credentials:'include'});allMedia=allMedia.filter(function(m){return m.id!==id;});updateStats();renderGallery();buildCropPicker();buildTrimList();showToast('Deleted','success');}
   catch(e){showToast('Delete failed','error');}
 }
 
