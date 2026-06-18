@@ -4,7 +4,7 @@
  */
 
 // ── Panel switching ──────────────────────────────────────────
-function showPanel(id, btn) {
+async function showPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   const el = document.getElementById('panel-' + id);
@@ -346,9 +346,9 @@ function loadEnhancer(file) {
   enhImg.src = url;
 }
 
-function resetEnhancer() { filters = {...defaultFilters}; buildSliders(); applyFilters(); }
+async function resetEnhancer() { filters = {...defaultFilters}; buildSliders(); applyFilters(); }
 
-function downloadEnhanced() {
+async function downloadEnhanced() {
   const canvas = document.getElementById('enh-canvas');
   canvas.toBlob(blob => {
     const a = document.createElement('a');
@@ -425,7 +425,7 @@ function openVideoTrim(id, url) {
   };
 }
 
-function openEnhanceFromGallery(url) {
+async function openEnhanceFromGallery(url) {
   showPanel('enhance', null);
   const img = new Image();
   img.crossOrigin = 'anonymous';

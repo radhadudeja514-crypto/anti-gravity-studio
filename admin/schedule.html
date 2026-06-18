@@ -126,8 +126,8 @@ function renderList(){
 
 document.getElementById('prevBtn').onclick=()=>{M--;if(M<0){M=11;Y--;}renderCal();};
 document.getElementById('nextBtn').onclick=()=>{M++;if(M>11){M=0;Y++;}renderCal();};
-function openAdd(){document.getElementById('modal').classList.add('open');}
-function closeAdd(){document.getElementById('modal').classList.remove('open');}
+async function openAdd(){document.getElementById('modal').classList.add('open');}
+async function closeAdd(){document.getElementById('modal').classList.remove('open');}
 async function save(){
   const title=document.getElementById('fTitle').value.trim(),date=document.getElementById('fDate').value;
   if(!title||!date){alert('Title and date required');return;}

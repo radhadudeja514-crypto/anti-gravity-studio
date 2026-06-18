@@ -1034,7 +1034,7 @@ function calculateLeadScore(lead) {
   return Math.min(Math.max(score, 0), 100);
 }
 
-function getScoreColor(score) {
+async function getScoreColor(score) {
   if (score >= 70) return 'var(--green)';
   if (score >= 40) return 'var(--yellow)';
   return 'var(--red)';
@@ -1448,13 +1448,13 @@ function getStatusLabel(status) {
   return 'NEW';
 }
 
-function escapeHtml(str) {
+async function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
 
-function filterLeads(filter, el) {
+async function filterLeads(filter, el) {
   currentFilter = filter;
   document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
@@ -1538,7 +1538,7 @@ function renderCalendar() {
   grid.innerHTML = html;
 }
 
-function changeMonth(delta) {
+async function changeMonth(delta) {
   calendarDate.setMonth(calendarDate.getMonth() + delta);
   renderCalendar();
 }

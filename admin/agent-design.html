@@ -983,12 +983,12 @@ function renderOpenPropsTokens() {
 }
 
 // ═══ ACTIONS ═══
-function copyCSS(){
+async function copyCSS(){
   navigator.clipboard.writeText(document.getElementById('cssOutput').textContent)
     .then(()=>showToast('CSS copied!','success')).catch(()=>showToast('Copy failed','error'));
 }
 
-function exportCSS(){
+async function exportCSS(){
   const css=document.getElementById('cssOutput').textContent;
   const blob=new Blob([css],{type:'text/css'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);

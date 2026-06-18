@@ -104,8 +104,8 @@ function render(){
     </tr>`;
   }).join('');
 }
-function openAdd(){document.getElementById('addModal').classList.add('open');}
-function closeAdd(){document.getElementById('addModal').classList.remove('open');}
+async function openAdd(){document.getElementById('addModal').classList.add('open');}
+async function closeAdd(){document.getElementById('addModal').classList.remove('open');}
 async function savePayment(){
   const leadId=document.getElementById('fLead').value,amount=document.getElementById('fAmt').value,method=document.getElementById('fMethod').value,notes=document.getElementById('fNotes').value;
   if(!leadId||!amount){alert('Select a lead and enter amount');return;}

@@ -224,7 +224,7 @@ function openHeroPicker(slot){
   }).catch(function(){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;color:#f66">Could not load gallery</div>';});
 }
 
-function pickHeroPhoto(url){
+async function pickHeroPhoto(url){
   document.getElementById('hurl'+heroPickingSlot).value = url;
   previewHero(heroPickingSlot);
   document.getElementById('heroPickerModal').style.display = 'none';

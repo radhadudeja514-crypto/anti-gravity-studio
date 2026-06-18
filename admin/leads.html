@@ -210,7 +210,7 @@ function openD(id){
     <div class="di" style="grid-column:1/-1"><label>Message</label><p style="font-size:.8rem;color:var(--text-dim);line-height:1.6">${e(cur.message||'—')}</p></div>`;
   document.getElementById('detailM').classList.add('open');
 }
-function closeD(){document.getElementById('detailM').classList.remove('open');cur=null;}
+async async function closeD(){document.getElementById('detailM').classList.remove('open');cur=null;}
 
 async function setS(s){
   if(!cur)return;
@@ -228,8 +228,8 @@ async function delD(){
   closeD();load();toast('Deleted');
 }
 
-function openAdd(){document.getElementById('addM').classList.add('open');}
-function closeAdd(){document.getElementById('addM').classList.remove('open');}
+async function openAdd(){document.getElementById('addM').classList.add('open');}
+async function closeAdd(){document.getElementById('addM').classList.remove('open');}
 async function addLead(){
   const name=document.getElementById('aN').value.trim(),email=document.getElementById('aE').value.trim();
   if(!name||!email){alert('Name and email required');return;}

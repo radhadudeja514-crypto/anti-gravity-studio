@@ -431,7 +431,7 @@ function openViewer(url,isVid){
 }
 document.getElementById('fullOverlay').addEventListener('click',function(){this.classList.remove('open');var v=this.querySelector('video');if(v)v.pause();document.getElementById('fullContent').innerHTML='';});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=document.getElementById('fullOverlay');if(ov.classList.contains('open')){ov.classList.remove('open');document.getElementById('fullContent').innerHTML='';}closeCropModal();}});
-function copyUrl(url){navigator.clipboard.writeText(url).then(function(){showToast('URL copied!','success');}).catch(function(){});}
+async function copyUrl(url){navigator.clipboard.writeText(url).then(function(){showToast('URL copied!','success');}).catch(function(){});}
 async function deleteItem(id){
   if(!confirm('Delete permanently?'))return;
   try{await fetch('/api/media/'+id,{method:'DELETE'});allMedia=allMedia.filter(function(m){return m.id!==id;});updateStats();renderGallery();buildCropPicker();buildTrimList();showToast('Deleted','success');}

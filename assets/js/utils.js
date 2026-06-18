@@ -89,14 +89,14 @@ function showToast(msg, type = 'success') {
   }, 3000);
 }
 
-function formatDate(isoStr) {
+async function formatDate(isoStr) {
   if (!isoStr) return '';
   const d = new Date(isoStr);
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 // File Utils
-function fileToBase64(file) {
+async function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -208,7 +208,7 @@ const Schedule = {
 };
 
 // Form Handler
-function initEnquiryForm(formId, pillar) {
+async function initEnquiryForm(formId, pillar) {
   const form = document.getElementById(formId);
   if (!form) return;
   form.addEventListener('submit', async (e) => {
