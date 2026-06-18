@@ -1332,6 +1332,12 @@ app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
 
 
 // ── START SERVER ──────────────────────────────────────────────────────────────
+
+// ── Health check (used by Render.com healthCheckPath) ─────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });
+});
+
 app.listen(PORT, () => {
   console.log(`Anti-Gravity Studio server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
