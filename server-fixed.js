@@ -26,6 +26,7 @@ const cloudinary   = require('cloudinary').v2;
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
 const app  = express();
+app.set('trust proxy', 1); // Render/Heroku reverse proxy
 const PORT = process.env.PORT || 3005;
 
 // ── CORS Middleware ────────────────────────────────────────────────────────
@@ -111,13 +112,20 @@ setInterval(() => {
 // ── Rate limiting ─────────────────────────────────────────────────────────
 const rateLimitMap = new Map();
 function rateLimit(maxReq, windowMs) {
-  return (req, res, next) => {
-    const ip  = req.ip || req.socket?.remoteAddress;
+  // Each rateLimit() call gets its own closure Map — per-route isolation
+  const routeMap = new Map();
+  // Clean stale entries every 5 min
+  setInterval(() => {
     const now = Date.now();
-    const entry = rateLimitMap.get(ip) || { count: 0, start: now };
+    routeMap.forEach((entry, key) => { if (now - entry.start > windowMs * 2) routeMap.delete(key); });
+  }, 5 * 60 * 1000);
+  return (req, res, next) => {
+    const ip  = req.ip || req.socket?.remoteAddress || 'unknown';
+    const now = Date.now();
+    const entry = routeMap.get(ip) || { count: 0, start: now };
     if (now - entry.start > windowMs) { entry.count = 0; entry.start = now; }
     entry.count++;
-    rateLimitMap.set(ip, entry);
+    routeMap.set(ip, entry);
     if (entry.count > maxReq) {
       res.setHeader('Retry-After', Math.ceil(windowMs / 1000));
       return res.status(429).json({ error: 'Too many requests – please slow down.' });
@@ -540,7 +548,7 @@ app.post('/api/admin/login', rateLimit(5, 60_000), (req, res) => {
     const sessionId = createSession(req.ip);
     res.setHeader(
       'Set-Cookie',
-      `admin_session=${sessionId}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`
+      `admin_session=${sessionId}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
     );
     res.json({ success: true, message: 'Login successful' });
   } else {
