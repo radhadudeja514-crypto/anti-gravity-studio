@@ -337,6 +337,20 @@ async function loadLogs(){
 
 // Auto-load on page ready
 loadData();
+
+/* ── SYNC GOOGLE REVIEWS ── */
+async function syncGoogleReviews(){
+  var btn = document.querySelector('[onclick="syncGoogleReviews()"]');
+  var orig = btn ? btn.textContent : '';
+  if(btn){ btn.textContent='⏳ Syncing...'; btn.disabled=true; }
+  try{
+    var d = await fetch('/api/admin/sync-reviews',{credentials:'include',method:'POST'}).then(function(r){return r.json();});
+    if(btn){ btn.textContent = d.error ? ('❌ '+d.error) : ('✅ Synced! ('+( d.total||0)+' reviews)'); }
+    setTimeout(function(){ if(btn){btn.textContent=orig;btn.disabled=false;} }, 3000);
+  }catch(e){
+    if(btn){ btn.textContent='❌ Error'; setTimeout(function(){btn.textContent=orig;btn.disabled=false;}, 2000); }
+  }
+}
 </script>
 <script src="../assets/js/admin-nav.js"></script>
 </body>
