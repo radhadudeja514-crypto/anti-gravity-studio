@@ -1485,6 +1485,25 @@ app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
 // ── START SERVER ──────────────────────────────────────────────────────────────
 
 // ── Health check (used by Render.com healthCheckPath) ─────────────────────────
+
+// ── CSV Export for leads ──────────────────────────────────────────────────────
+app.get('/api/leads/export-csv', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const cols = ['id','name','phone','email','eventType','pillar','eventDate','budget','message','status','notes','timestamp'];
+    const lines = [cols.join(',')];
+    (rows || []).forEach(r => {
+      lines.push(cols.map(c => {
+        const v = (r[c] === null || r[c] === undefined) ? '' : String(r[c]);
+        return '"' + v.replace(/"/g, '""') + '"';
+      }).join(','));
+    });
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="leads.csv"');
+    res.send(lines.join('\n'));
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });
 });

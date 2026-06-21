@@ -61,7 +61,7 @@ fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
       <div class="glass-card accent-purple">
         <div class="card-header"><div class="card-title" style="color:var(--purple);"><span class="icon">📥</span> DATA EXPORTS</div></div>
         <div style="display:flex;flex-direction:column;gap:0.75rem;">
-          <a href="/api/backup/leads" class="export-card"><div class="export-icon">📋</div><div><strong>Export All Leads (CSV)</strong><div style="font-size:0.72rem;color:var(--text-dim);">Download complete lead database</div></div></a>
+          <a href="/api/agent/data/leads-export" class="export-card"><div class="export-icon">📋</div><div><strong>Export All Leads (CSV)</strong><div style="font-size:0.72rem;color:var(--text-dim);">Download complete lead database</div></div></a>
           <div class="export-card" onclick="exportFiltered()"><div class="export-icon">🔍</div><div><strong>Filtered Lead Export</strong><div style="font-size:0.72rem;color:var(--text-dim);">Export by pillar, status, or date range</div></div></div>
         </div>
       </div>

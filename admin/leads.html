@@ -34,7 +34,7 @@
     <div class="header-actions">
       <input class="search-input" id="searchInput" placeholder="Search name, email..." oninput="renderAll()"/>
       <button class="btn btn-cyan" onclick="openAdd()">+ New Lead</button>
-      <button class="btn btn-ghost" onclick="location.href='/api/backup/leads'">📥 CSV Export</button>
+      <button class="btn btn-ghost" onclick="location.href='/api/leads/export-csv'">📥 CSV Export</button>
     </div>
   </div>
 
@@ -210,7 +210,7 @@ function openD(id){
     <div class="di" style="grid-column:1/-1"><label>Message</label><p style="font-size:.8rem;color:var(--text-dim);line-height:1.6">${e(cur.message||'—')}</p></div>`;
   document.getElementById('detailM').classList.add('open');
 }
-async async function closeD(){document.getElementById('detailM').classList.remove('open');cur=null;}
+async function closeD(){document.getElementById('detailM').classList.remove('open');cur=null;}
 
 async function setS(s){
   if(!cur)return;

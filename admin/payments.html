@@ -23,7 +23,7 @@
     <div><h1>💳 Payments</h1><p>Track all bookings and payments across pillars</p></div>
     <div class="header-actions">
       <button class="btn btn-cyan" onclick="openAdd()">+ Record Payment</button>
-      <button class="btn btn-ghost" onclick="location.href='/api/backup/leads'">📥 Export CSV</button>
+      <button class="btn btn-ghost" onclick="location.href='/api/leads/export-csv'">📥 Export CSV</button>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
@@ -112,8 +112,8 @@ async function savePayment(){
   await fetch('/api/payments', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leadId,amount,method,notes})});
   closeAdd();load();toast('Payment recorded!');
 }
-async async function markPaid(id){await fetch(`/api/payments/${id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Completed'})});load();}
-async async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/payments/${id}`,{credentials:'include',method:'DELETE'});load();}
+async function markPaid(id){await fetch(`/api/payments/${id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Completed'})});load();}
+async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/payments/${id}`,{credentials:'include',method:'DELETE'});load();}
 function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 function toast(msg){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:1.5rem;right:1.5rem;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#fff;padding:.75rem 1.25rem;border-radius:8px;font-size:.8rem;z-index:9999';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
 fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});
