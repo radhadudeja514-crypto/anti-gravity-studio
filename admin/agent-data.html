@@ -20,7 +20,7 @@
 .stat-fill{height:100%;border-radius:4px;transition:width 1s ease;}
 </style>
 <script>
-fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
+fetch('/api/admin/check').then(r=>r.json()).then(d=>{
   if(!d.authenticated) window.location='/admin/login.html';
 }).catch(()=>{});
 </script>
@@ -90,8 +90,8 @@ fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
 async function loadAll(){
   try{
     const [health,mstats]=await Promise.all([
-      fetch('/api/agent/data/health',{credentials:'include'}).then(r=>r.json()).catch(()=>({})),
-      fetch('/api/agent/data/media-stats',{credentials:'include'}).then(r=>r.json()).catch(()=>({stats:{}}))
+      fetch('/api/agent/data/health').then(r=>r.json()).catch(()=>({})),
+      fetch('/api/agent/data/media-stats').then(r=>r.json()).catch(()=>({stats:{}}))
     ]);
     renderHealth(health);renderMedia(mstats);
   }catch(e){console.error(e);}

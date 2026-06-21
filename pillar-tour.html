@@ -267,18 +267,6 @@
           <div><div style="font-family:var(--font-display);font-size:2rem;color:var(--tour-secondary);font-weight:700;">25+</div><div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">Destinations</div></div>
           <div><div style="font-family:var(--font-display);font-size:2rem;color:var(--tour-accent);font-weight:700;">500+</div><div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">Travellers Guided</div></div>
         </div>
-        <div class="voice-samples-block" style="margin-top:2rem; padding:1.25rem; background:rgba(242,165,65,0.06); border:1px solid rgba(242,165,65,0.2); border-radius:12px;">
-          <h4 style="font-size:0.9rem; color:#f2a541; margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.1em;">Hear Radhaa's Voice</h4>
-          <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:1rem;">Hover over the buttons below to hear original voice samples.</p>
-          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-            <button class="btn-radha-voice" onmouseover="playVoice('en')" onmouseout="stopVoice('en')">🔊 English</button>
-            <button class="btn-radha-voice" onmouseover="playVoice('hi')" onmouseout="stopVoice('hi')">🔊 Hindi</button>
-            <button class="btn-radha-voice" onmouseover="playVoice('pa')" onmouseout="stopVoice('pa')">🔊 Punjabi</button>
-          </div>
-          <audio id="voice-en" src="" data-src="assets/media/tour-english.mp3" preload="none"></audio>
-          <audio id="voice-hi" src="" data-src="assets/media/tour-hindi.mp3" preload="none"></audio>
-          <audio id="voice-pa" src="" data-src="assets/media/tour-punjabi.mp3" preload="none"></audio>
-        </div>
       </div>
       <div class="tour-photo-mosaic reveal delay-2">
         <div class="mosaic-item large"><img src="assets/media/tour-hero.png" alt="Mountain landscape" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);"/></div>
@@ -404,42 +392,31 @@
 })();
 </script>
 
-<!-- TESTIMONIAL CAROUSEL -->
-<section class="section testimonial-section" style="background:var(--tour-surface);">
-  <div class="container text-center reveal" style="margin-bottom:3rem;">
-    <div class="section-label">Traveller Stories</div>
-    <h2 class="display-md">Journeys of <span class="gradient-text-tour">A Lifetime</span></h2>
-  </div>
-  <div class="testimonial-track" id="tourTestimonials">
-    <div class="testimonial-slide">
-      <div class="testimonial-card">
-        <div class="testimonial-text">"I thought I knew Rajasthan until I walked through the hidden havelis with this curator. The stories brought the stones to life in a way no guidebook ever could."</div>
-        <div class="testimonial-author">Michael T.</div>
-        <div class="testimonial-role">Heritage Circuit, 2025</div>
-      </div>
+<!-- YOUTUBE VIDEO GALLERY (dynamic from admin + hardcoded) -->
+<section class="section" id="video-gallery" style="background:linear-gradient(180deg,rgba(242,165,65,0.04),var(--space-black));padding:4rem 0;">
+  <div class="container">
+    <div class="reveal text-center" style="margin-bottom:2rem;">
+      <div class="section-label">Watch &amp; Explore</div>
+      <h2 class="display-sm">Trail <span class="gradient-text-tour">Highlights</span></h2>
     </div>
-    <div class="testimonial-slide">
-      <div class="testimonial-card">
-        <div class="testimonial-text">"A deeply moving and perfectly organized expedition through Spiti. It wasn't just a tour; it was a soulful journey that changed my perspective on the world."</div>
-        <div class="testimonial-author">The Sharma Family</div>
-        <div class="testimonial-role">Mountain Trail Expedition</div>
-      </div>
+    <div id="tourVideoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+      <!-- Hardcoded fallbacks -->
+      <div class="video-card reveal"><div class="video-thumb" onclick="openVideo('FCGjyfjQ_VI',this)"><img src="https://img.youtube.com/vi/FCGjyfjQ_VI/hqdefault.jpg" alt="Tour" loading="lazy"/><div class="play-btn">▶</div></div></div>
     </div>
-    <div class="testimonial-slide">
-      <div class="testimonial-card">
-        <div class="testimonial-text">"Waking up at dawn to witness Varanasi through their eyes was the highlight of our India trip. Absolutely mesmerizing and deeply respectful of the culture."</div>
-        <div class="testimonial-author">Elena & Marcus</div>
-        <div class="testimonial-role">Varanasi Cultural Walk</div>
-      </div>
-    </div>
-  </div>
-  <div class="testimonial-controls">
-    <button class="tc-btn tc-prev">←</button>
-    <button class="tc-btn tc-next">→</button>
   </div>
 </section>
 
+<style>
+.video-card{border-radius:12px;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid rgba(242,165,65,.15);transition:all .3s}
+.video-card:hover{border-color:rgba(242,165,65,.4);transform:translateY(-3px)}
+.video-thumb{position:relative;aspect-ratio:16/9;cursor:pointer;overflow:hidden}
+.video-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.video-thumb:hover img{transform:scale(1.05)}
+.play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#fff;background:rgba(0,0,0,.3);transition:background .3s}
+.play-btn:hover{background:rgba(242,165,65,.5)}
+</style>
 
+<!-- TESTIMONIAL CAROUSEL -->
 
 <!-- CROSS-PILLAR -->
 <section class="section" style="background:rgba(232,135,30,0.04);border-top:1px solid rgba(232,135,30,0.1);">
@@ -854,6 +831,32 @@ if (document.readyState === 'loading') {
 
 
 <script>
+// ── Load DB-uploaded YouTube videos for Tour ──
+(function(){
+  fetch('/api/media/public').then(r=>r.json()).then(function(items){
+    var ytItems = (Array.isArray(items)?items:[]).filter(function(m){
+      return (m.pillar||'').toLowerCase().includes('tour') && m.type==='youtube' && m.name && m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/);
+    });
+    if(!ytItems.length) return;
+    var grid = document.getElementById('tourVideoGrid');
+    if(!grid) return;
+    var existing = Array.from(grid.querySelectorAll('.video-thumb')).map(function(el){
+      var mc = (el.getAttribute('onclick')||'').match(/'([a-zA-Z0-9_-]{11})'/);
+      return mc ? mc[1] : '';
+    });
+    ytItems.forEach(function(m){
+      var id = (m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
+      if(!id || existing.includes(id)) return;
+      var card = document.createElement('div');
+      card.className = 'video-card reveal';
+      card.innerHTML = '<div class="video-thumb" onclick="openVideo(''+id+'',this)"><img src="https://img.youtube.com/vi/'+id+'/hqdefault.jpg" alt="Tour Performance" loading="lazy" onerror="this.src='https://img.youtube.com/vi/'+id+'/mqdefault.jpg'"/><div class="play-btn">▶</div></div>';
+      grid.insertBefore(card, grid.firstChild);
+    });
+  }).catch(function(){});
+})();
+</script>
+
+<script>
 (function(){
   try {
     fetch('/api/analytics/view', {
@@ -868,25 +871,25 @@ if (document.readyState === 'loading') {
 })();
 </script>
 
+<!-- VIDEO LIGHTBOX -->
+<div id="videoLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10000;align-items:center;justify-content:center;">
+  <button onclick="closeVideo()" style="position:absolute;top:1.5rem;right:1.5rem;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;">✕</button>
+  <div style="width:min(860px,95vw);aspect-ratio:16/9;">
+    <iframe id="videoFrame" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="border-radius:12px;"></iframe>
+  </div>
+</div>
 <script>
-(function(){
-  function playVoice(lang){
-    var el=document.getElementById('voice-'+lang);
-    if(!el)return;
-    if(!el.src||el.src===window.location.href){
-      el.src=el.getAttribute('data-src');
-    }
-    el.currentTime=0;
-    el.play().catch(function(){});
-  }
-  function stopVoice(lang){
-    var el=document.getElementById('voice-'+lang);
-    if(el){el.pause();el.currentTime=0;}
-  }
-  window.playVoice=playVoice;
-  window.stopVoice=stopVoice;
-})();
+function openVideo(id,el){
+  var lb=document.getElementById('videoLightbox');
+  document.getElementById('videoFrame').src='https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0';
+  lb.style.display='flex';document.body.style.overflow='hidden';
+}
+function closeVideo(){
+  var lb=document.getElementById('videoLightbox');
+  document.getElementById('videoFrame').src='';
+  lb.style.display='none';document.body.style.overflow='';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVideo();});
 </script>
-
 </body>
 </html>

@@ -420,7 +420,7 @@
       <h2 class="display-md">Live <span class="gradient-text-radha">Performances</span></h2>
       <p style="color:var(--text-muted);margin-top:0.75rem;max-width:520px;">Real moments from real celebrations — watch Radhaa in action.</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
+    <div id="radhaVideoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
       <div class="video-card reveal">
         <div class="video-thumb" onclick="openVideo('YGqdpcUXBpY',this)">
           <img src="https://img.youtube.com/vi/YGqdpcUXBpY/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
@@ -955,24 +955,30 @@ loadGoogleReviews();
   <a href="#enquire" class="btn btn-radha sticky-bar-btn magnetic-btn" style="padding:0.5rem 1.5rem;">Book Radhaa</a>
 </div>
 
-
 <script>
+// ── Load DB-uploaded YouTube videos for Radha ──
 (function(){
-  function playVoice(lang){
-    var el=document.getElementById('voice-'+lang);
-    if(!el)return;
-    if(!el.src||el.src===window.location.href){
-      el.src=el.getAttribute('data-src');
-    }
-    el.currentTime=0;
-    el.play().catch(function(){});
-  }
-  function stopVoice(lang){
-    var el=document.getElementById('voice-'+lang);
-    if(el){el.pause();el.currentTime=0;}
-  }
-  window.playVoice=playVoice;
-  window.stopVoice=stopVoice;
+  fetch('/api/media/public').then(r=>r.json()).then(function(items){
+    var ytItems = (Array.isArray(items)?items:[]).filter(function(m){
+      return (m.pillar||'').toLowerCase().includes('radha') && m.type==='youtube' && m.name && m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/);
+    });
+    if(!ytItems.length) return;
+    var grid = document.getElementById('radhaVideoGrid');
+    if(!grid) return;
+    // Deduplicate against hardcoded IDs already in grid
+    var existing = Array.from(grid.querySelectorAll('.video-thumb')).map(function(el){
+      var m = (el.getAttribute('onclick')||'').match(/'([a-zA-Z0-9_-]{11})'/);
+      return m ? m[1] : '';
+    });
+    ytItems.forEach(function(m){
+      var id = (m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
+      if(!id || existing.includes(id)) return;
+      var card = document.createElement('div');
+      card.className = 'video-card reveal';
+      card.innerHTML = '<div class="video-thumb" onclick="openVideo(''+id+'',this)"><img src="https://img.youtube.com/vi/'+id+'/hqdefault.jpg" alt="Radhaa Performance" loading="lazy" onerror="this.src='https://img.youtube.com/vi/'+id+'/mqdefault.jpg'"/><div class="play-btn">▶</div></div>';
+      grid.insertBefore(card, grid.firstChild);
+    });
+  }).catch(function(){});
 })();
 </script>
 

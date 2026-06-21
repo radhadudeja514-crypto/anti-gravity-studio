@@ -553,6 +553,66 @@
 </footer>
 
 <script>
+// ── Load Google reviews into testimonial carousel ──
+(function(){
+  var FALLBACK = [
+    {text:"Radhaa transformed our corporate gala into an unforgettable experience. Every guest was mesmerised.",author:"Priya S.",role:"Head of Events, TechCorp India",stars:5},
+    {text:"The Trail Curator showed us parts of Rajasthan we never knew existed. Deeply spiritual and perfectly organised.",author:"Michael T.",role:"Heritage Circuit, 2025",stars:5},
+    {text:"Veronica commanded a stage of 3,000 people like it was her living room. Flawless energy all evening.",author:"Rahul M.",role:"Conference Director",stars:5},
+    {text:"Our sangeet night was beyond magical — the choreography, the energy, the connection with guests was extraordinary.",author:"Ananya K.",role:"Bride, Delhi Wedding",stars:5},
+  ];
+
+  function renderTestimonials(list){
+    var container = document.getElementById('indexTestimonials');
+    if(!container) return;
+    container.innerHTML = list.map(function(t,i){
+      var stars = '★'.repeat(t.stars||5)+'☆'.repeat(5-(t.stars||5));
+      return '<div class="testimonial-slide'+(i===0?' active':'')+'">'
+        +'<div class="testimonial-card">'
+        +'<div style="color:#F4C97A;font-size:1.4rem;letter-spacing:.1em;margin-bottom:1rem;">'+stars+'</div>'
+        +'<div class="testimonial-text">"'+t.text+'"</div>'
+        +'<div style="margin-top:1.5rem;text-align:center">'
+        +'<div class="testimonial-author">'+t.author+'</div>'
+        +'<div class="testimonial-role">'+t.role+'</div>'
+        +'</div></div></div>';
+    }).join('');
+
+    // Hook up prev/next controls
+    var idx=0;
+    var slides=container.querySelectorAll('.testimonial-slide');
+    var section=container.closest('.testimonial-section');
+    function goTo(n){
+      slides[idx].classList.remove('active');
+      idx=(n+slides.length)%slides.length;
+      slides[idx].classList.add('active');
+      container.style.transform='translateX(-'+idx*100+'%)';
+    }
+    if(section){
+      var prev=section.querySelector('.tc-prev');
+      var next=section.querySelector('.tc-next');
+      if(prev) prev.onclick=function(){goTo(idx-1);};
+      if(next) next.onclick=function(){goTo(idx+1);};
+    }
+    var timer=setInterval(function(){goTo(idx+1);},5000);
+    if(section) section.onmouseenter=function(){clearInterval(timer);};
+  }
+
+  // Try to load from Google reviews API
+  fetch('/api/google-reviews').then(function(r){return r.json();}).then(function(data){
+    var reviews = Array.isArray(data)?data:(data.reviews||[]);
+    if(reviews.length>=2){
+      var mapped = reviews.filter(function(r){return r.rating>=4&&r.text;}).slice(0,6).map(function(r){
+        return {text:r.text,author:r.author_name||'Client',role:'Verified Google Review',stars:r.rating||5};
+      });
+      renderTestimonials(mapped.length>=2?mapped:FALLBACK);
+    } else {
+      renderTestimonials(FALLBACK);
+    }
+  }).catch(function(){renderTestimonials(FALLBACK);});
+})();
+</script>
+
+<script>
 (function(){
   try {
     fetch('/api/analytics/view', {

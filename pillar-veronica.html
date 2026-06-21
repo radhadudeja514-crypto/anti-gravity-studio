@@ -285,18 +285,6 @@
           <div class="corp-chip">🏆 Awards Ceremonies</div>
           <div class="corp-chip">📺 Live Streaming Host</div>
         </div>
-        <div class="voice-samples-block" style="margin-top:2rem; padding:1.25rem; background:rgba(232,135,30,0.05); border:1px solid rgba(232,135,30,0.2); border-radius:12px;">
-          <h4 style="font-size:0.9rem; color:#e8871e; margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.1em;">Hear Veronica's Voice</h4>
-          <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:1rem;">Hover over the buttons below to hear original voice samples.</p>
-          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-            <button class="btn-radha-voice" onmouseover="playVoice('en')" onmouseout="stopVoice('en')">🔊 English</button>
-            <button class="btn-radha-voice" onmouseover="playVoice('hi')" onmouseout="stopVoice('hi')">🔊 Hindi</button>
-            <button class="btn-radha-voice" onmouseover="playVoice('pa')" onmouseout="stopVoice('pa')">🔊 Punjabi</button>
-          </div>
-          <audio id="voice-en" src="" data-src="assets/media/veronica-english.mp3" preload="none"></audio>
-          <audio id="voice-hi" src="" data-src="assets/media/veronica-hindi.mp3" preload="none"></audio>
-          <audio id="voice-pa" src="" data-src="assets/media/veronica-punjabi.mp3" preload="none"></audio>
-        </div>
       </div>
       <div class="corp-about-visual reveal delay-2">
         <div class="corp-photo-frame">
@@ -437,39 +425,7 @@
 </script>
 
 <!-- TESTIMONIAL CAROUSEL -->
-<section class="section testimonial-section" style="background:var(--corp-surface);">
-  <div class="container text-center reveal" style="margin-bottom:3rem;">
-    <div class="section-label">Industry Trust</div>
-    <h2 class="display-md">Executive <span class="gradient-text-corp">Endorsements</span></h2>
-  </div>
-  <div class="testimonial-track" id="corpTestimonials">
-    <div class="testimonial-slide">
-      <div class="testimonial-card">
-        <div class="testimonial-text">"Veronica doesn't just host the event; she elevates the entire brand. Her ability to keep a 5,000-person tech summit engaged for 8 hours straight is unparalleled."</div>
-        <div class="testimonial-author">Sarah Jenkins</div>
-        <div class="testimonial-role">CMO, TechGlobal Innovations</div>
-      </div>
-    </div>
-    <div class="testimonial-slide">
-      <div class="testimonial-card">
-        <div class="testimonial-text">"When the keynote speaker's flight was delayed by an hour, Veronica stepped in and held the room flawlessly. She is a crisis manager on stage."</div>
-        <div class="testimonial-author">Rajiv Menon</div>
-        <div class="testimonial-role">Director of Events, Horizon Group</div>
-      </div>
-    </div>
-    <div class="testimonial-slide">
-      <div class="testimonial-card">
-        <div class="testimonial-text">"Sharp, authoritative, and brilliantly articulate. She is our go-to host for every major product launch."</div>
-        <div class="testimonial-author">David Chen</div>
-        <div class="testimonial-role">VP Marketing, NexaCorp</div>
-      </div>
-    </div>
-  </div>
-  <div class="testimonial-controls">
-    <button class="tc-btn tc-prev">←</button>
-    <button class="tc-btn tc-next">→</button>
-  </div>
-</section>
+
 
 
 
@@ -733,6 +689,29 @@
 }
 </style>
 
+<!-- YOUTUBE VIDEO GALLERY -->
+<section class="section" id="video-gallery" style="background:linear-gradient(180deg,rgba(0,212,255,0.04),var(--space-black));padding:4rem 0;">
+  <div class="container">
+    <div class="reveal text-center" style="margin-bottom:2rem;">
+      <div class="section-label">See Veronica Live</div>
+      <h2 class="display-sm">Corporate <span class="gradient-text-corp">Moments</span></h2>
+    </div>
+    <div id="veronicaVideoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+      <div class="corp-vid-card reveal"><div class="video-thumb" onclick="openVideo('YGqdpcUXBpY',this)"><img src="https://img.youtube.com/vi/YGqdpcUXBpY/hqdefault.jpg" alt="Veronica" loading="lazy"/><div class="play-btn">▶</div></div></div>
+    </div>
+  </div>
+</section>
+
+<style>
+.corp-vid-card{border-radius:12px;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid rgba(0,212,255,.12);transition:all .3s}
+.corp-vid-card:hover{border-color:rgba(0,212,255,.4);transform:translateY(-3px)}
+.video-thumb{position:relative;aspect-ratio:16/9;cursor:pointer;overflow:hidden}
+.video-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.video-thumb:hover img{transform:scale(1.05)}
+.play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#fff;background:rgba(0,0,0,.3);transition:background .3s}
+.play-btn:hover{background:rgba(0,212,255,.4)}
+</style>
+
 <section class="reviews-section" id="reviews">
   <div class="reviews-header">
     <p class="reviews-label">✦ Client Testimonials</p>
@@ -845,25 +824,48 @@ loadGoogleReviews();
 })();
 </script>
 
+<!-- VIDEO LIGHTBOX -->
+<div id="videoLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10000;align-items:center;justify-content:center;">
+  <button onclick="closeVideo()" style="position:absolute;top:1.5rem;right:1.5rem;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;">✕</button>
+  <div style="width:min(860px,95vw);aspect-ratio:16/9;">
+    <iframe id="videoFrame" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="border-radius:12px;"></iframe>
+  </div>
+</div>
 <script>
+function openVideo(id,el){
+  var lb=document.getElementById('videoLightbox');
+  document.getElementById('videoFrame').src='https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0';
+  lb.style.display='flex';document.body.style.overflow='hidden';
+}
+function closeVideo(){
+  document.getElementById('videoFrame').src='';
+  document.getElementById('videoLightbox').style.display='none';
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVideo();});
+
+// ── Load DB-uploaded YouTube videos for Veronica ──
 (function(){
-  function playVoice(lang){
-    var el=document.getElementById('voice-'+lang);
-    if(!el)return;
-    if(!el.src||el.src===window.location.href){
-      el.src=el.getAttribute('data-src');
-    }
-    el.currentTime=0;
-    el.play().catch(function(){});
-  }
-  function stopVoice(lang){
-    var el=document.getElementById('voice-'+lang);
-    if(el){el.pause();el.currentTime=0;}
-  }
-  window.playVoice=playVoice;
-  window.stopVoice=stopVoice;
+  fetch('/api/media/public').then(r=>r.json()).then(function(items){
+    var ytItems = (Array.isArray(items)?items:[]).filter(function(m){
+      return (m.pillar||'').toLowerCase().includes('corporate') && m.type==='youtube' && m.name && m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/);
+    });
+    if(!ytItems.length) return;
+    var grid = document.getElementById('veronicaVideoGrid');
+    if(!grid) return;
+    var existing = Array.from(grid.querySelectorAll('.video-thumb')).map(function(el){
+      var mc=(el.getAttribute('onclick')||'').match(/'([a-zA-Z0-9_-]{11})'/);return mc?mc[1]:'';
+    });
+    ytItems.forEach(function(m){
+      var id=(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
+      if(!id||existing.includes(id)) return;
+      var card=document.createElement('div');
+      card.className='corp-vid-card reveal';
+      card.innerHTML='<div class="video-thumb" onclick="openVideo(''+id+'',this)"><img src="https://img.youtube.com/vi/'+id+'/hqdefault.jpg" loading="lazy" onerror="this.src='https://img.youtube.com/vi/'+id+'/mqdefault.jpg'"/><div class="play-btn">▶</div></div>';
+      grid.insertBefore(card,grid.firstChild);
+    });
+  }).catch(function(){});
 })();
 </script>
-
 </body>
 </html>

@@ -86,9 +86,9 @@ let statsData={},analyticsData={},insightsData={};
 async function loadData(){
   try{
     const [stats,ana,ins]=await Promise.all([
-      fetch('/api/analytics/stats',{credentials:'include'}).then(r=>r.json()).catch(()=>({views:{},events:{}})),
-      fetch('/api/admin/analytics',{credentials:'include'}).then(r=>r.json()).catch(()=>({revenue:{},conversion:0})),
-      fetch('/api/admin/insights',{credentials:'include'}).then(r=>r.json()).catch(()=>({insights:[]}))
+      fetch('/api/analytics/stats').then(r=>r.json()).catch(()=>({views:{},events:{}})),
+      fetch('/api/admin/analytics').then(r=>r.json()).catch(()=>({revenue:{},conversion:0})),
+      fetch('/api/admin/insights').then(r=>r.json()).catch(()=>({insights:[]}))
     ]);
     statsData=stats; analyticsData=ana; insightsData=ins;
     renderKPIs(); renderViews(); renderRevenue(); renderEvents(); renderInsights();

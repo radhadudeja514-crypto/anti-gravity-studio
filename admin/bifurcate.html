@@ -800,7 +800,7 @@ async function confirmSave() {
   const ytItems = items.filter(i => i.source === 'youtube');
   if (ytItems.length) {
     try {
-      const r = await fetch('/api/media/import-youtube-bulk', {credentials:'include', 
+      const r = await fetch('/api/media/import-youtube-bulk', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ urls: ytItems.map(i => 'https://www.youtube.com/watch?v=' + i.ytVideoId), pillar: null })
       });
@@ -813,7 +813,7 @@ async function confirmSave() {
   const gpItems = items.filter(i => i.source === 'gphoto');
   if (gpItems.length) {
     try {
-      const r = await fetch('/api/media/import-google-photos', {credentials:'include', 
+      const r = await fetch('/api/media/import-google-photos', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ items: gpItems.map(i => ({ name: i.name, url: i.url })), pillar: null })
       });
@@ -830,7 +830,7 @@ async function confirmSave() {
     fd.append('file', item.file);
     fd.append('pillar', item.pillar);
     try {
-      const r = await fetch('/api/media', {credentials:'include',  method:'POST', body: fd });
+      const r = await fetch('/api/media', { method:'POST', body: fd });
       if (r.ok) saved++;
     } catch(e) {}
   }
