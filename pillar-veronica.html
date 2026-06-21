@@ -515,6 +515,7 @@
   padding: 6rem 6%;
   background: var(--navy-mid, #070f20);
 }
+.reviews-section.hidden { display: none; }
 
 .reviews-header {
   text-align: center;
@@ -720,7 +721,7 @@
 .play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#fff;background:rgba(0,0,0,.3);transition:background .3s}
 .play-btn:hover{background:rgba(0,212,255,.4)}
 </style>
-<section class="reviews-section" id="reviews">
+<section class="reviews-section hidden" id="reviews">
   <div class="reviews-header">
     <p class="reviews-label">✦ Client Testimonials</p>
     <h2 class="reviews-title">Verified Google Reviews</h2>
@@ -737,7 +738,7 @@
   </div>
 
   <div class="reviews-cta" id="reviews-cta" style="display: none;">
-    <a href="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID" target="_blank" rel="noopener">
+    <a href="#" id="write-review-link" onclick="openGoogleReview(event)" target="_blank" rel="noopener">
       <i class="fas fa-star"></i> Leave us a Google Review
     </a>
   </div>
@@ -770,10 +771,13 @@ async function loadGoogleReviews() {
     if (!container) return;
 
     if (!reviews.length) {
-      container.innerHTML = '<div class="reviews-loading"><p>No reviews yet. Be the first to leave a review!</p></div>';
-      const cta = document.getElementById('reviews-cta'); if (cta) cta.style.display = 'block';
+      const section = document.getElementById('reviews');
+      if (section) section.classList.add('hidden');
       return;
     }
+    // Show section now we have reviews
+    const section = document.getElementById('reviews');
+    if (section) section.classList.remove('hidden');
 
     const reviewsHTML = reviews.map(review => {
       const rating = review.rating || 0;
@@ -804,8 +808,8 @@ async function loadGoogleReviews() {
     const cta2 = document.getElementById('reviews-cta'); if (cta2) cta2.style.display = 'block';
 
   } catch (error) {
-    console.error('Failed to load Google reviews:', error);
-    if (container) container.innerHTML = '<div class="reviews-loading"><p>Reviews temporarily unavailable.</p></div>';
+    const section = document.getElementById('reviews');
+    if (section) section.classList.add('hidden');
   }
 }
 loadGoogleReviews();

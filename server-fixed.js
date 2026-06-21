@@ -54,9 +54,9 @@ app.use((req, res, next) => {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com",
       "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
       "img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com https://img.youtube.com https://*.unsplash.com https://*.ytimg.com https://api.qrserver.com",
-      "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com https://photoslibrary.googleapis.com https://generativelanguage.googleapis.com https://accounts.google.com",
+      "connect-src 'self' https://api.cloudinary.com https://upload-widget.cloudinary.com https://photoslibrary.googleapis.com https://generativelanguage.googleapis.com https://accounts.google.com https://maps.googleapis.com",
       "media-src 'self' blob: https://res.cloudinary.com",
-      "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
+      "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com",
     ].join('; ')
   );
   next();
@@ -1178,9 +1178,15 @@ app.get('/api/config', requireDb, (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     const cfg = {};
     (rows || []).forEach(r => { cfg[r.key] = r.value; });
-    // Also expose env-based GOOGLE_CLIENT_ID if not in DB
+    // Also expose env-based config keys if not in DB
     if (!cfg.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID) {
       cfg.GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    }
+    if (!cfg.GOOGLE_PLACE_ID && process.env.GOOGLE_PLACE_ID) {
+      cfg.GOOGLE_PLACE_ID = process.env.GOOGLE_PLACE_ID;
+    }
+    if (!cfg.GOOGLE_PLACES_KEY && (process.env.GOOGLE_PLACES_KEY || process.env.GOOGLE_PLACES_API_KEY)) {
+      cfg.GOOGLE_PLACES_KEY = process.env.GOOGLE_PLACES_KEY || process.env.GOOGLE_PLACES_API_KEY;
     }
     res.json(cfg);
   });
