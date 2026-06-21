@@ -830,7 +830,7 @@ async function confirmSave() {
     fd.append('file', item.file);
     fd.append('pillar', item.pillar);
     try {
-      const r = await fetch('/api/media', {credentials:'include',  method:'POST', body: fd });
+      const r = await fetch('/api/media?pillar='+encodeURIComponent(item.pillar||''), {credentials:'include',  method:'POST', body: fd });
       if (r.ok) saved++;
     } catch(e) {}
   }
