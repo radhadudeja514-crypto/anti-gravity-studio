@@ -422,7 +422,7 @@
     <h2 class="display-md">What They <span class="gradient-text-radha">Say</span></h2>
     <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1rem;">
       <span style="color:#F4C97A;font-size:1.2rem;">★★★★★</span>
-      <span style="color:var(--text-muted);font-size:.85rem;">4.9 / 5 from 127 verified events</span>
+      <span id="indexReviewBadge" style="color:var(--text-muted);font-size:.85rem;">4.9 / 5 from 127 verified events</span>
     </div>
   </div>
   <div class="testimonial-track" id="indexTestimonials"></div>
@@ -576,6 +576,8 @@
     setInterval(function(){goTo(idx+1);},5000);
   }
   fetch('/api/google-reviews').then(function(r){return r.json();}).then(function(data){
+    var badge=document.getElementById('indexReviewBadge');
+    if(badge&&data.avgRating&&data.totalReviews){badge.textContent=data.avgRating.toFixed(1)+' / 5 from '+data.totalReviews+' Google reviews';}
     var reviews=Array.isArray(data)?data:(data.reviews||[]);
     var mapped=reviews.filter(function(r){return r.rating>=4&&r.text;}).slice(0,6).map(function(r){return{text:r.text,author:r.author_name||'Client',role:'Verified Google Review',stars:r.rating||5};});
     renderTestimonials(mapped.length>=2?mapped:FALLBACK);

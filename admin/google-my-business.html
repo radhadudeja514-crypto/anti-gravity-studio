@@ -110,7 +110,7 @@
 <script>
 async function loadReviews(){
   try{
-    var data = await fetch('/api/google-reviews').then(function(r){return r.json();});
+    var data = await fetch('/api/google-reviews', {credentials:'include'}).then(function(r){return r.json();});
     renderReviews(data);
   }catch(e){
     document.getElementById('reviewList').innerHTML = '<div style="text-align:center;padding:2rem;color:#666"><div style="font-size:2rem;margin-bottom:.5rem">📭</div><div style="font-size:.85rem">Google reviews not connected yet.<br>Set GOOGLE_PLACES_API_KEY + GOOGLE_PLACE_ID in Render.</div></div>';
