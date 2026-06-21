@@ -62,25 +62,47 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Session management (signed cookie, no extra dep) ─────────────────────────
+// ── Session management — SQLite-backed (survives Render restarts/redeploys) ──
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
-const sessions = new Map(); // sessionId -> { ip, created }
+// In-memory fallback Map used ONLY before DB is ready (first few ms of startup)
+const sessions = new Map(); // sessionId -> { ip, created } — pre-DB fallback only
+let dbReady = false; // set to true once DB block completes
 
 function createSession(ip) {
   const id = crypto.randomBytes(32).toString('hex');
-  sessions.set(id, { ip, created: Date.now() });
+  const created = Date.now();
+  // Always write to in-memory Map as immediate fallback
+  sessions.set(id, { ip, created });
+  // Persist to SQLite if available
+  if (dbReady && db) {
+    db.run(
+      'INSERT OR REPLACE INTO sessions (id, ip, created) VALUES (?,?,?)',
+      [id, ip || '', created],
+      (err) => { if (err) console.error('Session insert error:', err.message); }
+    );
+  }
   return id;
 }
+
 function getSession(req) {
   const raw = req.headers.cookie || '';
   const match = raw.match(/admin_session=([a-f0-9]{64})/);
   if (!match) return null;
-  const sess = sessions.get(match[1]);
-  if (!sess) return null;
-  // Expire after 8 hours
-  if (Date.now() - sess.created > 8 * 3600 * 1000) { sessions.delete(match[1]); return null; }
-  return sess;
+  const sid = match[1];
+  const EXPIRE = 8 * 3600 * 1000; // 8 hours
+  // Check in-memory first (fastest path, covers pre-DB startup)
+  const memSess = sessions.get(sid);
+  if (memSess) {
+    if (Date.now() - memSess.created > EXPIRE) { sessions.delete(sid); return null; }
+    return memSess;
+  }
+  // NOTE: getSession is called synchronously in middleware — we can't await here.
+  // SQLite sessions are loaded into memory at startup (see 'Load active sessions' below).
+  // If a session isn't in memory it either expired or this is a fresh boot
+  // and the load hasn't completed yet — treat as unauthenticated.
+  return null;
 }
+
 function requireAuth(req, res, next) {
   if (getSession(req)) return next();
   res.status(401).json({ error: 'Unauthorised – please login at /admin/login.html' });
@@ -100,11 +122,18 @@ function validateCSRF(token) {
   csrfTokens.delete(token); // one-use
   return true;
 }
-// Clean expired tokens + rate limit map every 10 min (prevents memory leak)
+// Clean expired tokens, sessions + rate limit map every 10 min (prevents memory leak)
 setInterval(() => {
   const now = Date.now();
+  const EXPIRE = 8 * 3600 * 1000;
   csrfTokens.forEach((exp, tok) => { if (now > exp) csrfTokens.delete(tok); });
-  sessions.forEach((sess, id) => { if (now - sess.created > 8 * 3600 * 1000) sessions.delete(id); });
+  sessions.forEach((sess, id) => { if (now - sess.created > EXPIRE) sessions.delete(id); });
+  // Prune expired SQLite sessions
+  if (dbReady && db) {
+    db.run('DELETE FROM sessions WHERE created < ?', [now - EXPIRE], (err) => {
+      if (err) console.error('Session cleanup error:', err.message);
+    });
+  }
   // Prune stale rate limit entries
   rateLimitMap.forEach((entry, ip) => { if (now - entry.start > 5 * 60 * 1000) rateLimitMap.delete(ip); });
 }, 600_000);
@@ -462,27 +491,26 @@ if (db) db.serialize(() => {
   addCol('schedule', 'title',        'TEXT');
   addCol('schedule', 'content',      'TEXT');
   addCol('schedule', 'platform',     'TEXT');
-  db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    mediaId       INTEGER,
-    mediaUrl      TEXT,
-    caption       TEXT,
-    accounts      TEXT DEFAULT '[]',
-    scheduledFor  TEXT,
-    status        TEXT DEFAULT 'pending',
-    pillar        TEXT DEFAULT '',
-    topic         TEXT DEFAULT '',
-    createdAt     TEXT DEFAULT CURRENT_TIMESTAMP
+  addCol('instagram_queue', 'pillar', 'TEXT DEFAULT ""');
+  addCol('instagram_queue', 'topic',  'TEXT DEFAULT ""');
+
+  // ── Sessions table (persistent login across Render restarts) ─────────────
+  db.run(`CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    ip TEXT,
+    created INTEGER
   )`);
-  db.run(`CREATE TABLE IF NOT EXISTS payments (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    leadId      INTEGER,
-    amount      REAL,
-    method      TEXT DEFAULT 'Cash',
-    notes       TEXT,
-    status      TEXT DEFAULT 'Pending',
-    createdAt   TEXT DEFAULT CURRENT_TIMESTAMP
-  )`);
+
+  // Pre-load active sessions into memory so getSession() works synchronously
+  setTimeout(() => {
+    const EXPIRE = 8 * 3600 * 1000;
+    db.all('SELECT id, ip, created FROM sessions WHERE created > ?', [Date.now() - EXPIRE], (err, rows) => {
+      if (err) { console.error('Session pre-load error:', err.message); return; }
+      (rows || []).forEach(r => sessions.set(r.id, { ip: r.ip, created: r.created }));
+      console.log(`[sessions] Loaded ${(rows||[]).length} active session(s) from DB`);
+    });
+    dbReady = true;
+  }, 200); // tiny delay so all CREATE TABLE/ALTER TABLE ops finish first
 });
 
 // ── DB guard middleware ───────────────────────────────────────────────────
@@ -502,12 +530,16 @@ const ALLOWED_MIME = new Set([
 ]);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // NOTE: req.body is NOT reliable here — multipart fields after the file aren't parsed yet.
+    // We use req.query.pillar (passed as ?pillar=xxx in the upload URL) as the reliable source.
     let folder = 'tour';
     const p = (req.query.pillar || req.body.pillar || '').toLowerCase();
     if (p === 'corporate') folder = 'corporate';
     if (p === 'radha')     folder = 'sangeet';
     if (p === 'main')      folder = 'main';
-    cb(null, path.join(uploadsDir, folder));
+    const dir = path.join(uploadsDir, folder);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const ext  = path.extname(file.originalname).toLowerCase();
@@ -581,7 +613,10 @@ app.post('/api/admin/login', rateLimit(5, 60_000), (req, res) => {
 app.post('/api/admin/logout', (req, res) => {
   const raw   = req.headers.cookie || '';
   const match = raw.match(/admin_session=([a-f0-9]{64})/);
-  if (match) sessions.delete(match[1]);
+  if (match) {
+    sessions.delete(match[1]);
+    if (dbReady && db) db.run('DELETE FROM sessions WHERE id=?', [match[1]]);
+  }
   res.setHeader('Set-Cookie', 'admin_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
   res.json({ success: true });
 });
@@ -602,12 +637,9 @@ app.get('/api/google-reviews', requireDb, (req, res) => {
 // ── Google Places auto-fetch ──────────────────────────────────────────────────
 async function fetchGooglePlacesReviews() {
   if (!db) return;
-  // Read key+placeId from env vars first, fall back to DB config
   let apiKey = process.env.GOOGLE_PLACES_KEY || process.env.GOOGLE_PLACES_API_KEY || '';
   let placeId = process.env.GOOGLE_PLACE_ID || '';
-
   if (!apiKey || !placeId) {
-    // try DB config table
     await new Promise(resolve => {
       db.all("SELECT key,value FROM config WHERE key IN ('GOOGLE_PLACES_KEY','GOOGLE_PLACE_ID','GOOGLE_PLACES_API_KEY')", [], (err, rows) => {
         if (!err && rows) rows.forEach(r => {
@@ -618,56 +650,31 @@ async function fetchGooglePlacesReviews() {
       });
     });
   }
-
-  if (!apiKey || !placeId) return; // not configured yet
-
+  if (!apiKey || !placeId) return;
   try {
     const https = require('https');
     const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&key=${apiKey}`;
     const data = await new Promise((resolve, reject) => {
-      https.get(url, res => {
-        let body = '';
-        res.on('data', d => body += d);
-        res.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { reject(e); } });
-      }).on('error', reject);
+      https.get(url, res => { let body=''; res.on('data',d=>body+=d); res.on('end',()=>{try{resolve(JSON.parse(body));}catch(e){reject(e);}}); }).on('error',reject);
     });
-
-    if (data.status !== 'OK' || !data.result) {
-      console.log('[Google Places] API returned:', data.status, data.error_message || '');
-      return;
-    }
-
+    if (data.status !== 'OK' || !data.result) { console.log('[Google Places] API:', data.status, data.error_message||''); return; }
     const reviews = data.result.reviews || [];
     if (!reviews.length) return;
-
     let saved = 0;
     await Promise.all(reviews.map(r => new Promise(resolve => {
-      db.run(
-        'INSERT OR IGNORE INTO google_reviews (place_id,author_name,rating,text,time,profile_photo_url) VALUES (?,?,?,?,?,?)',
-        [placeId, r.author_name || '', r.rating || 5, r.text || '', r.time || 0, r.profile_photo_url || ''],
-        () => { saved++; resolve(); }
-      );
+      db.run('INSERT OR IGNORE INTO google_reviews (place_id,author_name,rating,text,time,profile_photo_url) VALUES (?,?,?,?,?,?)',
+        [placeId, r.author_name||'', r.rating||5, r.text||'', r.time||0, r.profile_photo_url||''], () => { saved++; resolve(); });
     })));
     console.log(`[Google Places] Synced ${saved} new reviews for place ${placeId}`);
-  } catch (e) {
-    console.error('[Google Places] fetch error:', e.message);
-  }
+  } catch(e) { console.error('[Google Places] fetch error:', e.message); }
 }
-
-// Run on startup (10s delay so DB is ready) and every 6 hours
 setTimeout(fetchGooglePlacesReviews, 10000);
-setInterval(fetchGooglePlacesReviews, 6 * 60 * 60 * 1000);
-
-// Also expose a manual trigger endpoint for admins
+setInterval(fetchGooglePlacesReviews, 6*60*60*1000);
 app.post('/api/admin/sync-reviews', requireAuth, async (req, res) => {
   try {
     await fetchGooglePlacesReviews();
-    db.all('SELECT COUNT(*) as c FROM google_reviews', [], (err, rows) => {
-      res.json({ success: true, total: rows?.[0]?.c || 0 });
-    });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+    db.all('SELECT COUNT(*) as c FROM google_reviews', [], (err, rows) => { res.json({ success: true, total: rows?.[0]?.c || 0 }); });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Feedback (private low-rating feedback from review-hub.html) ────────────
@@ -940,16 +947,22 @@ app.get('/api/google-photos-media', (req, res) => {
 });
 
 app.post('/api/media', requireAuth, requireDb, upload.single('file'), (req, res) => {
-  const { pillar, type } = req.body;
+  // pillar/type come from body (reliably available after multer finishes)
+  // query.pillar was used by multer destination; body.pillar used here
+  const pillar = req.body.pillar || req.query.pillar || 'main';
+  const type   = req.body.type   || 'photo';
   let folder = 'tour';
-  const p = (pillar || '').toLowerCase();
+  const p = pillar.toLowerCase();
   if (p === 'corporate') folder = 'corporate';
   if (p === 'radha')     folder = 'sangeet';
   if (p === 'main')      folder = 'main';
 
   if (req.file) {
-    const url = `/uploads/${folder}/${req.file.filename}`;
-    const localFilePath = req.file.path; // actual multer-saved path
+    // req.file.path is the ACTUAL path where multer saved the file (uses uploadsDir, not __dirname)
+    const actualFilePath = req.file.path;
+    // Derive a served URL relative to uploadsDir: /uploads/folder/filename
+    const relFromUploads = path.relative(uploadsDir, actualFilePath).replace(/\\/g, '/');
+    const url = '/uploads/' + relFromUploads;
 
     const hasCloudinary = process.env.CLOUDINARY_NAME && process.env.CLOUDINARY_KEY && process.env.CLOUDINARY_SECRET;
 
@@ -970,9 +983,10 @@ app.post('/api/media', requireAuth, requireDb, upload.single('file'), (req, res)
         api_key:    process.env.CLOUDINARY_KEY,
         api_secret: process.env.CLOUDINARY_SECRET,
       });
-      cloudinary.uploader.upload(localFilePath, { folder: `gig_portfolio/${folder}`, resource_type: 'auto' }, (error, result) => {
+      // Use actualFilePath (correct disk path) for Cloudinary upload
+      cloudinary.uploader.upload(actualFilePath, { folder: `gig_portfolio/${folder}`, resource_type: 'auto' }, (error, result) => {
         if (error) return res.status(500).json({ error: error.message });
-        if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+        try { if (fs.existsSync(actualFilePath)) fs.unlinkSync(actualFilePath); } catch(_) {}
         saveToDb(result.secure_url);
       });
     } else {
@@ -1003,7 +1017,9 @@ app.post('/api/media/trim', requireAuth, requireDb, (req, res) => {
     if (media.type !== 'video' || !media.url.startsWith('/uploads/'))
       return res.status(400).json({ error: 'Invalid video file' });
 
-    const inputPath    = path.join(uploadsDir, media.url.replace(/^\/uploads\//, ''));
+    // media.url = /uploads/folder/filename — resolve against uploadsDir (persistent disk)
+    const relFromUploads = media.url.replace(/^\/uploads\//, '');
+    const inputPath    = path.join(uploadsDir, relFromUploads);
     const parsedPath   = path.parse(inputPath);
     const outputName   = `trimmed_${Date.now()}_${parsedPath.name}.mp4`;
     const outputPath   = path.join(parsedPath.dir, outputName);
@@ -1074,8 +1090,17 @@ app.post('/api/media/merge', requireAuth, requireDb, (req, res) => {
   });
 });
 
-// ── Instagram scheduling queue (table created in serialize block above) ──
-
+// ── Instagram scheduling queue ────────────────────────────────────────────────
+if (db) db.run(`CREATE TABLE IF NOT EXISTS instagram_queue (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  mediaId       INTEGER,
+  mediaUrl      TEXT,
+  caption       TEXT,
+  accounts      TEXT DEFAULT '[]',
+  scheduledFor  TEXT,
+  status        TEXT DEFAULT 'pending',
+  createdAt     TEXT DEFAULT CURRENT_TIMESTAMP
+)`);
 // ── Delete media item ──────────────────────────────────────────────────────────
 app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
   const id = parseInt(req.params.id, 10);
@@ -1086,8 +1111,11 @@ app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
       if (err2) return res.status(500).json({ error: err2.message });
       // Best-effort local file delete (won't fail if Cloudinary or missing)
       try {
-        const localPath = row.url.startsWith('/uploads/') ? path.join(uploadsDir, row.url.replace(/^\/uploads\//, '')) : path.join(__dirname, row.url);
-        if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+        // row.url = /uploads/folder/filename — resolve against uploadsDir (persistent disk)
+        if (row.url && row.url.startsWith('/uploads/')) {
+          const localPath = path.join(uploadsDir, row.url.replace(/^\/uploads\//, ''));
+          if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+        }
       } catch (_) {}
       res.json({ success: true, id });
     });
@@ -1173,6 +1201,15 @@ app.post('/api/config', requireAuth, requireDb, (req, res) => {
 });
 
 // ── PAYMENTS ─────────────────────────────────────────────────────────────────
+if (db) db.run(`CREATE TABLE IF NOT EXISTS payments (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  leadId      INTEGER,
+  amount      REAL,
+  method      TEXT DEFAULT 'Cash',
+  notes       TEXT,
+  status      TEXT DEFAULT 'Pending',
+  createdAt   TEXT DEFAULT CURRENT_TIMESTAMP
+)`);
 
 app.get('/api/payments', requireAuth, requireDb, (req, res) => {
   db.all(`SELECT p.*, l.name as clientName, l.eventType
@@ -1198,20 +1235,29 @@ app.post('/api/payments', requireAuth, requireDb, (req, res) => {
 });
 
 app.put('/api/payments/:id', requireAuth, requireDb, (req, res) => {
-  const { status, amount, method, notes } = req.body;
+  const id = parseInt(req.params.id, 10);
+  const { amount, method, notes, status } = req.body;
   db.run(
-    'UPDATE payments SET status=COALESCE(?,status), amount=COALESCE(?,amount), method=COALESCE(?,method), notes=COALESCE(?,notes) WHERE id=?',
-    [status || null, amount || null, method || null, notes || null, req.params.id],
-    err => { if (err) return res.status(500).json({ error: err.message }); res.json({ success: true }); }
+    'UPDATE payments SET amount=COALESCE(?,amount), method=COALESCE(?,method), notes=COALESCE(?,notes), status=COALESCE(?,status) WHERE id=?',
+    [amount, method, notes, status, id],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    }
   );
 });
 
 app.delete('/api/payments/:id', requireAuth, requireDb, (req, res) => {
-  db.run('DELETE FROM payments WHERE id=?', [req.params.id], err => {
+  const id = parseInt(req.params.id, 10);
+  db.run('DELETE FROM payments WHERE id=?', [id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
 });
+
+
+
+
 
 // ── AGENT stubs (read-only analytics endpoints for agent pages) ────────────
 app.get('/api/agent/data/health', requireAuth, requireDb, (req, res) => {

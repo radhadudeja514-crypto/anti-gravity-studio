@@ -20,7 +20,7 @@
 }
 </style>
 <script>
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
   if(!d.authenticated) window.location='/admin/login.html';
 }).catch(()=>{});
 </script>
@@ -97,7 +97,7 @@ fetch('/api/admin/check').then(r=>r.json()).then(d=>{
             <button class="btn btn-sm" onclick="syncGoogleReviews()" style="background:rgba(66,133,244,.2);border-color:rgba(66,133,244,.4);color:#6aa9ff">⭐ Sync Now</button>
             <span id="syncStatus" style="font-size:.75rem;color:#888;margin-left:.5rem"></span>
           </div>
-          <div style="display:none"><!-- placeholder to keep structure -->
+          <div style="display:none">
           </div>
         </div>
       </div>
@@ -222,7 +222,7 @@ function openHeroPicker(slot){
   document.getElementById('heroPickerModal').style.display = 'flex';
   var grid = document.getElementById('heroGalleryGrid');
   grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1rem;color:#666;font-size:.82rem">Loading gallery…</div>';
-  fetch('/api/media').then(function(r){return r.json();}).then(function(items){
+  fetch('/api/media',{credentials:'include'}).then(function(r){return r.json();}).then(function(items){
     var photos = (items||[]).filter(function(m){return !/video/i.test(m.type||'')&&m.url;});
     if(!photos.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;color:#666">No photos in gallery yet — upload some first!</div>';return;}
     grid.innerHTML = photos.map(function(m){
@@ -231,7 +231,7 @@ function openHeroPicker(slot){
   }).catch(function(){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1rem;color:#f66">Could not load gallery</div>';});
 }
 
-function pickHeroPhoto(url){
+async function pickHeroPhoto(url){
   document.getElementById('hurl'+heroPickingSlot).value = url;
   previewHero(heroPickingSlot);
   document.getElementById('heroPickerModal').style.display = 'none';
@@ -244,7 +244,7 @@ async function saveHeroImages(){
     hero_bg_3: document.getElementById('hurl2').value.trim()
   };
   try{
-    var d = await fetch('/api/hero-images',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();});
+    var d = await fetch('/api/hero-images', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();});
     var msg = document.getElementById('heroSaveMsg');
     if(d.success){ msg.textContent='✅ Saved! Homepage will show new photos.'; setTimeout(function(){msg.textContent='';},3000); }
     else { msg.style.color='#f66'; msg.textContent='❌ Error saving'; }
@@ -252,7 +252,7 @@ async function saveHeroImages(){
 }
 
 // Load current hero images on page load
-fetch('/api/hero-images').then(function(r){return r.json();}).then(function(d){
+fetch('/api/hero-images',{credentials:'include'}).then(function(r){return r.json();}).then(function(d){
   ['hero_bg_1','hero_bg_2','hero_bg_3'].forEach(function(k,i){
     if(d[k]){ document.getElementById('hurl'+i).value=d[k]; previewHero(i); }
   });
@@ -265,7 +265,7 @@ async function saveKey(key){
   if(!input){ alert('Input not found: ' + key); return; }
   var value = input.value.trim();
   try{
-    var d = await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,value})}).then(function(r){return r.json();});
+    var d = await fetch('/api/config', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,value})}).then(function(r){return r.json();});
     if(d.success){
       var btn = input.nextElementSibling;
       var orig = btn.textContent;
@@ -281,7 +281,7 @@ async function saveKey(key){
 /* ── LOAD CONFIG VALUES ── */
 async function loadData(){
   try{
-    var cfg = await fetch('/api/config').then(function(r){return r.json();});
+    var cfg = await fetch('/api/config',{credentials:'include'}).then(function(r){return r.json();});
     Object.keys(cfg).forEach(function(k){
       var el = document.getElementById('cfg_'+k);
       if(el) el.value = cfg[k] || '';
@@ -290,7 +290,7 @@ async function loadData(){
 
   // Load health
   try{
-    var h = await fetch('/api/agent/data/health').then(function(r){return r.json();});
+    var h = await fetch('/api/agent/data/health',{credentials:'include'}).then(function(r){return r.json();});
     var info = (h && h.health) ? h.health : null;
     var el = document.getElementById('healthStatus');
     if(!el) return;
@@ -313,7 +313,7 @@ async function loadData(){
 /* ── LOAD SERVER LOGS ── */
 async function loadLogs(){
   try{
-    var d = await fetch('/api/admin/logs').then(function(r){return r.json();});
+    var d = await fetch('/api/admin/logs',{credentials:'include'}).then(function(r){return r.json();});
     var views = d.views || [];
     var events = d.events || [];
     var logEl = document.getElementById('serverLog');
@@ -339,16 +339,5 @@ async function loadLogs(){
 loadData();
 </script>
 <script src="../assets/js/admin-nav.js"></script>
-
-<script>
-async function syncGoogleReviews(){
-  var s=document.getElementById('syncStatus');
-  if(s) s.textContent='Syncing...';
-  try{
-    var d=await fetch('/api/admin/sync-reviews',{method:'POST',credentials:'include'}).then(r=>r.json());
-    if(s) s.textContent='Done! '+d.total+' reviews in DB';
-  }catch(e){if(s)s.textContent='Error: '+e.message;}
-}
-</script>
 </body>
 </html>

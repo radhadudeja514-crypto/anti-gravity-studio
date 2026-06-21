@@ -99,14 +99,14 @@ fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
 <script>
 let contentType='hook', history=[];
 
-function setType(t,el){contentType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+async function setType(t,el){contentType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 
 async function generate(){
   const pillar=document.getElementById('gPillar').value;
   const out=document.getElementById('output');
   out.innerHTML='<span class="cursor"></span> Generating...';
   try{
-    const r=await fetch('/api/agent/marketing/generate',{credentials:\'include\',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,type:contentType})});
+    const r=await fetch('/api/agent/marketing/generate', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,type:contentType})});
     const d=await r.json();
     const text=d.fullCaption||d.content||d.text||(typeof d==='object'?JSON.stringify(d):'');
     typewriter(out,text);
@@ -137,7 +137,7 @@ function renderHistory(){
 }
 
 // Load pillar template stats
-fetch('/api/agent/marketing/all-pillars').then(r=>r.json()).then(d=>{
+fetch('/api/agent/marketing/all-pillars',{credentials:'include'}).then(r=>r.json()).then(d=>{
   const pillars=Array.isArray(d)?d:(d.pillars||[]);
   document.getElementById('pillarStats').innerHTML=pillars.length?pillars.map(p=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.8rem;">

@@ -70,7 +70,7 @@
 <script>
 let payments=[],leads=[],filter='all';
 async function load(){
-  [payments,leads]=await Promise.all([fetch('/api/payments',{credentials:'include'}).then(r=>r.json()).catch(()=>[]),fetch('/api/leads').then(r=>r.json()).catch(()=>[])]);
+  [payments,leads]=await Promise.all([fetch('/api/payments',{credentials:'include'}).then(r=>r.json()).catch(()=>[]),fetch('/api/leads',{credentials:'include'}).then(r=>r.json()).catch(()=>[])]);
   if(!Array.isArray(payments))payments=[];if(!Array.isArray(leads))leads=[];
   const paid=payments.filter(p=>p.status==='Completed');
   const total=paid.reduce((s,p)=>s+(+p.amount||0),0);
@@ -104,16 +104,16 @@ function render(){
     </tr>`;
   }).join('');
 }
-function openAdd(){document.getElementById('addModal').classList.add('open');}
-function closeAdd(){document.getElementById('addModal').classList.remove('open');}
+async function openAdd(){document.getElementById('addModal').classList.add('open');}
+async function closeAdd(){document.getElementById('addModal').classList.remove('open');}
 async function savePayment(){
   const leadId=document.getElementById('fLead').value,amount=document.getElementById('fAmt').value,method=document.getElementById('fMethod').value,notes=document.getElementById('fNotes').value;
   if(!leadId||!amount){alert('Select a lead and enter amount');return;}
-  await fetch('/api/payments',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({leadId,amount,method,notes})});
+  await fetch('/api/payments', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leadId,amount,method,notes})});
   closeAdd();load();toast('Payment recorded!');
 }
-async function markPaid(id){await fetch(`/api/payments/${id}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Completed'})});load();}
-async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/payments/${id}`,{method:'DELETE',credentials:'include'});load();}
+async async function markPaid(id){await fetch(`/api/payments/${id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'Completed'})});load();}
+async async function del(id){if(!confirm('Delete?'))return;await fetch(`/api/payments/${id}`,{credentials:'include',method:'DELETE'});load();}
 function e(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 function toast(msg){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:1.5rem;right:1.5rem;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#fff;padding:.75rem 1.25rem;border-radius:8px;font-size:.8rem;z-index:9999';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
 fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{if(!d.authenticated)window.location='/admin/login.html';});

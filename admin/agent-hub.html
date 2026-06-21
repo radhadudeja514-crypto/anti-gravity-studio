@@ -90,11 +90,11 @@ fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
 
 <script>
 // Load real counts
-fetch('/api/agent/instagram/scheduled').then(r=>r.json()).then(d=>{
+fetch('/api/agent/instagram/scheduled',{credentials:'include'}).then(r=>r.json()).then(d=>{
   const posts=Array.isArray(d)?d:(d.posts||[]);
   document.getElementById('schedCount').textContent=posts.length+' posts scheduled';
 }).catch(()=>{});
-fetch('/api/agent/data/health').then(r=>r.json()).then(d=>{
+fetch('/api/agent/data/health',{credentials:'include'}).then(r=>r.json()).then(d=>{
   const h=d&&d.health?d.health:d||{};
   const srv=h.server||{};
   const leads=h.leads||{};

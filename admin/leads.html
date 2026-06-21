@@ -210,30 +210,30 @@ function openD(id){
     <div class="di" style="grid-column:1/-1"><label>Message</label><p style="font-size:.8rem;color:var(--text-dim);line-height:1.6">${e(cur.message||'—')}</p></div>`;
   document.getElementById('detailM').classList.add('open');
 }
-function closeD(){document.getElementById('detailM').classList.remove('open');cur=null;}
+async async function closeD(){document.getElementById('detailM').classList.remove('open');cur=null;}
 
 async function setS(s){
   if(!cur)return;
-  await fetch(`/api/leads/${cur.id}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s,notes:document.getElementById('dNotes').value})});
+  await fetch(`/api/leads/${cur.id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s,notes:document.getElementById('dNotes').value})});
   cur.status=s;load();toast('→ '+s,'success');
 }
 async function saveD(){
   if(!cur)return;
-  await fetch(`/api/leads/${cur.id}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:cur.status||'New',notes:document.getElementById('dNotes').value})});
+  await fetch(`/api/leads/${cur.id}`,{credentials:'include',method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:cur.status||'New',notes:document.getElementById('dNotes').value})});
   load();toast('Saved','success');
 }
 async function delD(){
   if(!cur||!confirm('Delete this lead?'))return;
-  await fetch(`/api/leads/${cur.id}`,{method:'DELETE',credentials:'include'});
+  await fetch(`/api/leads/${cur.id}`,{credentials:'include',method:'DELETE'});
   closeD();load();toast('Deleted');
 }
 
-function openAdd(){document.getElementById('addM').classList.add('open');}
-function closeAdd(){document.getElementById('addM').classList.remove('open');}
+async function openAdd(){document.getElementById('addM').classList.add('open');}
+async function closeAdd(){document.getElementById('addM').classList.remove('open');}
 async function addLead(){
   const name=document.getElementById('aN').value.trim(),email=document.getElementById('aE').value.trim();
   if(!name||!email){alert('Name and email required');return;}
-  const r=await fetch('/api/leads',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone:document.getElementById('aP').value,pillar:document.getElementById('aPl').value,eventDate:document.getElementById('aD').value,budget:document.getElementById('aB').value,message:document.getElementById('aM').value})});
+  const r=await fetch('/api/leads', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone:document.getElementById('aP').value,pillar:document.getElementById('aPl').value,eventDate:document.getElementById('aD').value,budget:document.getElementById('aB').value,message:document.getElementById('aM').value})});
   const d=await r.json();
   if(d.id||d.success){closeAdd();load();toast('Lead added!','success');}
   else toast(d.error||'Failed','error');

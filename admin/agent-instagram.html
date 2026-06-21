@@ -110,13 +110,13 @@ fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
 <script>
 let allPosts=[],bestTimesData={};
 
-function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+async function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
 
 async function loadData(){
   try{
     const [sched,times]=await Promise.all([
-      fetch('/api/agent/instagram/scheduled').then(r=>r.json()).catch(()=>[]),
-      fetch('/api/agent/instagram/best-times').then(r=>r.json()).catch(()=>[])
+      fetch('/api/agent/instagram/scheduled',{credentials:'include'}).then(r=>r.json()).catch(()=>[]),
+      fetch('/api/agent/instagram/best-times',{credentials:'include'}).then(r=>r.json()).catch(()=>[])
     ]);
     // Server returns plain arrays
     allPosts=Array.isArray(sched)?sched:(sched.posts||[]);
@@ -175,13 +175,13 @@ async function schedPost(){
   const topic=document.getElementById('iTopic').value,caption=document.getElementById('iCaption').value,mediaUrl=document.getElementById('iMedia').value;
   if(!date||!time){showToast('Date & time required','error');return;}
   try{
-    const r=await fetch('/api/agent/instagram/schedule-post',{credentials:\'include\',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,date,time,topic,caption,mediaUrl})});
+    const r=await fetch('/api/agent/instagram/schedule-post', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar,date,time,topic,caption,mediaUrl})});
     const d=await r.json();if(d.success||d.id){showToast('Scheduled!','success');document.getElementById('iTopic').value='';document.getElementById('iCaption').value='';loadData();}
     else showToast(d.error||'Failed','error');
   }catch(e){showToast('Error','error');}
 }
 
-async function delPost(id){if(!confirm('Delete?'))return;try{await fetch(`/api/agent/instagram/post/${id}`,{credentials:\'include\',method:'DELETE'});showToast('Deleted','success');loadData();}catch(e){showToast('Error','error');}}
+async function delPost(id){if(!confirm('Delete?'))return;try{await fetch(`/api/agent/instagram/post/${id}`,{credentials:'include',method:'DELETE'});showToast('Deleted','success');loadData();}catch(e){showToast('Error','error');}}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
 const tmrw=new Date();tmrw.setDate(tmrw.getDate()+1);document.getElementById('iDate').value=tmrw.toISOString().split('T')[0];
