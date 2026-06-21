@@ -37,6 +37,8 @@ services:
         sync: false
       - key: GOOGLE_PLACE_ID
         sync: false
+      - key: GEMINI_API_KEY
+        sync: false
       - key: GA4_MEASUREMENT_ID
         sync: false
       - key: GMB_ACCESS_TOKEN
