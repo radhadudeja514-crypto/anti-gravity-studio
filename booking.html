@@ -70,7 +70,7 @@
   <a href="index.html" class="nav-logo">RD<span style="color:var(--radha-primary)">.</span></a>
   <ul class="nav-links" id="nav-menu">
     <li><a href="index.html">Home</a></li>
-    <li><a href="pillar-radha.html">The Bhakt</a></li>
+    <li><a href="pillar-radha.html">The Soulful Anchor</a></li>
     <li><a href="pillar-veronica.html">Corporate</a></li>
     <li><a href="pillar-tour.html">Tour Guide</a></li>
   </ul>
@@ -104,7 +104,7 @@
     <div class="pillar-pills">
       <div class="pillar-pill" id="pill-radha" onclick="selectPillar('radha')">
         <div class="pillar-pill-icon">🪔</div>
-        <div class="pillar-pill-name">The Bhakt</div>
+        <div class="pillar-pill-name">The Soulful Anchor</div>
         <div class="pillar-pill-sub">Sangeet · Wedding · Family</div>
       </div>
       <div class="pillar-pill" id="pill-corp" onclick="selectPillar('corp')">
@@ -128,7 +128,7 @@
 
     <!-- AI Proposal tip box -->
     <div class="qr-info" style="margin-bottom:1.5rem;">
-      <div style="font-size:.8rem;color:var(--radha-primary);font-weight:700;margin-bottom:.25rem;">✨ AI Proposal Generator</div>
+      <div style="font-size:.8rem;color:var(--radha-primary);font-weight:700;margin-bottom:.25rem;">✨ Your Personalised Proposal</div>
       <div style="font-size:.8rem;color:var(--text-muted);">Fill the form below and we'll auto-generate a personalised event proposal for you.</div>
     </div>
 
@@ -156,7 +156,7 @@
 
     <div style="display:flex;gap:1rem;margin-top:1rem;">
       <button class="btn btn-ghost" onclick="goPage(1)" style="flex:1;justify-content:center;">← Back</button>
-      <button class="btn btn-radha" onclick="submitDetails()" style="flex:2;justify-content:center;">✨ Run AI Proposal &amp; Pay Token →</button>
+      <button class="btn btn-radha" onclick="submitDetails()" style="flex:2;justify-content:center;">✨ Get Your Proposal &amp; Pay Token →</button>
     </div>
   </div>
 
@@ -321,7 +321,7 @@ function submitDetails() {
     })
   }).catch(() => {});
 
-  // Generate AI proposal text
+  // Generate proposal text
   const proposals = {
     radha: `Dear ${name},\n\nThank you for choosing Kartikey Bameta for your ${eventType} on ${date}!\n\nWe propose a full ${eventType} experience including:\n• Personalised ceremony hosting in Hindi/English\n• Live audience engagement games\n• Emotional moments curation\n• Custom intro & closing rituals\n\nExpected Duration: 3-4 hours\nStarting from: — contact for pricing\n\nWe will call you within 4 hours to finalize.`,
     corp: `Dear ${name},\n\nThank you for choosing Veronica (Corporate MC) for your ${eventType} on ${date}!\n\nWe propose a high-impact ${eventType} hosting including:\n• Sharp, high-energy stage presence\n• Bilingual hosting (English + Hindi)\n• Panel moderation & Q&A management\n• Networking session facilitation\n\nExpected Duration: Full day / Half day\nStarting from: — contact for pricing\n\nWe will contact you within 4 hours.`,

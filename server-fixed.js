@@ -190,6 +190,7 @@ app.post('/api/media/import-youtube', requireAuth, requireDb, (req, res) => {
     [name, thumbUrl, pillar || 'main', 'youtube', 0, name],
     function(err) {
       if (err) return res.status(500).json({ error: err.message });
+      backupYouTubeEntry(name, thumbUrl, pillar || 'main');
       res.json({ id: this.lastID, url: thumbUrl, videoId, name });
     }
   );
@@ -211,7 +212,7 @@ app.post('/api/media/import-youtube-bulk', requireAuth, requireDb, (req, res) =>
       'INSERT INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)',
       [name, thumbUrl, pillar || 'main', 'youtube', 0, name],
       function(err) {
-        if (!err) results.push({ id: this.lastID, url: thumbUrl, videoId });
+        if (!err) { results.push({ id: this.lastID, url: thumbUrl, videoId }); backupYouTubeEntry(name, thumbUrl, pillar || 'main'); }
         done++;
         if (done === urls.length) res.json({ imported: results });
       }
@@ -669,6 +670,40 @@ async function fetchGooglePlacesReviews() {
   } catch(e) { console.error('[Google Places] fetch error:', e.message); }
 }
 setTimeout(fetchGooglePlacesReviews, 10000);
+
+// ── YouTube ID backup/restore (survives DB wipe) ─────────────────────────────
+const YT_BACKUP_FILE = path.join(process.env.UPLOAD_DIR || path.join(__dirname,'data'), 'yt-backup.json');
+
+function backupYouTubeEntry(name, url, pillar) {
+  try {
+    let data = {};
+    try { data = JSON.parse(require('fs').readFileSync(YT_BACKUP_FILE,'utf8')); } catch(_) {}
+    if (!data.videos) data.videos = [];
+    const id = name.replace('youtube_','').replace('.jpg','');
+    if (!data.videos.find(v => v.id === id)) {
+      data.videos.push({ id, name, url, pillar, ts: Date.now() });
+      require('fs').writeFileSync(YT_BACKUP_FILE, JSON.stringify(data, null, 2));
+    }
+  } catch(e) { /* non-fatal */ }
+}
+
+function restoreYouTubeBackup() {
+  if (!db) return;
+  try {
+    const data = JSON.parse(require('fs').readFileSync(YT_BACKUP_FILE,'utf8'));
+    if (!data.videos || !data.videos.length) return;
+    db.get('SELECT COUNT(*) as c FROM media WHERE type="youtube"', [], (err, row) => {
+      if (err || (row && row.c > 0)) return; // DB already has YT entries
+      console.log('[YouTube] DB empty — restoring', data.videos.length, 'videos from backup');
+      data.videos.forEach(v => {
+        db.run('INSERT OR IGNORE INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)',
+          [v.name, v.url, v.pillar, 'youtube', 0, v.name], () => {});
+      });
+    });
+  } catch(_) { /* no backup file yet */ }
+}
+setTimeout(restoreYouTubeBackup, 500); // run after DB is ready
+
 setInterval(fetchGooglePlacesReviews, 6*60*60*1000);
 app.post('/api/admin/sync-reviews', requireAuth, async (req, res) => {
   try {
