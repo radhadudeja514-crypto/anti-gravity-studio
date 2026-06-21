@@ -453,7 +453,7 @@ async function uploadFiles(files){
     var file=files[i],line=document.createElement('div');
     line.className='log-line';line.textContent='⏳ '+file.name+'…';logEl.appendChild(line);
     var form=new FormData();form.append('file',file);form.append('pillar',pillar);form.append('type',type);
-    try{var data=await fetch('/api/media?pillar='+encodeURIComponent(pillar),{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});if(data.error){line.className='log-err';line.textContent='❌ '+file.name+': '+data.error;}else{line.className='log-ok';line.textContent='✅ '+file.name;}}
+    try{var data=await fetch('/api/media?pillar='+encodeURIComponent(pillar), {credentials:'include'},{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});if(data.error){line.className='log-err';line.textContent='❌ '+file.name+': '+data.error;}else{line.className='log-ok';line.textContent='✅ '+file.name;}}
     catch(e){line.className='log-err';line.textContent='❌ '+file.name+': network error';}
   }
   document.getElementById('fileInput').value='';
@@ -649,7 +649,7 @@ async function saveCrop(){
     var fname='crop_'+(selectedCropId||Date.now())+'.jpg';
     var form=new FormData();form.append('file',blob,fname);form.append('pillar',pillar);form.append('type','photo');
     try{
-      var data=await fetch('/api/media?pillar='+encodeURIComponent(pillar),{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});
+      var data=await fetch('/api/media?pillar='+encodeURIComponent(pillar), {credentials:'include'},{credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});
       if(data.error){document.getElementById('cropStatus').textContent='❌ '+data.error;}
       else{document.getElementById('cropStatus').textContent='✅ Saved!';setTimeout(closeCropModal,1500);loadMedia();showToast('Cropped image saved!','success');}
     }catch(e){document.getElementById('cropStatus').textContent='❌ Network error';}

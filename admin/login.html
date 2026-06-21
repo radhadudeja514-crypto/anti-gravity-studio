@@ -75,7 +75,7 @@ input:focus{border-color:rgba(0,249,255,0.4);background:rgba(255,255,255,0.07);b
 </div>
 <script>
 // Auto-redirect if already logged in
-fetch('/api/admin/check').then(r=>r.json()).then(d=>{
+fetch('/api/admin/check',{credentials:'include'}).then(r=>r.json()).then(d=>{
   if(d.authenticated) window.location='/admin/dashboard.html';
 }).catch(()=>{});
 
@@ -94,7 +94,7 @@ async function doLogin(e) {
   errorMsg.style.display = 'none';
 
   try {
-    const res = await fetch('/api/admin/login', {
+    const res = await fetch('/api/admin/login', {credentials:'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })

@@ -59,7 +59,7 @@ async function checkAdminAuth() {
   return true;
 }
 function logoutAdmin() {
-  fetch('/api/admin/logout', {credentials:'include',  method: 'POST' }).catch(() => {});
+  fetch('/api/admin/logout', {credentials:'include', method: 'POST' }).catch(() => {});
   localStorage.removeItem('admin_auth');
   localStorage.removeItem('admin_auth_expiry');
   window.location.href = '/index.html';
@@ -89,14 +89,14 @@ function showToast(msg, type = 'success') {
   }, 3000);
 }
 
-async function formatDate(isoStr) {
+function formatDate(isoStr) {
   if (!isoStr) return '';
   const d = new Date(isoStr);
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 // File Utils
-async function fileToBase64(file) {
+function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -208,7 +208,7 @@ const Schedule = {
 };
 
 // Form Handler
-async function initEnquiryForm(formId, pillar) {
+function initEnquiryForm(formId, pillar) {
   const form = document.getElementById(formId);
   if (!form) return;
   form.addEventListener('submit', async (e) => {

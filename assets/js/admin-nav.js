@@ -7,7 +7,7 @@
 // ── Auth check ────────────────────────────────────────────────────────────────
 (async function checkAdminAuth() {
   try {
-    const r = await fetch('/api/admin/check',{credentials:'include'});
+    const r = await fetch('/api/admin/check', {credentials:'include'});
     const d = await r.json();
     if (!d.authenticated) window.location.href = '/admin/login.html';
   } catch (e) {
@@ -139,7 +139,7 @@ function showToast(msg, type = 'info') {
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 function logoutAdmin() {
-  fetch('/api/admin/logout', {credentials:'include',  method: 'POST' })
+  fetch('/api/admin/logout', { method: 'POST', credentials:'include' })
     .finally(() => { window.location.href = '/admin/login.html'; });
   return false;
 }

@@ -164,7 +164,7 @@ async function runExport(){
   const from=document.getElementById('exFrom').value;if(from)params.set('from',from);
   const to=document.getElementById('exTo').value;if(to)params.set('to',to);
   try{
-    const r=await fetch('/api/agent/data/leads-export?'+params);const d=await r.json();
+    const r=await fetch('/api/agent/data/leads-export?'+params, {credentials:'include'});const d=await r.json();
     if(d.leads){
       const csv=['Name,Phone,Email,Pillar,EventType,Budget,Status,Date',...d.leads.map(l=>`"${l.name}","${l.phone}","${l.email}","${l.pillar}","${l.eventType}","${l.budget}","${l.status}","${l.timestamp}"`)].join('\n');
       const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='leads-export.csv';a.click();

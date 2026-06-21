@@ -4,7 +4,7 @@
  */
 
 // ── Panel switching ──────────────────────────────────────────
-async function showPanel(id, btn) {
+function showPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   const el = document.getElementById('panel-' + id);
@@ -20,7 +20,7 @@ async function showPanel(id, btn) {
 // ── Stats ────────────────────────────────────────────────────
 async function refreshStats() {
   try {
-    const r = await fetch('/api/media',{credentials:'include'}); const d = await r.json();
+    const r = await fetch('/api/media', {credentials:'include'}); const d = await r.json();
     document.getElementById('s-total').textContent = d.length;
     document.getElementById('s-radha').textContent = d.filter(i=>i.pillar==='radha'||i.pillar==='sangeet').length;
     document.getElementById('s-veronica').textContent = d.filter(i=>i.pillar==='corporate').length;
@@ -29,8 +29,8 @@ async function refreshStats() {
     // /api/admin/analytics now returns {revenue:{Radhaa,Corporate,Tour}, conversion}
     // Get lead counts from /api/leads directly
     const [r2, rLeads] = await Promise.all([
-      fetch('/api/admin/analytics',{credentials:'include'}),
-      fetch('/api/leads',{credentials:'include'})
+      fetch('/api/admin/analytics', {credentials:'include'}),
+      fetch('/api/leads', {credentials:'include'})
     ]);
     if (r2.ok) {
       const a = await r2.json();
@@ -43,7 +43,7 @@ async function refreshStats() {
       document.getElementById('a-rev').textContent = '₹' + (totalRev >= 100000 ? (totalRev/100000).toFixed(1)+'L' : totalRev.toLocaleString('en-IN'));
     }
 
-    const r3 = await fetch('/api/admin/insights',{credentials:'include'});
+    const r3 = await fetch('/api/admin/insights', {credentials:'include'});
     if (r3.ok) {
       const insightsList = await r3.json();
       const iHtml = insightsList.map(ins => `<div style="background:rgba(0,0,0,0.5);padding:0.75rem 1rem;border-radius:0.5rem;border-left:2px solid var(--c);">${ins}</div>`).join('');
@@ -107,7 +107,7 @@ async function handleUploadFiles(files) {
       }
       fd.append('pillar', pillar);
       fd.append('type', isVid ? 'video' : typeSel);
-      const res = await fetch('/api/media', {credentials:'include',  method: 'POST', body: fd });
+      const res = await fetch('/api/media', {credentials:'include', method: 'POST', body: fd });
       const d = await res.json();
       const cs = document.getElementById(`card-status-${done}`);
       if (cs) cs.textContent = res.ok ? `✅ Saved (${pillar})` : `❌ ${d.error}`;
@@ -213,7 +213,7 @@ async function applyTrim() {
   btn.disabled = true;
   document.getElementById('trim-status').textContent = '⏳ Processing on server…';
   try {
-    const r = await fetch('/api/media/trim', {credentials:'include', 
+    const r = await fetch('/api/media/trim', {credentials:'include',
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({id: editMediaId, startTime: trimStart, endTime: trimEnd})
@@ -235,7 +235,7 @@ async function loadVideoGallery() {
   const grid = document.getElementById('video-gallery');
   grid.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Loading…</p></div>';
   try {
-    const r = await fetch('/api/media',{credentials:'include'}); const d = await r.json();
+    const r = await fetch('/api/media', {credentials:'include'}); const d = await r.json();
     const vids = d.filter(m => m.type === 'video');
     if (!vids.length) { grid.innerHTML = '<div class="empty"><div class="ei">🎬</div><p>No videos yet.</p></div>'; return; }
     grid.innerHTML = vids.map(v => mediaCard(v)).join('');
@@ -346,9 +346,9 @@ function loadEnhancer(file) {
   enhImg.src = url;
 }
 
-async function resetEnhancer() { filters = {...defaultFilters}; buildSliders(); applyFilters(); }
+function resetEnhancer() { filters = {...defaultFilters}; buildSliders(); applyFilters(); }
 
-async function downloadEnhanced() {
+function downloadEnhanced() {
   const canvas = document.getElementById('enh-canvas');
   canvas.toBlob(blob => {
     const a = document.createElement('a');
@@ -367,7 +367,7 @@ async function saveEnhancedToGallery() {
     fd.append('file', blob, `enhanced_${Date.now()}.png`);
     fd.append('pillar', 'main'); fd.append('type', 'image');
     try {
-      const r = await fetch('/api/media', {credentials:'include', method:'POST',body:fd});
+      const r = await fetch('/api/media',{credentials:'include',method:'POST',body:fd});
       st.textContent = r.ok ? '✅ Saved to gallery!' : '❌ Save failed';
       if (r.ok) refreshStats();
     } catch(e){ st.textContent='❌ Network error'; }
@@ -382,7 +382,7 @@ async function loadGallery(filter) {
   if (!grid) return;
   grid.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Loading…</p></div>';
   try {
-    const r = await fetch('/api/media',{credentials:'include'}); const data = await r.json();
+    const r = await fetch('/api/media', {credentials:'include'}); const data = await r.json();
     const filtered = filter === 'all' ? data
       : filter === 'radha' ? data.filter(m=>m.pillar==='radha'||m.pillar==='sangeet')
       : filter === 'veronica' ? data.filter(m=>m.pillar==='corporate')
@@ -425,7 +425,7 @@ function openVideoTrim(id, url) {
   };
 }
 
-async function openEnhanceFromGallery(url) {
+function openEnhanceFromGallery(url) {
   showPanel('enhance', null);
   const img = new Image();
   img.crossOrigin = 'anonymous';
@@ -444,7 +444,7 @@ async function deleteMedia(id, btn) {
   if (!confirm('Delete this media?')) return;
   btn.textContent = '⏳'; btn.disabled = true;
   try {
-    await fetch(`/api/media/${id}`,{credentials:'include',method:'DELETE'});
+    await fetch(`/api/media/${id}`,{method:'DELETE',credentials:'include'});
     btn.closest('.m-card').remove();
     refreshStats();
   } catch(e){ btn.textContent='❌'; }
@@ -524,7 +524,7 @@ async function fetchLogs() {
   if (!container) return;
   container.innerHTML = '<div style="color:var(--c)">Fetching logs from server...</div>';
   try {
-    const r = await fetch('/api/admin/logs',{credentials:'include'});
+    const r = await fetch('/api/admin/logs', {credentials:'include'});
     if (!r.ok) throw new Error('Unauthorized or Server Error');
     const logs = await r.json();
     

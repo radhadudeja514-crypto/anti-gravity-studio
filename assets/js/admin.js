@@ -24,7 +24,7 @@ export function initAdminToggle() {
  * Logout helper — call from admin pages
  */
 export async function adminLogout() {
-  await fetch('/api/admin/logout', {credentials:'include',  method: 'POST' });
+  await fetch('/api/admin/logout', {credentials:'include', method: 'POST' });
   window.location.assign('/admin/login.html');
 }
 
@@ -32,7 +32,7 @@ export async function adminLogout() {
  * Fetch a CSRF token for forms
  */
 export async function getCsrfToken() {
-  const r = await fetch('/api/csrf-token',{credentials:'include'});
+  const r = await fetch('/api/csrf-token');
   const d = await r.json();
   return d.token;
 }

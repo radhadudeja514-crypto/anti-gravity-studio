@@ -499,7 +499,7 @@ let currentPillar = 'radha';
 
 async function loadSavedTheme(pillar) {
   try {
-    const r = await fetch('/api/agent/design/theme/' + pillar);
+    const r = await fetch('/api/agent/design/theme/' + pillar, {credentials:'include'});
     const d = await r.json();
     if (d.success && d.theme) {
       Object.assign(themes[pillar], d.theme);
@@ -983,12 +983,12 @@ function renderOpenPropsTokens() {
 }
 
 // ═══ ACTIONS ═══
-async function copyCSS(){
+function copyCSS(){
   navigator.clipboard.writeText(document.getElementById('cssOutput').textContent)
     .then(()=>showToast('CSS copied!','success')).catch(()=>showToast('Copy failed','error'));
 }
 
-async function exportCSS(){
+function exportCSS(){
   const css=document.getElementById('cssOutput').textContent;
   const blob=new Blob([css],{type:'text/css'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -999,7 +999,7 @@ async function exportCSS(){
 async function saveAllThemes(){
   for(const [pillar,theme] of Object.entries(themes)){
     try{
-      await fetch('/api/agent/design/save-theme', {credentials:'include', method:'POST',headers:{'Content-Type':'application/json'},
+      await fetch('/api/agent/design/save-theme',{credentials:'include',method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({pillar,...theme})});
     }catch(e){}
   }
@@ -1009,7 +1009,7 @@ async function saveAllThemes(){
 async function loadServerThemes(){
   for(const pillar of ['radha','veronica','tour']){
     try{
-      const r=await fetch(`/api/agent/design/theme/${pillar}`,{credentials:'include'});
+      const r=await fetch(`/api/agent/design/theme/${pillar}`, {credentials:'include'});
       const d=await r.json();
       if(d.theme) themes[pillar]={...themes[pillar],...d.theme};
     }catch(e){}
