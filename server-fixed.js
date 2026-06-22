@@ -232,8 +232,39 @@ app.post('/api/media/import-youtube-bulk', requireAuth, requireDb, (req, res) =>
 
 // ── GOOGLE PHOTOS OAUTH CALLBACK ──────────────────────────────────────────────
 app.get('/api/google-photos/callback', (req, res) => {
-  // OAuth token comes as hash fragment on client side
-  res.send('<script>window.opener && window.opener.postMessage({type:"gp_token",hash:location.hash},"*");window.close();</script>');
+  // PKCE: code comes as query param, send to opener via postMessage
+  const code = req.query.code || '';
+  const err  = req.query.error || '';
+  res.send(`<script>
+    if(window.opener){
+      window.opener.postMessage({type:'gp_code',code:${JSON.stringify(code)},error:${JSON.stringify(err)}},'*');
+    }
+    window.close();
+  </script>`);
+});
+
+// Token exchange for Google Photos PKCE flow
+app.post('/api/google-photos/exchange-token', requireAuth, async (req, res) => {
+  const { code, verifier, redirect } = req.body;
+  const clientId     = process.env.GOOGLE_CLIENT_ID || '';
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
+  if (!clientId || !clientSecret) return res.status(500).json({ error: 'GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not configured' });
+  try {
+    const resp = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code, client_id: clientId, client_secret: clientSecret,
+        redirect_uri: redirect, grant_type: 'authorization_code',
+        code_verifier: verifier
+      }).toString()
+    });
+    const data = await resp.json();
+    if (data.error) return res.status(400).json({ error: data.error_description || data.error });
+    res.json({ access_token: data.access_token });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ── GOOGLE PHOTOS IMPORT (download → Cloudinary → DB) ────────────────────────
