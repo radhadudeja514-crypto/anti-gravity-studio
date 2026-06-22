@@ -537,11 +537,12 @@ if (db) db.serialize(() => {
   )`);
 
   // Sessions are now HMAC-signed stateless — no DB preload needed
+  // Seed static files and set DB ready after a tiny delay for all CREATE/ALTER to finish
+  setTimeout(function() {
     dbReady = true;
-    // Seed static gallery files after DB is confirmed ready
     seedStaticMedia();
     restoreYouTubeBackup();
-  }, 200); // tiny delay so all CREATE TABLE/ALTER TABLE ops finish first
+  }, 300);
 });
 
 // ── DB guard middleware ───────────────────────────────────────────────────
