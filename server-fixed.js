@@ -535,11 +535,11 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // NOTE: req.body is NOT reliable here — multipart fields after the file aren't parsed yet.
     // We use req.query.pillar (passed as ?pillar=xxx in the upload URL) as the reliable source.
-    let folder = 'tour';
+    let folder = 'main';
     const p = (req.query.pillar || req.body.pillar || '').toLowerCase();
     if (p === 'corporate') folder = 'corporate';
     if (p === 'radha')     folder = 'sangeet';
-    if (p === 'main')      folder = 'main';
+    if (p === 'tour')      folder = 'tour';
     const dir = path.join(uploadsDir, folder);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
@@ -997,11 +997,11 @@ app.post('/api/media', requireAuth, requireDb, upload.single('file'), (req, res)
   // query.pillar was used by multer destination; body.pillar used here
   const pillar = req.body.pillar || req.query.pillar || 'main';
   const type   = req.body.type   || 'photo';
-  let folder = 'tour';
+  let folder = 'main';
   const p = pillar.toLowerCase();
   if (p === 'corporate') folder = 'corporate';
   if (p === 'radha')     folder = 'sangeet';
-  if (p === 'main')      folder = 'main';
+  if (p === 'tour')      folder = 'tour';
 
   if (req.file) {
     // req.file.path is the ACTUAL path where multer saved the file (uses uploadsDir, not __dirname)
@@ -1225,6 +1225,10 @@ app.get('/api/config', requireDb, (req, res) => {
     const cfg = {};
     (rows || []).forEach(r => { cfg[r.key] = r.value; });
     // Also expose env-based config keys if not in DB
+    // Expose whether Cloudinary is configured (name only, not secret)
+    if (process.env.CLOUDINARY_NAME) cfg.CLOUDINARY_NAME = process.env.CLOUDINARY_NAME;
+    if (process.env.CLOUDINARY_KEY)  cfg.CLOUDINARY_KEY  = '***configured***';
+    if (process.env.CLOUDINARY_SECRET) cfg.CLOUDINARY_SECRET = '***configured***';
     if (!cfg.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID) {
       cfg.GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     }

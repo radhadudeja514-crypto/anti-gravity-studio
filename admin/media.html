@@ -17,6 +17,10 @@
 .upload-zone .desc{font-size:.75rem;color:var(--text-muted)}
 #uploadLog{margin-top:.6rem;font-size:.8rem;line-height:1.7}
 #uploadLog .log-ok{color:var(--green)} #uploadLog .log-err{color:#ff4444} #uploadLog .log-line{color:var(--cyan)}
+/* Storage warning banner */
+#storageWarning{display:none;background:rgba(255,180,0,.12);border:1px solid rgba(255,180,0,.4);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#ffd95e;line-height:1.5}
+#storageWarning strong{display:block;margin-bottom:.2rem;font-size:.88rem}
+
 
 /* ── YOUTUBE ── */
 .yt-add-row{display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap}
@@ -370,7 +374,14 @@ document.querySelectorAll('.stab').forEach(function(btn){
 });
 
 /* ── LOAD MEDIA ── */
-async function loadMedia(){
+async 
+  // Show storage warning if Cloudinary not configured
+  fetch('/api/config', {credentials:'include'}).then(function(r){return r.json();}).then(function(cfg){
+    var hasCloud = cfg.CLOUDINARY_NAME && cfg.CLOUDINARY_KEY && cfg.CLOUDINARY_SECRET;
+    if (!hasCloud) document.getElementById('storageWarning').style.display = '';
+  }).catch(function(){});
+
+function loadMedia(){
   try{
     var res=await fetch('/api/media',{credentials:'include'});
     if(res.status===401){window.location.href='/admin/login.html';return;}
