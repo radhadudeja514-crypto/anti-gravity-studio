@@ -3,7 +3,7 @@
 <head>
 <script>
 (function(){
-  var pillar = document.body.dataset.pillar || '';
+  var pillar = (document.body && document.body.dataset.pillar) || '';
   if(!pillar) return;
   fetch('/api/agent/design/theme/' + pillar, {credentials:'include'})
     .then(function(r){ return r.json(); })
@@ -865,7 +865,7 @@ loadGoogleReviews();
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         page: location.pathname,
-        pillar: document.body.dataset.pillar || ''
+        pillar: (document.body && document.body.dataset.pillar) || ''
       })
     });
   } catch(e) {}

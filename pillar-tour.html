@@ -3,7 +3,7 @@
 <head>
 <script>
 (function(){
-  var pillar = document.body.dataset.pillar || '';
+  var pillar = (document.body && document.body.dataset.pillar) || '';
   if(!pillar) return;
   fetch('/api/agent/design/theme/' + pillar, {credentials:'include'})
     .then(function(r){ return r.json(); })
@@ -881,7 +881,7 @@ if (document.readyState === 'loading') {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         page: location.pathname,
-        pillar: document.body.dataset.pillar || ''
+        pillar: (document.body && document.body.dataset.pillar) || ''
       })
     });
   } catch(e) {}
@@ -928,7 +928,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVideo()
       var id=(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
       if(!id||existing.includes(id)) return;
       var card=document.createElement('div');card.className='video-card reveal';
-      card.innerHTML='<div class="video-thumb" onclick="openVideo(''+id+'',this)"><img src="https://img.youtube.com/vi/'+id+'/hqdefault.jpg" loading="lazy" onerror="this.src='https://img.youtube.com/vi/'+id+'/mqdefault.jpg'"/><div class="play-btn">▶</div></div>';
+      card.innerHTML=`<div class="video-thumb" onclick="openVideo('${id}',this)"><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${id}/mqdefault.jpg'"/><div class="play-btn">▶</div></div>`;
       grid.insertBefore(card,grid.firstChild);
     });
   }).catch(function(){});
