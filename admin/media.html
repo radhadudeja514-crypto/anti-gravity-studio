@@ -374,21 +374,23 @@ document.querySelectorAll('.stab').forEach(function(btn){
 });
 
 /* ── LOAD MEDIA ── */
-async 
+async function loadMedia(){
   // Show storage warning if Cloudinary not configured
   fetch('/api/config', {credentials:'include'}).then(function(r){return r.json();}).then(function(cfg){
     var hasCloud = cfg.CLOUDINARY_NAME && cfg.CLOUDINARY_KEY && cfg.CLOUDINARY_SECRET;
-    if (!hasCloud) document.getElementById('storageWarning').style.display = '';
+    if (!hasCloud) { var w=document.getElementById('storageWarning'); if(w) w.style.display=''; }
   }).catch(function(){});
 
-function loadMedia(){
   try{
     var res=await fetch('/api/media',{credentials:'include'});
     if(res.status===401){window.location.href='/admin/login.html';return;}
     allMedia=await res.json();
     if(!Array.isArray(allMedia))allMedia=[];
     updateStats();renderGallery();buildCropPicker();buildTrimList();
-  }catch(e){document.getElementById('gallery').innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div>Failed to load</div>';}
+  }catch(e){
+    var g=document.getElementById('gallery');
+    if(g) g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div>Failed to load media</div>';
+  }
 }
 function updateStats(){
   var photos=allMedia.filter(function(m){return!isVideo(m);}),videos=allMedia.filter(function(m){return isVideo(m);});
