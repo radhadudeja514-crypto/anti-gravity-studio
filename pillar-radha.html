@@ -251,7 +251,7 @@
 
 
 <!-- ABOUT -->
-<section class="section" id="about">
+<section id="voiceSamplesSection" class="voice-section-hidden section" id="about">
   <div class="container">
     <div class="radha-about-grid">
       <div class="radha-about-visual reveal">
@@ -1045,5 +1045,17 @@ loadGoogleReviews();
   }).catch(function(){});
 })();
 </script>
+
+  // Show voice samples section only if audio exists
+  (function(){
+    var sec = document.getElementById('voiceSamplesSection');
+    if (!sec) return;
+    var mp3s = sec.querySelectorAll('audio[src]');
+    if (!mp3s.length) { return; }
+    var src = mp3s[0].getAttribute('src');
+    fetch(src, {method:'HEAD'}).then(function(r){
+      if (r.ok) sec.style.display = '';
+    }).catch(function(){});
+  })();
 </body>
 </html>

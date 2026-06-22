@@ -265,7 +265,7 @@
 </div>
 
 <!-- ABOUT -->
-<section class="section" id="about">
+<section id="voiceSamplesSection" class="voice-section-hidden section" id="about">
   <div class="container">
     <div class="corp-about-grid">
       <div class="reveal">
@@ -448,7 +448,7 @@
   <div class="container text-center reveal">
     <p style="font-family:var(--font-elegant);font-style:italic;font-size:1.2rem;color:var(--text-muted);margin-bottom:1rem;">Planning a family celebration or wedding?</p>
     <h2 class="display-md" style="margin-bottom:0.5rem;">Meet <span class="gradient-text-radha">Radha</span></h2>
-    <p style="color:var(--text-muted);margin-bottom:2rem;">The Bhakt — for sangeet, family events, and spiritual gatherings.</p>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">The Soulful Anchor — for sangeet, family events, and spiritual gatherings.</p>
     <a href="booking.html?pillar=corp" class="btn btn-corp" style="margin-bottom:0.75rem;">⚡ Book Veronica</a>
     <a href="pillar-radha.html" class="btn btn-radha">Discover Radha →</a>
   </div>
@@ -891,5 +891,17 @@ loadGoogleReviews();
 })();
 </script>
 
+
+  // Show voice samples section only if audio exists
+  (function(){
+    var sec = document.getElementById('voiceSamplesSection');
+    if (!sec) return;
+    var mp3s = sec.querySelectorAll('audio[src]');
+    if (!mp3s.length) { return; }
+    var src = mp3s[0].getAttribute('src');
+    fetch(src, {method:'HEAD'}).then(function(r){
+      if (r.ok) sec.style.display = '';
+    }).catch(function(){});
+  })();
 </body>
 </html>
