@@ -397,6 +397,11 @@
     }
     grid.appendChild(div);
   });
+  // Reveal gallery section now that it has content
+  if(grid.children.length > 0){
+    var gallSec = document.getElementById('gallery-preview');
+    if(gallSec) gallSec.style.display = '';
+  }
 })();
 </script>
 
