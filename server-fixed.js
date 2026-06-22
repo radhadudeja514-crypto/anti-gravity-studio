@@ -68,20 +68,13 @@ const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toSt
 const sessions = new Map(); // sessionId -> { ip, created } — pre-DB fallback only
 let dbReady = false; // set to true once DB block completes
 
-function createSession(ip) {
-  const id = crypto.randomBytes(32).toString('hex');
-  const created = Date.now();
-  // Always write to in-memory Map as immediate fallback
-  sessions.set(id, { ip, created });
-  // Persist to SQLite if available
-  if (dbReady && db) {
-    db.run(
-      'INSERT OR REPLACE INTO sessions (id, ip, created) VALUES (?,?,?)',
-      [id, ip || '', created],
-      (err) => { if (err) console.error('Session insert error:', err.message); }
-    );
-  }
-  return id;
+function createSession(ip, email) {
+  // HMAC-signed stateless token — no DB needed, survives restarts
+  const secret = process.env.SESSION_SECRET || 'anti-gravity-fallback-secret';
+  const payload = { email: email || '', ip: ip || '', created: Date.now() };
+  const b64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig = crypto.createHmac('sha256', secret).update(b64).digest('hex');
+  return b64 + '.' + sig;
 }
 
 function getSession(req) {
@@ -543,14 +536,7 @@ if (db) db.serialize(() => {
     created INTEGER
   )`);
 
-  // Pre-load active sessions into memory so getSession() works synchronously
-  setTimeout(() => {
-    const EXPIRE = 8 * 3600 * 1000;
-    db.all('SELECT id, ip, created FROM sessions WHERE created > ?', [Date.now() - EXPIRE], (err, rows) => {
-      if (err) { console.error('Session pre-load error:', err.message); return; }
-      (rows || []).forEach(r => sessions.set(r.id, { ip: r.ip, created: r.created }));
-      console.log(`[sessions] Loaded ${(rows||[]).length} active session(s) from DB`);
-    });
+  // Sessions are now HMAC-signed stateless — no DB preload needed
     dbReady = true;
   }, 200); // tiny delay so all CREATE TABLE/ALTER TABLE ops finish first
 });
@@ -641,7 +627,7 @@ app.post('/api/admin/login', rateLimit(5, 60_000), (req, res) => {
 
   // 4. Both must pass
   if (passMatch && emailMatch) {
-    const sessionId = createSession(req.ip);
+    const sessionId = createSession(req.ip, email || ADMIN_USER_EMAIL);
     res.setHeader(
       'Set-Cookie',
       `admin_session=${sessionId}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
@@ -653,12 +639,7 @@ app.post('/api/admin/login', rateLimit(5, 60_000), (req, res) => {
 });
 
 app.post('/api/admin/logout', (req, res) => {
-  const raw   = req.headers.cookie || '';
-  const match = raw.match(/admin_session=([a-f0-9]{64})/);
-  if (match) {
-    sessions.delete(match[1]);
-    if (dbReady && db) db.run('DELETE FROM sessions WHERE id=?', [match[1]]);
-  }
+  // Stateless sessions — just clear the cookie
   res.setHeader('Set-Cookie', 'admin_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
   res.json({ success: true });
 });
@@ -753,6 +734,40 @@ function restoreYouTubeBackup() {
   } catch(_) { /* no backup file yet */ }
 }
 setTimeout(restoreYouTubeBackup, 500); // run after DB is ready
+
+// ── Seed static gallery files into DB on every startup ───────────────────────
+// This ensures pillar pages always show content even after Render restarts
+function seedStaticMedia() {
+  if (!db) return;
+  const galleryDir = path.join(__dirname, 'assets', 'media', 'gallery');
+  if (!fs.existsSync(galleryDir)) return;
+
+  // Folder → pillar mapping
+  const folderPillar = { radha: 'radha', photos: 'main', videos: 'main', tour: 'tour', veronica: 'veronica' };
+  const exts = new Set(['.jpg', '.jpeg', '.png', '.webp', '.mp4', '.mov']);
+
+  let inserted = 0;
+  const subdirs = fs.readdirSync(galleryDir);
+  subdirs.forEach(sub => {
+    const subPath = path.join(galleryDir, sub);
+    if (!fs.statSync(subPath).isDirectory()) return;
+    const pillar = folderPillar[sub] || 'main';
+    fs.readdirSync(subPath).forEach(file => {
+      const ext = path.extname(file).toLowerCase();
+      if (!exts.has(ext)) return;
+      const url = '/assets/media/gallery/' + sub + '/' + encodeURIComponent(file);
+      const type = ['.mp4', '.mov'].includes(ext) ? 'video' : 'image';
+      db.run(
+        'INSERT OR IGNORE INTO media (name, url, pillar, type, size, originalName) VALUES (?,?,?,?,?,?)',
+        [file, url, pillar, type, 0, file],
+        function(err) { if (!err && this.lastID) inserted++; }
+      );
+    });
+  });
+  setTimeout(() => { if (inserted > 0) console.log('[seed] Seeded', inserted, 'static media files'); }, 500);
+}
+setTimeout(seedStaticMedia, 800);
+
 
 setInterval(fetchGooglePlacesReviews, 6*60*60*1000);
 app.post('/api/admin/sync-reviews', requireAuth, async (req, res) => {
@@ -980,10 +995,18 @@ app.get('/api/media', requireAuth, requireDb, (req, res) => {
 });
 
 app.get('/api/media/public', requireDb, (req, res) => {
-  db.all('SELECT * FROM media ORDER BY timestamp DESC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+  const pillar = req.query.pillar || '';
+  if (pillar) {
+    db.all('SELECT * FROM media WHERE LOWER(pillar)=LOWER(?) ORDER BY timestamp DESC', [pillar], (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows || []);
+    });
+  } else {
+    db.all('SELECT * FROM media ORDER BY timestamp DESC', [], (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows || []);
+    });
+  }
 });
 
 app.get('/api/combined-media', (req, res) => {

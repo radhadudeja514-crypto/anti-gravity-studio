@@ -917,19 +917,24 @@ function openVideo(id,el){var lb=document.getElementById('videoLightbox');docume
 function closeVideo(){document.getElementById('videoFrame').src='';document.getElementById('videoLightbox').style.display='none';document.body.style.overflow='';}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVideo();});
 (function(){
-  fetch('/api/media/public').then(r=>r.json()).then(function(items){
-    var ytItems=(Array.isArray(items)?items:[]).filter(function(m){return (m.pillar||'').toLowerCase().includes('tour')&&m.type==='youtube'&&m.name&&m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/);});
-    if(!ytItems.length) return;
-    var grid=document.getElementById('tourVideoGrid');
-    if(!grid) return;
-    document.getElementById('tour-yt-gallery').style.display = '';
-    var existing=Array.from(grid.querySelectorAll('.video-thumb')).map(function(el){var mc=(el.getAttribute('onclick')||'').match(/'([a-zA-Z0-9_-]{11})'/);return mc?mc[1]:'';});
-    ytItems.forEach(function(m){
-      var id=(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
-      if(!id||existing.includes(id)) return;
+  fetch('/api/media/public?pillar=tour').then(r=>r.json()).then(function(items){
+    var all=(Array.isArray(items)?items:[]);
+    if(!all.length) return;
+    var grid=document.getElementById('tourVideoGrid');if(!grid) return;
+    var section=document.getElementById('tour-yt-gallery')||grid.closest('section');
+    if(section) section.style.display='';
+    all.forEach(function(m){
       var card=document.createElement('div');card.className='video-card reveal';
-      card.innerHTML=`<div class="video-thumb" onclick="openVideo('${id}',this)"><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${id}/mqdefault.jpg'"/><div class="play-btn">▶</div></div>`;
-      grid.insertBefore(card,grid.firstChild);
+      if(m.type==='youtube'){
+        var id=(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
+        if(!id) return;
+        card.innerHTML=`<div class="video-thumb" onclick="openVideo('${id}',this)"><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${id}/mqdefault.jpg'"/><div class="play-btn">▶</div></div>`;
+      } else if(m.type==='video'){
+        card.innerHTML=`<div class="video-thumb"><video src="${m.url}" muted loop playsinline style="width:100%;height:100%;object-fit:cover" onmouseenter="this.play()" onmouseleave="this.pause()"></video><div class="play-btn">▶</div></div>`;
+      } else {
+        card.innerHTML=`<div class="video-thumb" style="overflow:hidden"><img src="${m.url}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"/></div>`;
+      }
+      grid.appendChild(card);
     });
   }).catch(function(){});
 })();
