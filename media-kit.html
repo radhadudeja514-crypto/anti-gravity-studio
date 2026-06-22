@@ -508,7 +508,7 @@ function buildEvGrid(items) {
   });
 }
 
-async function evFilter(ev, btn) {
+function evFilter(ev, btn) {
   currentEvFilter = ev;
   document.querySelectorAll('.ev-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');

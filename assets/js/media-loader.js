@@ -6,7 +6,7 @@
 (async function loadSiteMedia() {
   try {
     // Fetch all media (public endpoint - no auth needed for display)
-    const r = await fetch('/api/media/public',{credentials:'include'});
+    const r = await fetch('/api/media/public');
     if (!r.ok) return; // silently skip if endpoint not ready
     const data = await r.json();
     if (!data || !data.length) return;
