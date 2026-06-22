@@ -568,6 +568,7 @@
   function renderTestimonials(list){
     var container=document.getElementById('indexTestimonials');if(!container) return;
     var tsec=document.getElementById('testimonialSection');if(tsec)tsec.style.display='';
+    container.style.transform='';
     container.innerHTML=list.map(function(t,i){
       var stars='★'.repeat(t.stars||5)+'☆'.repeat(5-(t.stars||5));
       return '<div class="testimonial-slide'+(i===0?' active':'')+'"><div class="testimonial-card">'
@@ -577,7 +578,15 @@
         +'<div class="testimonial-role">'+t.role+'</div></div></div></div>';
     }).join('');
     var idx=0,slides=container.querySelectorAll('.testimonial-slide'),section=container.closest('.testimonial-section');
-    function goTo(n){slides[idx].classList.remove('active');idx=(n+slides.length)%slides.length;slides[idx].classList.add('active');container.style.transform='translateX(-'+idx*100+'%)';}
+    function goTo(n){
+      slides[idx].classList.remove('active');
+      idx=(n+slides.length)%slides.length;
+      slides[idx].classList.add('active');
+      // CSS uses scroll-snap — scroll to slide position, don't transform
+      container.style.transform='';
+      var slideEl=slides[idx];
+      if(slideEl) container.scrollTo({left:slideEl.offsetLeft, behavior:'smooth'});
+    }
     if(section){var pv=section.querySelector('.tc-prev'),nx=section.querySelector('.tc-next');if(pv)pv.onclick=function(){goTo(idx-1);};if(nx)nx.onclick=function(){goTo(idx+1);};}
     setInterval(function(){goTo(idx+1);},5000);
   }
