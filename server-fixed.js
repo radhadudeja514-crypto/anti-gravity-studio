@@ -538,6 +538,9 @@ if (db) db.serialize(() => {
 
   // Sessions are now HMAC-signed stateless — no DB preload needed
     dbReady = true;
+    // Seed static gallery files after DB is confirmed ready
+    seedStaticMedia();
+    restoreYouTubeBackup();
   }, 200); // tiny delay so all CREATE TABLE/ALTER TABLE ops finish first
 });
 
@@ -733,7 +736,7 @@ function restoreYouTubeBackup() {
     });
   } catch(_) { /* no backup file yet */ }
 }
-setTimeout(restoreYouTubeBackup, 500); // run after DB is ready
+// restoreYouTubeBackup is now called inside DB init after tables are ready
 
 // ── Seed static gallery files into DB on every startup ───────────────────────
 // This ensures pillar pages always show content even after Render restarts
@@ -766,7 +769,7 @@ function seedStaticMedia() {
   });
   setTimeout(() => { if (inserted > 0) console.log('[seed] Seeded', inserted, 'static media files'); }, 500);
 }
-setTimeout(seedStaticMedia, 800);
+// seedStaticMedia is called inside DB init after tables are ready
 
 
 setInterval(fetchGooglePlacesReviews, 6*60*60*1000);
