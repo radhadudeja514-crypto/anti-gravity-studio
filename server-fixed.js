@@ -214,7 +214,15 @@ app.post('/api/media/import-youtube-bulk', requireAuth, requireDb, (req, res) =>
       'INSERT OR IGNORE INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)',
       [name, thumbUrl, pillar || 'main', 'youtube', 0, name],
       function(err) {
-        if (!err) { results.push({ id: this.lastID, url: thumbUrl, videoId }); backupYouTubeEntry(name, thumbUrl, pillar || 'main'); }
+        if (!err) {
+          backupYouTubeEntry(name, thumbUrl, pillar || 'main');
+          // lastID=0 when INSERT OR IGNORE skips duplicate — still count as saved
+          results.push({ url: thumbUrl, videoId, saved: true });
+          // Update pillar in case user is moving video to different pillar
+          if (!this.lastID) {
+            db.run('UPDATE media SET pillar=? WHERE name=? AND pillar!=?', [pillar || 'main', name, pillar || 'main']);
+          }
+        }
         done++;
         if (done === urls.length) res.json({ imported: results });
       }

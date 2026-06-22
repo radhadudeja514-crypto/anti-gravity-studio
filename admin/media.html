@@ -464,8 +464,12 @@ async function uploadFiles(files){
     var file=files[i],line=document.createElement('div');
     line.className='log-line';line.textContent='⏳ '+file.name+'…';logEl.appendChild(line);
     var form=new FormData();form.append('file',file);form.append('pillar',pillar);form.append('type',type);
-    try{var data=await fetch('/api/media?pillar='+encodeURIComponent(pillar), {credentials:'include',method:'POST',body:form}).then(function(r){return r.json();});if(data.error){line.className='log-err';line.textContent='❌ '+file.name+': '+data.error;}else{line.className='log-ok';line.textContent='✅ '+file.name;}}
-    catch(e){line.className='log-err';line.textContent='❌ '+file.name+': network error';}
+    try{
+      var _r=await fetch('/api/media?pillar='+encodeURIComponent(pillar), {credentials:'include',method:'POST',body:form});
+      if(_r.status===401){window.location.href='/admin/login.html';return;}
+      var data=await _r.json();
+      if(data.error){line.className='log-err';line.textContent='❌ '+file.name+': '+data.error;}else{line.className='log-ok';line.textContent='✅ '+file.name;}
+    }catch(e){line.className='log-err';line.textContent='❌ '+file.name+': network error';}
   }
   document.getElementById('fileInput').value='';
   setTimeout(function(){logEl.innerHTML='';},4000);loadMedia();
@@ -495,8 +499,12 @@ async function saveAllYT(){
   var btn=document.getElementById('ytSaveBtn');btn.disabled=true;btn.textContent='⏳ Saving…';
   var saved=0,failed=0;
   for(var i=0;i<ytQueue.length;i++){
-    try{var data=await fetch('/api/media/import-youtube-bulk',{credentials:'include',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls:['https://youtu.be/'+ytQueue[i].id],pillar:ytQueue[i].pillar})}).then(function(r){return r.json();});if(data.error)failed++;else saved+=(data.imported||[]).length;}
-    catch(e){failed++;}
+    try{
+      var resp=await fetch('/api/media/import-youtube-bulk',{credentials:'include',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls:['https://youtu.be/'+ytQueue[i].id],pillar:ytQueue[i].pillar})});
+      if(resp.status===401){window.location.href='/admin/login.html';return;}
+      var data=await resp.json();
+      if(data.error)failed++;else saved+=(data.imported||[]).length;
+    }catch(e){failed++;}
   }
   ytQueue=[];renderYTQueue();loadMedia();
   btn.disabled=false;btn.textContent='💾 Save All to Gallery';
