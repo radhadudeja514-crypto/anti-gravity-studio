@@ -416,7 +416,7 @@
 </section>
 
 <!-- TESTIMONIALS -->
-<section class="section testimonial-section" style="background:rgba(232,135,30,0.03);border-top:1px solid rgba(232,135,30,0.08);">
+<section class="section testimonial-section" id="testimonialSection" style="background:rgba(232,135,30,0.03);border-top:1px solid rgba(232,135,30,0.08);display:none">
   <div class="container text-center reveal" style="margin-bottom:3rem;">
     <div class="section-label">Client Love</div>
     <h2 class="display-md">What They <span class="gradient-text-radha">Say</span></h2>
@@ -562,6 +562,7 @@
   ];
   function renderTestimonials(list){
     var container=document.getElementById('indexTestimonials');if(!container) return;
+    var tsec=document.getElementById('testimonialSection');if(tsec)tsec.style.display='';
     container.innerHTML=list.map(function(t,i){
       var stars='★'.repeat(t.stars||5)+'☆'.repeat(5-(t.stars||5));
       return '<div class="testimonial-slide'+(i===0?' active':'')+'"><div class="testimonial-card">'

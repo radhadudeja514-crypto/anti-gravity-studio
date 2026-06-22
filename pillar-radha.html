@@ -176,7 +176,7 @@
     <button onclick="vreelNext('radha')" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.5);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;">›</button>
   </div>
   <!-- Thumbnail strip -->
-  <div id="vreel-strip-radha" style="display:flex;gap:0.5rem;padding:0.75rem 1rem;background:#111;overflow-x:auto;scrollbar-width:none;"></div>
+  <div id="vreel-strip-radha" style="display:none;gap:0.5rem;padding:0.75rem 1rem;background:#111;overflow-x:auto;scrollbar-width:none;"></div>
 </section>
 
 <script>
@@ -202,6 +202,7 @@
       dot.id = 'vreel-dot-radha-'+i;
       dots.appendChild(dot);
     });
+    document.getElementById('vreel-strip-radha').style.display='flex';
     playReel_radha(0);
   }
 
@@ -526,7 +527,7 @@ document.getElementById('videoLightbox').addEventListener('click', function(e) {
       </div>
     </div>
     <!-- Thumbnail strip -->
-    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto;" id="radha-vid-strip"></div>
+    <div style="display:none;gap:0.75rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto;" id="radha-vid-strip"></div>
   </div>
 </section>
 <script>
