@@ -349,7 +349,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').cat
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         page: location.pathname,
-        pillar: document.body.dataset.pillar || ''
+        pillar: (document.body && document.body.dataset.pillar) || ''
       })
     }).catch(()=>{});
   } catch(e) {}
