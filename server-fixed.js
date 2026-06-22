@@ -1000,10 +1000,19 @@ app.get('/api/media', requireAuth, requireDb, (req, res) => {
 
 app.get('/api/media/public', requireDb, (req, res) => {
   const pillar = req.query.pillar || '';
+  const fallback = req.query.fallback || '';
   if (pillar) {
     db.all('SELECT * FROM media WHERE LOWER(pillar)=LOWER(?) ORDER BY timestamp DESC', [pillar], (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.json(rows || []);
+      // If no results and fallback specified, return fallback pillar items
+      if ((!rows || rows.length === 0) && fallback) {
+        db.all('SELECT * FROM media WHERE LOWER(pillar)=LOWER(?) ORDER BY timestamp DESC', [fallback], (err2, rows2) => {
+          if (err2) return res.status(500).json({ error: err2.message });
+          res.json(rows2 || []);
+        });
+      } else {
+        res.json(rows || []);
+      }
     });
   } else {
     db.all('SELECT * FROM media ORDER BY timestamp DESC', [], (err, rows) => {

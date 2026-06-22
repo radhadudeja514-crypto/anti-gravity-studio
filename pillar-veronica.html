@@ -907,7 +907,7 @@ loadGoogleReviews();
 
 <script>
 (function(){
-  fetch('/api/media/public?pillar=veronica').then(r=>r.json()).then(function(items){
+  fetch('/api/media/public?pillar=veronica&fallback=main').then(r=>r.json()).then(function(items){
     var all=(Array.isArray(items)?items:[]);
     if(!all.length) return;
     var grid=document.getElementById('veronicaVideoGrid');if(!grid) return;
