@@ -351,7 +351,10 @@ function initTestimonials(trackId) {
     slides.forEach((s, i) => {
       s.classList.toggle('active', i === index);
     });
-    track.style.transform = `translateX(-${index * slideWidth}%)`;
+    // Use scrollTo to match scroll-snap CSS
+    const target = slides[index];
+    if(target) track.scrollTo({left: target.offsetLeft, behavior: 'smooth'});
+    track.style.transform = '';
     currentIndex = index;
   }
   

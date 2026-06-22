@@ -94,7 +94,10 @@ function buildStarTestimonials(containerId, testimonials) {
     slides[idx].classList.remove('active');
     idx = (idx + 1) % slides.length;
     slides[idx].classList.add('active');
-    container.style.transform = `translateX(-${idx * 100}%)`;
+    // Use scrollTo to match scroll-snap CSS (translateX % is broken with flex)
+    const target = slides[idx];
+    if(target) container.scrollTo({left: target.offsetLeft, behavior: 'smooth'});
+    container.style.transform = '';
   };
   setInterval(rotate, 5000);
 
@@ -105,7 +108,10 @@ function buildStarTestimonials(containerId, testimonials) {
       slides[idx].classList.remove('active');
       idx = (idx - 1 + slides.length) % slides.length;
       slides[idx].classList.add('active');
-      container.style.transform = `translateX(-${idx * 100}%)`;
+      // Use scrollTo to match scroll-snap CSS (translateX % is broken with flex)
+    const target = slides[idx];
+    if(target) container.scrollTo({left: target.offsetLeft, behavior: 'smooth'});
+    container.style.transform = '';
     });
     section.querySelector('.tc-next')?.addEventListener('click', () => rotate());
   }
