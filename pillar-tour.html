@@ -376,6 +376,18 @@
     <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto;" id="trail-vid-strip"></div>
   </div>
 </section>
+
+<!-- YouTube videos from admin (dynamically loaded) -->
+<section class="section" id="tour-yt-gallery" style="background:linear-gradient(180deg,rgba(242,165,65,0.03),rgba(10,10,15,0));padding:2rem 0 3rem;display:none;">
+  <div class="container">
+    <div class="reveal text-center" style="margin-bottom:1.5rem;">
+      <div class="section-label">Trail Highlights</div>
+      <h2 class="display-sm">More <span class="gradient-text-tour">Trail Reels</span></h2>
+    </div>
+    <div id="tourVideoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;"></div>
+  </div>
+</section>
+
 <script>
 (function(){
   var clips = [
@@ -909,6 +921,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVideo()
     if(!ytItems.length) return;
     var grid=document.getElementById('tourVideoGrid');
     if(!grid) return;
+    document.getElementById('tour-yt-gallery').style.display = '';
     var existing=Array.from(grid.querySelectorAll('.video-thumb')).map(function(el){var mc=(el.getAttribute('onclick')||'').match(/'([a-zA-Z0-9_-]{11})'/);return mc?mc[1]:'';});
     ytItems.forEach(function(m){
       var id=(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
