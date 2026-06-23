@@ -479,7 +479,7 @@ async function movePillar(id, current){
   if(!opts.includes(chosen.toLowerCase())){alert('Invalid pillar. Choose: '+opts.join(', '));return;}
   fetch('/api/media/'+id,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar:chosen.toLowerCase()})})
     .then(function(r){return r.json();})
-    .then(function(){loadMedia();})
+    .then(function(){loadMedia().then(function(){ setTimeout(updateStats, 300); });})
     .catch(function(e){alert('Error: '+e.message);});
 }
 function clearAllMedia(){
