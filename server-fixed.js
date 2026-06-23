@@ -79,21 +79,21 @@ function createSession(ip, email) {
 
 function getSession(req) {
   const raw = req.headers.cookie || '';
-  const match = raw.match(/admin_session=([a-f0-9]{64})/);
+  // Match HMAC-signed token: base64url.hexsig
+  const match = raw.match(/admin_session=([A-Za-z0-9_\-]+\.[a-f0-9]{64})/);
   if (!match) return null;
-  const sid = match[1];
-  const EXPIRE = 8 * 3600 * 1000; // 8 hours
-  // Check in-memory first (fastest path, covers pre-DB startup)
-  const memSess = sessions.get(sid);
-  if (memSess) {
-    if (Date.now() - memSess.created > EXPIRE) { sessions.delete(sid); return null; }
-    return memSess;
-  }
-  // NOTE: getSession is called synchronously in middleware — we can't await here.
-  // SQLite sessions are loaded into memory at startup (see 'Load active sessions' below).
-  // If a session isn't in memory it either expired or this is a fresh boot
-  // and the load hasn't completed yet — treat as unauthenticated.
-  return null;
+  try {
+    const token = match[1];
+    const dotIdx = token.lastIndexOf('.');
+    const b64 = token.substring(0, dotIdx);
+    const sig = token.substring(dotIdx + 1);
+    const secret = process.env.SESSION_SECRET || 'anti-gravity-fallback-secret';
+    const expected = crypto.createHmac('sha256', secret).update(b64).digest('hex');
+    if (sig !== expected) return null;
+    const payload = JSON.parse(Buffer.from(b64, 'base64url').toString());
+    if (Date.now() - payload.created > 8 * 3600 * 1000) return null;
+    return payload;
+  } catch(e) { return null; }
 }
 
 function requireAuth(req, res, next) {
