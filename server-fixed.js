@@ -761,11 +761,14 @@ function seedStaticMedia() {
       if (!exts.has(ext)) return;
       const url = '/assets/media/gallery/' + sub + '/' + encodeURIComponent(file);
       const type = ['.mp4', '.mov'].includes(ext) ? 'video' : 'image';
-      db.run(
-        'INSERT OR IGNORE INTO media (name, url, pillar, type, size, originalName) VALUES (?,?,?,?,?,?)',
-        [file, url, pillar, type, 0, file],
-        function(err) { if (!err && this.lastID) inserted++; }
-      );
+      db.get('SELECT 1 FROM seed_exclusions WHERE url=?', [url], (_, exRow) => {
+        if (exRow) return; // user deleted this — don't re-seed
+        db.run(
+          'INSERT OR IGNORE INTO media (name, url, pillar, type, size, originalName) VALUES (?,?,?,?,?,?)',
+          [file, url, pillar, type, 0, file],
+          function(err) { if (!err && this.lastID) inserted++; }
+        );
+      });
     });
   });
   setTimeout(() => { if (inserted > 0) console.log('[seed] Seeded', inserted, 'static media files'); }, 500);
@@ -1230,15 +1233,45 @@ app.delete('/api/media/:id', requireAuth, requireDb, (req, res) => {
     if (err || !row) return res.status(404).json({ error: 'Not found' });
     db.run('DELETE FROM media WHERE id=?', [id], function(err2) {
       if (err2) return res.status(500).json({ error: err2.message });
-      // Best-effort local file delete (won't fail if Cloudinary or missing)
+      // If this was a seeded static file, record exclusion so it won't re-seed
+      if (row.url && row.url.startsWith('/assets/media/gallery/')) {
+        db.run('INSERT OR IGNORE INTO seed_exclusions (url) VALUES (?)', [row.url]);
+      }
+      // Best-effort local file delete
       try {
-        // row.url = /uploads/folder/filename — resolve against uploadsDir (persistent disk)
         if (row.url && row.url.startsWith('/uploads/')) {
           const localPath = path.join(uploadsDir, row.url.replace(/^\/uploads\//, ''));
           if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
         }
       } catch (_) {}
       res.json({ success: true, id });
+    });
+  });
+});
+
+// PATCH /api/media/:id — update pillar or name
+app.patch('/api/media/:id', requireAuth, requireDb, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  const { pillar, name } = req.body;
+  if (!pillar && !name) return res.status(400).json({ error: 'Nothing to update' });
+  const sets = []; const vals = [];
+  if (pillar) { sets.push('pillar=?'); vals.push(pillar); }
+  if (name)   { sets.push('name=?');   vals.push(name); }
+  vals.push(id);
+  db.run('UPDATE media SET ' + sets.join(',') + ' WHERE id=?', vals, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, id });
+  });
+});
+
+// DELETE /api/media/all — clear all media (for full reset)
+app.delete('/api/media/all', requireAuth, requireDb, (req, res) => {
+  db.run('DELETE FROM media', [], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    // Also clear exclusions so seeds start fresh
+    db.run('DELETE FROM seed_exclusions', [], () => {
+      res.json({ success: true, deleted: this.changes });
     });
   });
 });

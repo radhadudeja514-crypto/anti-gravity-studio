@@ -430,6 +430,7 @@ document.getElementById('gallery').addEventListener('click',function(e){
   if(e.target.closest('.action-crop')){openCropFromGallery(Number(id),url);return;}
   if(e.target.closest('.action-copy')){copyUrl(url);return;}
   if(e.target.closest('.action-delete')){deleteItem(Number(id));return;}
+  if(e.target.closest('.action-move')){movePillar(Number(id),e.target.closest('.action-move').dataset.current);return;}
   if(ytid){window.open('https://youtube.com/watch?v='+ytid,'_blank');return;}
   openViewer(url,vid==='1');
 });
@@ -445,7 +446,24 @@ function openViewer(url,isVid){
 document.getElementById('fullOverlay').addEventListener('click',function(){this.classList.remove('open');var v=this.querySelector('video');if(v)v.pause();document.getElementById('fullContent').innerHTML='';});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=document.getElementById('fullOverlay');if(ov.classList.contains('open')){ov.classList.remove('open');document.getElementById('fullContent').innerHTML='';}closeCropModal();}});
 async function copyUrl(url){navigator.clipboard.writeText(url).then(function(){showToast('URL copied!','success');}).catch(function(){});}
-async function deleteItem(id){
+async function movePillar(id, current){
+  var opts=['main','radha','tour','veronica'];
+  var chosen=prompt('Move to pillar:\n'+opts.map(function(p,i){return(i+1)+'. '+p+(p===current?' (current)':'');}).join('\n')+'\n\nEnter pillar name:',current);
+  if(!chosen||chosen===current)return;
+  if(!opts.includes(chosen.toLowerCase())){alert('Invalid pillar. Choose: '+opts.join(', '));return;}
+  fetch('/api/media/'+id,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({pillar:chosen.toLowerCase()})})
+    .then(function(r){return r.json();})
+    .then(function(){loadMedia();})
+    .catch(function(e){alert('Error: '+e.message);});
+}
+function clearAllMedia(){
+  if(!confirm('Delete ALL media from the gallery? This cannot be undone.\n\nSeeded photos will reload fresh from the server on next restart (you can delete them again).'))return;
+  fetch('/api/media/all',{method:'DELETE',credentials:'include'})
+    .then(function(r){return r.json();})
+    .then(function(){allMedia=[];renderGallery();updateStats();alert('Gallery cleared.');})
+    .catch(function(e){alert('Error: '+e.message);});
+}
+function deleteItem(id){
   if(!confirm('Delete permanently?'))return;
   try{await fetch('/api/media/'+id,{method:'DELETE',credentials:'include'});allMedia=allMedia.filter(function(m){return m.id!==id;});updateStats();renderGallery();buildCropPicker();buildTrimList();showToast('Deleted','success');}
   catch(e){showToast('Delete failed','error');}
