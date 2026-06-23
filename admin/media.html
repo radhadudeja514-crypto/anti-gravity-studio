@@ -596,7 +596,17 @@ async function connectGooglePhotos(){
       body:JSON.stringify({code:code,verifier:verifier2,redirect:redirect})
     }).then(function(r){return r.json();}).then(function(d){
       if(d.access_token){gpToken=d.access_token;gpConnected();loadAlbums();}
-      else showToast('Google Photos auth failed: '+(d.error||'unknown'),'error');
+      else {
+      var errMsg = d.error || 'unknown';
+      if(errMsg.toLowerCase().includes('client secret') || errMsg.toLowerCase().includes('invalid')){
+        showToast('Fix needed: update GOOGLE_CLIENT_SECRET in Render environment vars','error');
+        document.getElementById('gpErrorBox').style.display='';
+        document.getElementById('gpErrorBox').querySelector('div:last-child').innerHTML += 
+          '<br/><b style="color:#ff9f9f">Your GOOGLE_CLIENT_SECRET in Render env is wrong. Re-copy it from Google Cloud → Credentials → your OAuth client → Client Secret.</b>';
+      } else {
+        showToast('Google Photos auth failed: '+errMsg,'error');
+      }
+    }
     }).catch(function(){showToast('Google Photos auth request failed','error');});
   }
   window.addEventListener('message',onMsg);
@@ -745,7 +755,7 @@ async function saveCrop(){
 
 /* ── TRIM VIDEO ── */
 function buildTrimList(){
-  var videos=allMedia.filter(function(m){return isVideo(m)&&m.url.startsWith('/uploads/');});
+  var videos=allMedia.filter(function(m){return isVideo(m);});
   var sel=document.getElementById('trimVideoSel');
   sel.innerHTML='<option value="">— pick a video —</option>'+videos.map(function(m){return'<option value="'+m.id+'">'+safeAttr(m.originalName||m.name||m.id)+'</option>';}).join('');
 }
