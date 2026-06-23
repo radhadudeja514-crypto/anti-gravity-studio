@@ -169,6 +169,32 @@
 
   <!-- ── GOOGLE PHOTOS ── -->
   <div class="section-panel" id="panel-gphotos">
+    <!-- ── PASTE ALBUM LINK (no OAuth needed) ── -->
+    <div style="background:rgba(0,249,255,.05);border:1px solid rgba(0,249,255,.2);border-radius:10px;padding:.85rem 1rem;margin-bottom:.85rem">
+      <div style="font-weight:700;color:var(--cyan);font-size:.8rem;margin-bottom:.5rem">📎 Paste a Google Photos Album Link</div>
+      <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">Set the album to <b style="color:#ccc">"Anyone with the link can view"</b> in Google Photos, then paste the link here.</div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:.5rem;margin-bottom:.5rem">
+        <input id="albumLinkInput" class="form-select" placeholder="https://photos.google.com/share/..." style="font-size:.78rem"/>
+        <button class="btn btn-cyan btn-sm" onclick="scrapeAlbum()" id="scrapeBtn" style="white-space:nowrap">📥 Load Photos</button>
+      </div>
+      <div id="scrapePreview" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+          <span id="scrapeCount" style="font-size:.75rem;color:var(--text-muted)"></span>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <select id="scrapePillar" class="form-select" style="font-size:.75rem;padding:.2rem .4rem;width:130px">
+              <option value="radha">💍 Radhaa</option>
+              <option value="tour">🌍 Tour</option>
+              <option value="veronica">🎬 Veronica</option>
+              <option value="main">🌐 Main</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="saveScrapedPhotos()" id="scrapeSaveBtn" style="font-size:.75rem;padding:.25rem .7rem">💾 Add to Gallery</button>
+          </div>
+        </div>
+        <div id="scrapeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:.35rem;max-height:220px;overflow-y:auto"></div>
+      </div>
+      <div id="scrapeError" style="display:none;color:#ff6b6b;font-size:.75rem;margin-top:.4rem"></div>
+    </div>
+    <div style="font-size:.72rem;color:#555;text-align:center;margin-bottom:.75rem">── or connect via Google account below ──</div>
     <div class="gp-status">
       <div class="gp-dot" id="gpDot"></div>
       <span id="gpStatusText" style="font-size:.8rem;color:var(--text-muted)">Not connected</span>
@@ -299,7 +325,7 @@
     <div class="filter-group" id="filterGroup">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="radha">💍 Radhaa</button>
-      <button class="filter-btn" data-filter="corporate">🎤 Corp</button>
+      <button class="filter-btn" data-filter="veronica">🎬 Veronica</button>
       <button class="filter-btn" data-filter="tour">🌍 Tour</button>
       <button class="filter-btn" data-filter="main">🌐 Main</button>
     </div>
@@ -835,6 +861,56 @@ async function aiBulkUploadAll(){
 
 loadMedia();
 </script>
-<script src="../assets/js/admin-nav.js"></script>
+<script src="../assets/js/admin-nav.js">
+/* ── GOOGLE PHOTOS ALBUM LINK SCRAPER ── */
+var scrapedPhotos = [];
+async function scrapeAlbum(){
+  var url = document.getElementById('albumLinkInput').value.trim();
+  if(!url){alert('Paste a Google Photos share link first');return;}
+  var btn=document.getElementById('scrapeBtn');
+  btn.disabled=true; btn.textContent='⏳ Loading…';
+  document.getElementById('scrapeError').style.display='none';
+  document.getElementById('scrapePreview').style.display='none';
+  try{
+    var r=await fetch('/api/gphotos/album-scrape',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({albumUrl:url})});
+    var d=await r.json();
+    if(!r.ok||d.error){throw new Error(d.error||'Failed to load album');}
+    scrapedPhotos=d.photos;
+    document.getElementById('scrapeCount').textContent=d.count+' photos found';
+    var grid=document.getElementById('scrapeGrid');
+    grid.innerHTML=d.photos.slice(0,50).map(function(p,i){
+      return '<img src="'+p.url+'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px" '+
+             'loading="lazy" onerror="this.style.opacity=.2"/>';
+    }).join('');
+    document.getElementById('scrapePreview').style.display='';
+  }catch(e){
+    var errEl=document.getElementById('scrapeError');
+    errEl.textContent='⚠️ '+e.message;
+    errEl.style.display='';
+  }finally{
+    btn.disabled=false; btn.textContent='📥 Load Photos';
+  }
+}
+async function saveScrapedPhotos(){
+  if(!scrapedPhotos.length){alert('No photos loaded yet');return;}
+  var pillar=document.getElementById('scrapePillar').value;
+  var btn=document.getElementById('scrapeSaveBtn');
+  btn.disabled=true; btn.textContent='⏳ Saving…';
+  try{
+    var r=await fetch('/api/gphotos/album-save',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({photos:scrapedPhotos,pillar:pillar})});
+    var d=await r.json();
+    if(d.error)throw new Error(d.error);
+    alert('✅ '+d.saved+' photos added to gallery under "'+pillar+'" pillar!');
+    scrapedPhotos=[];
+    document.getElementById('scrapePreview').style.display='none';
+    document.getElementById('albumLinkInput').value='';
+    loadMedia();
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='💾 Add to Gallery';}
+}
+
+</script>
 </body>
 </html>

@@ -1277,6 +1277,60 @@ app.delete('/api/media/all', requireAuth, requireDb, (req, res) => {
 });
 
 
+
+// ── Google Photos shared album import (no OAuth — public share links) ──
+app.post('/api/gphotos/album-scrape', requireAuth, async (req, res) => {
+  const { albumUrl, pillar } = req.body;
+  if (!albumUrl) return res.status(400).json({ error: 'albumUrl required' });
+  try {
+    const https = require('https');
+    const html = await new Promise((resolve, reject) => {
+      const opts = new URL(albumUrl);
+      https.get({ hostname: opts.hostname, path: opts.pathname + opts.search, headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; AntiGravityBot/1.0)',
+        'Accept': 'text/html,application/xhtml+xml'
+      }}, r => {
+        let data = '';
+        r.on('data', d => data += d);
+        r.on('end', () => resolve(data));
+      }).on('error', reject);
+    });
+    // Extract image URLs from Google Photos embedded data
+    // Pattern: ["https://lh3.googleusercontent.com/...", null, null, width, height]
+    const imgPattern = /\["(https:\/\/lh3\.googleusercontent\.com\/[^"]+)"(?:,null)*,(\d+),(\d+)\]/g;
+    const seen = new Set();
+    const images = [];
+    let m;
+    while ((m = imgPattern.exec(html)) !== null) {
+      const url = m[1];
+      if (seen.has(url)) continue;
+      seen.add(url);
+      // Request high-res version by appending =w1920-h1080
+      images.push({ url: url + '=w1200', width: m[2], height: m[3] });
+    }
+    if (images.length === 0) return res.status(422).json({ error: 'No photos found. Make sure the album is set to "Anyone with the link can view".' });
+    res.json({ photos: images, count: images.length });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Save scraped Google Photos album photos to DB
+app.post('/api/gphotos/album-save', requireAuth, requireDb, (req, res) => {
+  const { photos, pillar } = req.body;
+  if (!photos || !Array.isArray(photos)) return res.status(400).json({ error: 'photos array required' });
+  const p = pillar || 'main';
+  let saved = 0;
+  const stmt = db.prepare('INSERT INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)');
+  photos.forEach((photo, i) => {
+    const name = 'gphotos_' + Date.now() + '_' + i + '.jpg';
+    stmt.run([name, photo.url, p, 'image', 0, 'Google Photos import'], function(err) {
+      if (!err) saved++;
+    });
+  });
+  stmt.finalize(() => res.json({ saved }));
+});
+
 app.get('/api/instagram/queue', requireAuth, requireDb, (req, res) => {
   db.all('SELECT * FROM instagram_queue ORDER BY scheduledFor ASC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
