@@ -489,7 +489,7 @@ function clearAllMedia(){
     .then(function(){allMedia=[];renderGallery();updateStats();alert('Gallery cleared.');})
     .catch(function(e){alert('Error: '+e.message);});
 }
-function deleteItem(id){
+async function deleteItem(id){
   if(!confirm('Delete permanently?'))return;
   try{await fetch('/api/media/'+id,{method:'DELETE',credentials:'include'});allMedia=allMedia.filter(function(m){return m.id!==id;});updateStats();renderGallery();buildCropPicker();buildTrimList();showToast('Deleted','success');}
   catch(e){showToast('Delete failed','error');}
