@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Kit Flyer — Anti Gravity Studio 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#D4A843;--gold-light:#F0C96A;--ink:#0E0B14;--cream:#F5F0E8;--rose:#C4687A;--teal:#3AAFA9}
+    body{background:#111;font-family:'Inter',sans-serif;color:#fff}
+    .print-bar{position:fixed;top:0;left:0;right:0;z-index:999;background:#1a1a2e;border-bottom:1px solid #333;padding:.6rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+    .print-bar span{font-size:.8rem;color:#aaa;flex:1}
+    .btn-print{padding:.4rem 1.2rem;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:.82rem;background:var(--gold);color:#000}
+    .btn-ghost{padding:.4rem 1rem;border-radius:6px;border:1px solid #444;cursor:pointer;font-size:.8rem;background:transparent;color:#aaa}
+    .flyer-wrapper{max-width:794px;margin:72px auto 40px;display:flex;flex-direction:column;gap:0}
+    .flyer-page{width:794px;min-height:1123px;background:var(--ink);position:relative;overflow:hidden;page-break-after:always;break-after:page}
+    /* COVER */
+    .collage-hero{position:relative;height:500px;overflow:hidden}
+    .collage-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(14,11,20,0)20%,var(--ink)100%)}
+    .mosaic{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;height:100%;gap:3px}
+    .mosaic img{width:100%;height:100%;object-fit:cover;display:block}
+    .mosaic .main{grid-row:1/3}
+    .cover-body{padding:0 52px;position:relative;z-index:2;margin-top:-80px;text-align:center}
+    .studio-eyebrow{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.5rem}
+    .cover-title{font-family:'Cinzel',serif;font-size:3.6rem;font-weight:900;line-height:1.05;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.8)}
+    .cover-title span{color:var(--gold)}
+    .cover-sub{font-family:'Playfair Display',serif;font-size:1rem;color:#c0b8d0;margin:.8rem 0 1.4rem;font-style:italic}
+    .gold-line{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 1.4rem}
+    .stats-row{display:flex;justify-content:center;gap:2.5rem;margin-bottom:2rem}
+    .stat-n{font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1}
+    .stat-l{font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:#888;margin-top:.2rem}
+    .pillars-mini{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:0 52px;margin-bottom:1.8rem}
+    .pillar-mini{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:1rem;text-align:center}
+    .pillar-mini-icon{font-size:1.4rem;margin-bottom:.3rem}
+    .pillar-mini-name{font-family:'Cinzel',serif;font-size:.88rem;color:#fff;font-weight:600;margin-bottom:.2rem}
+    .pillar-mini-role{font-size:.66rem;color:#888;line-height:1.4}
+    .cover-footer{background:rgba(212,168,67,.08);border-top:1px solid rgba(212,168,67,.2);padding:1rem 52px;display:flex;align-items:center;justify-content:space-between;position:absolute;bottom:0;left:0;right:0}
+    .brand-name{font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold);font-weight:600}
+    .contact-info{font-size:.7rem;color:#888;text-align:right;line-height:1.7}
+    .contact-info a{color:var(--gold-light);text-decoration:none}
+    /* INNER PAGES */
+    .page-sep{height:7px}
+    .page-inner{padding:44px 52px 44px}
+    .page-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.6rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)}
+    .ph-icon{font-size:1.8rem}
+    .ph-title{font-family:'Cinzel',serif;font-size:1.75rem;font-weight:700;color:#fff}
+    .ph-sub{font-size:.73rem;color:#888;margin-top:.12rem;letter-spacing:.07em}
+    .ph-tag{margin-left:auto;padding:.28rem .75rem;border-radius:20px;font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+    .tag-r{background:rgba(196,104,122,.15);color:#E8909E;border:1px solid rgba(196,104,122,.3)}
+    .tag-v{background:rgba(58,175,169,.15);color:#5DD6D0;border:1px solid rgba(58,175,169,.3)}
+    .tag-t{background:rgba(212,168,67,.15);color:var(--gold-light);border:1px solid rgba(212,168,67,.3)}
+    .two-col{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;margin-bottom:1.4rem}
+    .two-col-rev{grid-template-columns:1fr 1.1fr}
+    .photo-collage{display:grid;gap:4px;border-radius:10px;overflow:hidden}
+    .c3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;height:290px}
+    .c3 img:first-child{grid-row:1/3}
+    .c3 img{width:100%;height:100%;object-fit:cover;display:block}
+    .c2{grid-template-columns:1fr 1fr;height:190px}
+    .c2 img{width:100%;height:100%;object-fit:cover;display:block}
+    .c4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:230px}
+    .c4 img{width:100%;height:100%;object-fit:cover;display:block}
+    .bio-quote{font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--gold-light);line-height:1.55;margin-bottom:.9rem;padding-left:.9rem;border-left:3px solid var(--gold)}
+    .bio-text{font-size:.76rem;color:#bbb;line-height:1.75;margin-bottom:.9rem}
+    .chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.9rem}
+    .chip{padding:.18rem .55rem;border-radius:20px;font-size:.63rem;font-weight:500;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#ccc}
+    .mini-stats{display:flex;gap:.8rem;margin-bottom:.9rem}
+    .ms{text-align:center;flex:1;background:rgba(255,255,255,.03);border-radius:8px;padding:.55rem .3rem}
+    .ms-n{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:var(--gold)}
+    .ms-l{font-size:.58rem;color:#777;text-transform:uppercase;letter-spacing:.07em;margin-top:.1rem}
+    .contact-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.7rem 1rem;font-size:.7rem;color:#888;line-height:1.9}
+    .contact-box b{color:#ddd}
+    .final-cta{background:linear-gradient(135deg,rgba(212,168,67,.08),rgba(45,37,64,.4));border:1px solid rgba(212,168,67,.2);border-radius:14px;padding:1.4rem 1.8rem;text-align:center;margin-top:1.8rem}
+    .cta-title{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--gold);margin-bottom:.35rem}
+    .cta-sub{font-size:.76rem;color:#aaa;margin-bottom:1.1rem}
+    .cta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem}
+    .cta-item{background:rgba(255,255,255,.04);border-radius:8px;padding:.7rem}
+    .cta-label{font-size:.62rem;color:#777;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem}
+    .cta-val{font-size:.76rem;color:var(--gold-light)}
+    .page-footer{text-align:center;margin-top:1.4rem;font-size:.62rem;color:#444;letter-spacing:.08em}
+    /* ADMIN EDIT BAR (shown if ?edit=1 in URL or logged in) */
+    .edit-bar{display:none;background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1rem;margin-bottom:1.2rem;font-size:.78rem}
+    .edit-bar h4{color:var(--gold);margin-bottom:.6rem;font-size:.8rem}
+    .edit-bar label{color:#888;font-size:.7rem;display:block;margin-bottom:.15rem}
+    .edit-bar input,.edit-bar textarea,.edit-bar select{width:100%;background:#161b22;border:1px solid #30363d;border-radius:5px;color:#e6edf3;padding:.35rem .5rem;font-size:.75rem;margin-bottom:.6rem;font-family:inherit}
+    .edit-bar textarea{height:70px;resize:vertical}
+    .edit-bar .btn-save{background:var(--gold);color:#000;border:none;border-radius:5px;padding:.35rem .9rem;cursor:pointer;font-weight:600;font-size:.75rem}
+    @media print{
+      body{background:#fff}
+      .print-bar{display:none!important}
+      .flyer-wrapper{margin:0;max-width:100%}
+      .flyer-page{width:100%;box-shadow:none}
+      .edit-bar{display:none!important}
+    }
+  </style>
+</head>
+<body>
+
+<div class="print-bar">
+  <span>💡 Save as PDF: click Print → "Save as PDF" → Save | Or share this URL with event organizers</span>
+  <button class="btn-ghost" onclick="toggleEdit()">⚙️ Edit Content</button>
+  <button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+</div>
+
+<div class="flyer-wrapper">
+
+<!-- PAGE 1: COVER -->
+<div class="flyer-page">
+  <div class="collage-hero">
+    <div class="mosaic">
+      <img class="main" id="cover-photo-1" src="/assets/media/gallery/radha/radha-01.jpg" onerror="this.src='/assets/media/gallery/photos/IMG20260509214426.jpg'" alt="">
+      <img id="cover-photo-2" src="/assets/media/gallery/radha/radha-05.jpg" onerror="this.src='/assets/media/gallery/photos/IMG20241121115211.jpg'" alt="">
+      <img id="cover-photo-3" src="/assets/media/gallery/photos/IMG20260509214438.jpg" onerror="this.src='/assets/media/gallery/radha/radha-03.jpg'" alt="">
+      <img id="cover-photo-4" src="/assets/media/gallery/radha/radha-08.jpg" onerror="this.src='/assets/media/gallery/photos/IMG-20230316-WA0027.jpg'" alt="">
+      <img id="cover-photo-5" src="/assets/media/gallery/radha/radha-12.jpg" onerror="this.src='/assets/media/gallery/photos/IMG20221010221048.jpg'" alt="">
+    </div>
+  </div>
+
+  <div class="cover-body">
+    <div class="studio-eyebrow">Anti Gravity Studio · Media Kit 2026</div>
+    <h1 class="cover-title">Anchor. Host.<br/><span>Storyteller.</span></h1>
+    <p class="cover-sub" id="cover-tagline">"Three pillars. One studio. Infinite moments."</p>
+    <div class="gold-line"></div>
+    <div class="stats-row">
+      <div><div class="stat-n" id="stat-events">500+</div><div class="stat-l">Live Events</div></div>
+      <div><div class="stat-n" id="stat-years">12</div><div class="stat-l">Years</div></div>
+      <div><div class="stat-n" id="stat-clients">50+</div><div class="stat-l">MNC Clients</div></div>
+      <div><div class="stat-n">Pan-India</div><div class="stat-l">Coverage</div></div>
+    </div>
+  </div>
+
+  <div class="pillars-mini">
+    <div class="pillar-mini"><div class="pillar-mini-icon">💍</div><div class="pillar-mini-name">Radhaa</div><div class="pillar-mini-role">Wedding &amp; Sangeet Host<br/>Bhajan Performer</div></div>
+    <div class="pillar-mini"><div class="pillar-mini-icon">🎤</div><div class="pillar-mini-name">Veronica</div><div class="pillar-mini-role">Corporate MC<br/>Keynote Anchor</div></div>
+    <div class="pillar-mini"><div class="pillar-mini-icon">🌍</div><div class="pillar-mini-name">Trail Curator</div><div class="pillar-mini-role">Heritage Travel Host<br/>MICE Tours</div></div>
+  </div>
+
+  <div class="cover-footer">
+    <div><div class="brand-name">Anti Gravity Studio</div><div style="font-size:.63rem;color:#666;margin-top:.2rem">India's Premium Event &amp; Media Collective</div></div>
+    <div class="contact-info"><a id="footer-email" href="mailto:radhadudeja514@gmail.com">radhadudeja514@gmail.com</a><br/><span id="footer-website">anti-gravity-studio.onrender.com</span></div>
+  </div>
+</div>
+
+<!-- PAGE 2: RADHAA -->
+<div class="flyer-page">
+  <div class="page-sep" style="background:linear-gradient(90deg,#C4687A,#9B4DCA)"></div>
+  <div class="page-inner">
+
+    <!-- ADMIN EDIT PANEL -->
+    <div class="edit-bar" id="edit-radha">
+      <h4>✏️ Edit Radhaa Section</h4>
+      <label>Quote</label><input id="ed-radha-quote" value="जहाँ भाव है, वहाँ उत्सव है। — Where there is devotion, there is celebration.">
+      <label>Bio text</label><textarea id="ed-radha-bio">Radhaa brings grounded energy, soul, and rhythm to sangeets, marriages, haldi and mehendi ceremonies. Every event becomes a memory for a lifetime.</textarea>
+      <label>Stats (format: Number|Label, comma-separated)</label><input id="ed-radha-stats" value="300+|Weddings,10+|Years,Hindi/English|Languages">
+      <label>Photo URLs (comma-separated, leave blank to keep current)</label><input id="ed-radha-photos" placeholder="/assets/media/gallery/radha/radha-XX.jpg, ...">
+      <button class="btn-save" onclick="applyEdit('radha')">💾 Apply Changes</button>
+    </div>
+
+    <div class="page-header">
+      <div class="ph-icon">💍</div>
+      <div><div class="ph-title">Radhaa</div><div class="ph-sub">Wedding Host · Sangeet Anchor · Bhajan Performer</div></div>
+      <span class="ph-tag tag-r">Weddings &amp; Sangeet</span>
+    </div>
+    <div class="two-col">
+      <div class="photo-collage c3" id="radha-collage">
+        <img src="/assets/media/gallery/radha/radha-02.jpg" onerror="this.src='/assets/media/gallery/radha/radha-01.jpg'" alt="">
+        <img src="/assets/media/gallery/radha/radha-07.jpg" onerror="this.src='/assets/media/gallery/radha/radha-03.jpg'" alt="">
+        <img src="/assets/media/gallery/radha/radha-11.jpg" onerror="this.src='/assets/media/gallery/radha/radha-04.jpg'" alt="">
+      </div>
+      <div>
+        <div class="bio-quote" id="radha-quote">"जहाँ भाव है, वहाँ उत्सव है।<br/>Where there is devotion, there is celebration."</div>
+        <p class="bio-text" id="radha-bio">Radhaa brings grounded energy, soul, and rhythm to sangeets, marriages, haldi and mehendi ceremonies. Every event becomes a memory for a lifetime — she doesn't just host, she weaves the spirit of the occasion into every word.</p>
+        <div class="mini-stats">
+          <div class="ms"><div class="ms-n">300+</div><div class="ms-l">Weddings</div></div>
+          <div class="ms"><div class="ms-n">10+</div><div class="ms-l">Years</div></div>
+          <div class="ms"><div class="ms-n">HI/EN</div><div class="ms-l">Languages</div></div>
+        </div>
+        <div class="chips"><span class="chip">Sangeet</span><span class="chip">Wedding MC</span><span class="chip">Bhakti</span><span class="chip">Haldi &amp; Mehendi</span><span class="chip">Destination Weddings</span><span class="chip">Pheras</span></div>
+      </div>
+    </div>
+    <div class="photo-collage c2" style="margin-bottom:1.1rem">
+      <img src="/assets/media/gallery/radha/radha-14.jpg" onerror="this.src='/assets/media/gallery/radha/radha-06.jpg'" alt="">
+      <img src="/assets/media/gallery/radha/radha-18.jpg" onerror="this.src='/assets/media/gallery/radha/radha-09.jpg'" alt="">
+    </div>
+    <div class="contact-box"><b>Booking:</b> radhadudeja514@gmail.com &nbsp;·&nbsp; <b>Portfolio:</b> anti-gravity-studio.onrender.com/pillar-radha.html &nbsp;·&nbsp; <b>IG:</b> @radhadudeja</div>
+  </div>
+</div>
+
+<!-- PAGE 3: VERONICA -->
+<div class="flyer-page">
+  <div class="page-sep" style="background:linear-gradient(90deg,#3AAFA9,#2D6A8F)"></div>
+  <div class="page-inner">
+
+    <div class="edit-bar" id="edit-veronica">
+      <h4>✏️ Edit Veronica Section</h4>
+      <label>Quote</label><input id="ed-veronica-quote" value="High-voltage. Authoritative. Globally-neutral.">
+      <label>Bio text</label><textarea id="ed-veronica-bio">The premier corporate MC who commands 10,000-seat auditoriums and C-suite summits with equal precision. Trusted by Google, Infosys, TATA, and 50+ MNCs.</textarea>
+      <label>Photo URLs (comma-separated)</label><input id="ed-veronica-photos" placeholder="/assets/media/gallery/photos/IMG_XXX.jpg, ...">
+      <button class="btn-save" onclick="applyEdit('veronica')">💾 Apply Changes</button>
+    </div>
+
+    <div class="page-header">
+      <div class="ph-icon">🎤</div>
+      <div><div class="ph-title">Veronica</div><div class="ph-sub">Corporate MC · Keynote Anchor · Conference Host</div></div>
+      <span class="ph-tag tag-v">Corporate Events</span>
+    </div>
+    <div class="two-col two-col-rev">
+      <div>
+        <div class="bio-quote" id="veronica-quote" style="border-color:#3AAFA9;color:#5DD6D0">"High-voltage. Authoritative. Globally-neutral."</div>
+        <p class="bio-text" id="veronica-bio">The premier corporate MC who commands 10,000-seat auditoriums and steers intimate C-suite summits with equal precision. Trusted by Google, Infosys, TATA, and 50+ MNCs across India and abroad.</p>
+        <div class="mini-stats">
+          <div class="ms"><div class="ms-n">50+</div><div class="ms-l">MNC Clients</div></div>
+          <div class="ms"><div class="ms-n">200+</div><div class="ms-l">Corp Events</div></div>
+          <div class="ms"><div class="ms-n">Bilingual</div><div class="ms-l">EN/HI</div></div>
+        </div>
+        <div class="chips"><span class="chip">Keynote MC</span><span class="chip">AGM Meets</span><span class="chip">Product Launches</span><span class="chip">Awards</span><span class="chip">Tech Conferences</span><span class="chip">Panel Moderation</span></div>
+      </div>
+      <div class="photo-collage c3" id="veronica-collage">
+        <img src="/assets/media/gallery/photos/IMG20241121115211.jpg" onerror="this.src='/assets/media/gallery/radha/radha-15.jpg'" alt="">
+        <img src="/assets/media/gallery/photos/IMG20241121115246.jpg" onerror="this.src='/assets/media/gallery/radha/radha-20.jpg'" alt="">
+        <img src="/assets/media/gallery/photos/IMG20240814151201.jpg" onerror="this.src='/assets/media/gallery/radha/radha-21.jpg'" alt="">
+      </div>
+    </div>
+    <div class="photo-collage c4" style="margin-bottom:1.1rem">
+      <img src="/assets/media/gallery/photos/IMG20221010221048.jpg" onerror="this.src='/assets/media/gallery/radha/radha-10.jpg'" alt="">
+      <img src="/assets/media/gallery/photos/IMG-20230316-WA0027.jpg" onerror="this.src='/assets/media/gallery/radha/radha-16.jpg'" alt="">
+      <img src="/assets/media/gallery/photos/FB_IMG_1682789867128.jpg" onerror="this.src='/assets/media/gallery/radha/radha-22.jpg'" alt="">
+      <img src="/assets/media/gallery/photos/IMG20241117132110_BURST001.jpg" onerror="this.src='/assets/media/gallery/radha/radha-24.jpg'" alt="">
+    </div>
+    <div class="contact-box"><b>Booking:</b> radhadudeja514@gmail.com &nbsp;·&nbsp; <b>Portfolio:</b> anti-gravity-studio.onrender.com/pillar-veronica.html</div>
+  </div>
+</div>
+
+<!-- PAGE 4: TRAIL CURATOR + CONTACT -->
+<div class="flyer-page">
+  <div class="page-sep" style="background:linear-gradient(90deg,#D4A843,#E8903A)"></div>
+  <div class="page-inner">
+
+    <div class="edit-bar" id="edit-tour">
+      <h4>✏️ Edit Trail Curator Section</h4>
+      <label>Quote</label><input id="ed-tour-quote" value="Every trail has a story. We help you live it.">
+      <label>Bio text</label><textarea id="ed-tour-bio">Trail Curator crafts immersive MICE and heritage travel experiences across India — from Rajputana forts to Himalayan trails.</textarea>
+      <label>Contact email</label><input id="ed-contact-email" value="radhadudeja514@gmail.com">
+      <label>Contact Instagram</label><input id="ed-contact-ig" value="@radhadudeja">
+      <button class="btn-save" onclick="applyEdit('tour')">💾 Apply Changes</button>
+    </div>
+
+    <div class="page-header">
+      <div class="ph-icon">🌍</div>
+      <div><div class="ph-title">Trail Curator</div><div class="ph-sub">Heritage Travel Host · MICE Tours · Cultural Experiences</div></div>
+      <span class="ph-tag tag-t">Travel &amp; Tours</span>
+    </div>
+    <div class="two-col">
+      <div class="photo-collage c3" id="tour-collage">
+        <img src="/assets/media/gallery/photos/IMG_20230717_115452_381.webp" onerror="this.src='/assets/media/gallery/photos/IMG20260509214426.jpg'" alt="">
+        <img src="/assets/media/gallery/photos/original_1f2f93a5-9873-4a6a-8b3d-5b42c183ab0c_IMG-20230624-WA0052.jpg" onerror="this.src='/assets/media/gallery/radha/radha-25.jpg'" alt="">
+        <img src="/assets/media/gallery/photos/Screenshot_2023-07-17-10-31-15-61.jpg" onerror="this.src='/assets/media/gallery/radha/radha-26.jpg'" alt="">
+      </div>
+      <div>
+        <div class="bio-quote" id="tour-quote" style="border-color:var(--gold);color:var(--gold-light)">"Every trail has a story. We help you live it."</div>
+        <p class="bio-text" id="tour-bio">Trail Curator crafts immersive MICE and heritage travel experiences across India — from Rajputana forts to Himalayan trails. Curated itineraries, expert narration, and seamless execution for corporate groups and cultural explorers.</p>
+        <div class="mini-stats">
+          <div class="ms"><div class="ms-n">50+</div><div class="ms-l">Trails</div></div>
+          <div class="ms"><div class="ms-n">Pan-India</div><div class="ms-l">Coverage</div></div>
+          <div class="ms"><div class="ms-n">MICE</div><div class="ms-l">Specialist</div></div>
+        </div>
+        <div class="chips"><span class="chip">Heritage Walks</span><span class="chip">Corporate Offsites</span><span class="chip">MICE Tours</span><span class="chip">Rajputana</span><span class="chip">Himalayan</span><span class="chip">Cultural Immersion</span></div>
+      </div>
+    </div>
+
+    <div class="final-cta">
+      <div class="cta-title">Book · Collaborate · Feature</div>
+      <div class="cta-sub">Anti Gravity Studio · India's Premium Event &amp; Media Collective</div>
+      <div class="cta-grid">
+        <div class="cta-item"><div class="cta-label">Email</div><div class="cta-val" id="cta-email">radhadudeja514@gmail.com</div></div>
+        <div class="cta-item"><div class="cta-label">Website</div><div class="cta-val">anti-gravity-studio.onrender.com</div></div>
+        <div class="cta-item"><div class="cta-label">Instagram</div><div class="cta-val" id="cta-ig">@radhadudeja</div></div>
+      </div>
+    </div>
+    <div class="page-footer">ANTI GRAVITY STUDIO · MEDIA KIT 2026 · CONFIDENTIAL FOR BOOKING PURPOSES</div>
+  </div>
+</div>
+
+</div><!-- /flyer-wrapper -->
+
+<script>
+// ── ADMIN EDIT TOGGLE ──
+var editMode = false;
+function toggleEdit(){
+  // Check auth first
+  fetch('/api/admin/check',{credentials:'include'}).then(function(r){
+    if(r.status===401){alert('Please log in to admin first:\n'+location.origin+'/admin/login.html');return;}
+    editMode = !editMode;
+    document.querySelectorAll('.edit-bar').forEach(function(b){
+      b.style.display = editMode ? 'block' : 'none';
+    });
+    document.querySelector('.btn-ghost').textContent = editMode ? '✅ Done Editing' : '⚙️ Edit Content';
+  });
+}
+
+// ── APPLY EDITS ──
+function applyEdit(section){
+  if(section==='radha'){
+    var quote=document.getElementById('ed-radha-quote').value;
+    var bio=document.getElementById('ed-radha-bio').value;
+    var photos=document.getElementById('ed-radha-photos').value;
+    if(quote) document.getElementById('radha-quote').innerHTML='"'+quote+'"';
+    if(bio)   document.getElementById('radha-bio').textContent=bio;
+    if(photos){
+      var urls=photos.split(',').map(function(s){return s.trim();}).filter(Boolean);
+      var imgs=document.getElementById('radha-collage').querySelectorAll('img');
+      urls.forEach(function(u,i){if(imgs[i])imgs[i].src=u;});
+    }
+  }
+  if(section==='veronica'){
+    var quote=document.getElementById('ed-veronica-quote').value;
+    var bio=document.getElementById('ed-veronica-bio').value;
+    var photos=document.getElementById('ed-veronica-photos').value;
+    if(quote) document.getElementById('veronica-quote').innerHTML='"'+quote+'"';
+    if(bio)   document.getElementById('veronica-bio').textContent=bio;
+    if(photos){
+      var urls=photos.split(',').map(function(s){return s.trim();}).filter(Boolean);
+      var imgs=document.getElementById('veronica-collage').querySelectorAll('img');
+      urls.forEach(function(u,i){if(imgs[i])imgs[i].src=u;});
+    }
+  }
+  if(section==='tour'){
+    var quote=document.getElementById('ed-tour-quote').value;
+    var bio=document.getElementById('ed-tour-bio').value;
+    var email=document.getElementById('ed-contact-email').value;
+    var ig=document.getElementById('ed-contact-ig').value;
+    if(quote) document.getElementById('tour-quote').innerHTML='"'+quote+'"';
+    if(bio)   document.getElementById('tour-bio').textContent=bio;
+    if(email){document.getElementById('cta-email').textContent=email;document.getElementById('footer-email').textContent=email;document.getElementById('footer-email').href='mailto:'+email;}
+    if(ig)    document.getElementById('cta-ig').textContent=ig;
+  }
+  // Save to localStorage so changes persist across page reloads
+  var saved=JSON.parse(localStorage.getItem('mkEdits')||'{}');
+  saved[section]={
+    quote:document.getElementById('ed-'+section+'-quote')?.value,
+    bio:document.getElementById('ed-'+section+'-bio')?.value,
+    photos:document.getElementById('ed-'+section+'-photos')?.value,
+    email:document.getElementById('ed-contact-email')?.value,
+    ig:document.getElementById('ed-contact-ig')?.value
+  };
+  localStorage.setItem('mkEdits',JSON.stringify(saved));
+  alert('✅ Changes applied! Click "Print / Save PDF" to export.');
+}
+
+// Restore saved edits on load
+(function(){
+  try{
+    var saved=JSON.parse(localStorage.getItem('mkEdits')||'{}');
+    ['radha','veronica','tour'].forEach(function(s){
+      if(saved[s]){
+        var ed=document.getElementById('ed-'+s+'-quote');if(ed&&saved[s].quote)ed.value=saved[s].quote;
+        var eb=document.getElementById('ed-'+s+'-bio');if(eb&&saved[s].bio)eb.value=saved[s].bio;
+        // Auto-apply if saved
+        if(saved[s].quote||saved[s].bio) applyEdit(s);
+      }
+    });
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
