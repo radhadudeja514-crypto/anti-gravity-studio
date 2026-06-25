@@ -301,6 +301,7 @@ app.post('/api/media/import-google-photos', requireAuth, requireDb, async (req, 
           resource_type: 'image',
           public_id:     name.replace(/\.[^.]+$/, ''),
           overwrite:     false,
+          context:       `pillar=${pillar}`,
         });
         await new Promise((resolve, reject) => {
           saveToDb(name, result.secure_url, (err) => err ? reject(err) : resolve());
@@ -526,8 +527,10 @@ if (db) db.serialize(() => {
   addCol('schedule', 'title',        'TEXT');
   addCol('schedule', 'content',      'TEXT');
   addCol('schedule', 'platform',     'TEXT');
-  addCol('instagram_queue', 'pillar', 'TEXT DEFAULT ""');
-  addCol('instagram_queue', 'topic',  'TEXT DEFAULT ""');
+  addCol('instagram_queue', 'pillar',   'TEXT DEFAULT ""');
+  addCol('instagram_queue', 'topic',    'TEXT DEFAULT ""');
+  addCol('instagram_queue', 'postedAt', 'TEXT');
+  addCol('instagram_queue', 'errorMsg', 'TEXT');
 
   // ── Sessions table (persistent login across Render restarts) ─────────────
   db.run(`CREATE TABLE IF NOT EXISTS sessions (
@@ -544,6 +547,7 @@ if (db) db.serialize(() => {
     db.run("UPDATE media SET pillar='veronica' WHERE LOWER(pillar)='corporate'", [], () => {});
     seedStaticMedia();
     restoreYouTubeBackup();
+    restoreCloudinaryMedia(); // Re-insert Cloudinary uploads lost when Render restarted
   }, 300);
 });
 
@@ -740,6 +744,54 @@ function restoreYouTubeBackup() {
   } catch(_) { /* no backup file yet */ }
 }
 // restoreYouTubeBackup is now called inside DB init after tables are ready
+
+// ── Restore Cloudinary uploads to DB on startup ─────────────────────────────
+// Since Render free tier wipes SQLite on every restart, we re-fetch all Cloudinary
+// assets and re-insert them into the DB so pillar pages always show uploaded content.
+function guessPillarFromPublicId(publicId) {
+  if (publicId.includes('/sangeet/') || publicId.includes('/radha/')) return 'radha';
+  if (publicId.includes('/corporate/') || publicId.includes('/veronica/')) return 'veronica';
+  if (publicId.includes('/tour/')) return 'tour';
+  return 'main';
+}
+
+async function restoreCloudinaryMedia() {
+  if (!db) return;
+  const cn = process.env.CLOUDINARY_NAME;
+  const ck = process.env.CLOUDINARY_KEY;
+  const cs = process.env.CLOUDINARY_SECRET;
+  if (!cn || !ck || !cs) return;
+  try {
+    cloudinary.config({ cloud_name: cn, api_key: ck, api_secret: cs });
+    let resources = [];
+    let nextCursor = undefined;
+    do {
+      const opts = { type: 'upload', prefix: 'gig_portfolio/', max_results: 500, context: true };
+      if (nextCursor) opts.next_cursor = nextCursor;
+      const result = await cloudinary.api.resources(opts);
+      resources = resources.concat(result.resources || []);
+      nextCursor = result.next_cursor;
+    } while (nextCursor);
+
+    if (!resources.length) return;
+    console.log('[Cloudinary] Restoring', resources.length, 'assets to DB on startup');
+    resources.forEach(r => {
+      // Use stored context.pillar if available (set during upload), else guess from folder
+      const ctxPillar = r.context && r.context.custom && r.context.custom.pillar;
+      const pillar = ctxPillar || guessPillarFromPublicId(r.public_id);
+      const type = r.resource_type === 'video' ? 'video' : 'image';
+      const namePart = r.public_id.split('/').pop();
+      const name = namePart + (r.format ? '.' + r.format : '');
+      db.run(
+        'INSERT OR IGNORE INTO media (name,url,pillar,type,size,originalName) VALUES (?,?,?,?,?,?)',
+        [name, r.secure_url, pillar, type, r.bytes || 0, name],
+        () => {}
+      );
+    });
+  } catch(e) {
+    console.log('[Cloudinary] Restore skipped:', e.message);
+  }
+}
 
 // ── Seed static gallery files into DB on every startup ───────────────────────
 // This ensures pillar pages always show content even after Render restarts
@@ -1110,7 +1162,7 @@ app.post('/api/media', requireAuth, requireDb, upload.single('file'), (req, res)
         api_secret: process.env.CLOUDINARY_SECRET,
       });
       // Use actualFilePath (correct disk path) for Cloudinary upload
-      cloudinary.uploader.upload(actualFilePath, { folder: `gig_portfolio/${folder}`, resource_type: 'auto' }, (error, result) => {
+      cloudinary.uploader.upload(actualFilePath, { folder: `gig_portfolio/${folder}`, resource_type: 'auto', context: `pillar=${pillar}` }, (error, result) => {
         if (error) return res.status(500).json({ error: error.message });
         try { if (fs.existsSync(actualFilePath)) fs.unlinkSync(actualFilePath); } catch(_) {}
         saveToDb(result.secure_url);
@@ -1192,7 +1244,7 @@ app.post('/api/media/trim', requireAuth, requireDb, (req, res) => {
 
       if (hasCloudinary) {
         cloudinary.config({ cloud_name: process.env.CLOUDINARY_NAME, api_key: process.env.CLOUDINARY_KEY, api_secret: process.env.CLOUDINARY_SECRET });
-        cloudinary.uploader.upload(outputPath, { folder: 'gig_portfolio/trimmed', resource_type: 'video' }, (error, result) => {
+        cloudinary.uploader.upload(outputPath, { folder: 'gig_portfolio/trimmed', resource_type: 'video', context: `pillar=${media.pillar}` }, (error, result) => {
           try { fs.unlinkSync(outputPath); } catch(_) {}
           if (error) return res.status(500).json({ error: error.message });
           saveToDb(result.secure_url);
@@ -1643,98 +1695,76 @@ app.post('/api/agent/instagram/schedule-post', requireAuth, requireDb, (req, res
 });
 
 
-app.get('/api/agent/instagram/best-times', requireAuth, (_req, res) => {
-  // Static best-posting-times — can be replaced with real analytics later
-  res.json([
-    { day: 'Monday',    time: '09:00', score: 82 },
-    { day: 'Wednesday', time: '11:00', score: 91 },
-    { day: 'Friday',    time: '18:00', score: 88 },
-    { day: 'Saturday',  time: '10:00', score: 94 },
-    { day: 'Sunday',    time: '19:00', score: 87 },
-  ]);
-});
+// ── Instagram Auto-Poster ────────────────────────────────────────────────────
+// Requires Render env vars: INSTAGRAM_USER_ID + INSTAGRAM_TOKEN
+// Get these from: Meta Business Suite → Settings → Instagram → API access
+async function postToInstagram(post) {
+  const userId = process.env.INSTAGRAM_USER_ID;
+  const token  = process.env.INSTAGRAM_TOKEN;
+  if (!userId || !token) throw new Error('Missing INSTAGRAM_USER_ID or INSTAGRAM_TOKEN env vars');
 
-app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) => {
-  db.all('SELECT pillar, COUNT(*) as mediaCount FROM media GROUP BY pillar', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const pillars = [
-      { id: 'radha',     name: 'Radhaa (Wedding)', icon: '🤔\uDEEF' },
-      { id: 'corporate', name: 'Corporate',         icon: '🎙️' },
-      { id: 'tour',      name: 'Tour',              icon: '🧭' },
-      { id: 'main',      name: 'Main',              icon: '🌐' },
-    ];
-    res.json(pillars.map(p => ({
-      ...p,
-      mediaCount: (rows.find(r => r.pillar === p.id) || { mediaCount: 0 }).mediaCount,
-    })));
+  const url = post.mediaUrl;
+  const caption = post.caption || '';
+  const https = require('https');
+
+  const apiPost = (path, params) => new Promise((resolve, reject) => {
+    const qs = new URLSearchParams({ ...params, access_token: token }).toString();
+    const opts = { hostname: 'graph.facebook.com', path: `/v19.0/${path}?${qs}`, method: 'POST' };
+    const req = https.request(opts, r => {
+      let d = '';
+      r.on('data', c => d += c);
+      r.on('end', () => {
+        try { const j = JSON.parse(d); if (j.error) reject(new Error(j.error.message)); else resolve(j); }
+        catch(e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
   });
-});
 
-app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
-  const { pillar = 'radha', type = 'hook' } = req.body || {};
-  const T = {
-    radha: {
-      hook: '✨ Every love story deserves to be told beautifully.\nKartikey Bameta brings your wedding to life with heartfelt hosting, emotional rituals & unforgettable moments.\n💍 Inquire now → antigravitystudio.com/booking\n\n#WeddingMC #KartikeyBameta #WeddingHost #IndianWedding #Sangeet',
-      caption: 'From the first dance to the last toast — every moment curated with love.\nRadhaa by Kartikey Bameta is where emotions meet elegance.\n\n📲 DM to check availability!\n\n#WeddingCeremony #MCKartikey #WeddingIndia #SangeetNight',
-      story: '💕 Your wedding deserves a storyteller.\nNot just an MC — an experience architect.\nSwipe up to see how we transform your big day. ✨',
-      reel: '🎬 POV: Your wedding MC just made everyone cry (happy tears) 😭✨\nThe moments that matter — curated by Kartikey Bameta\n💍 Link in bio!\n\n#WeddingReel #MCLife #WeddingMagic',
-    },
-    corporate: {
-      hook: '🎤 Your event is only as good as the energy in the room.\nVeronica — Corporate MC — keeps your audience engaged, energised & entertained.\n📩 Let\'s talk: antigravitystudio.com/booking\n\n#CorporateMC #EventHost #Emcee',
-      caption: 'From product launches to leadership summits — Veronica has hosted them all.\nSharp, bilingual, high-energy stage presence.\n\n📲 DM for event packages!\n\n#CorporateHost #EventEmcee #Veronica',
-      story: '🏢 Your next corporate event needs the right voice.\nVeronica delivers professionalism + energy every time. 🎤',
-      reel: '🎬 When your conference needs that energy boost 🔥\nVeronica — Corporate MC who owns the stage.\n📩 Link in bio!\n\n#EventReel #CorporateMC',
-    },
-    tour: {
-      hook: '🌍 Not all who wander are lost — some are just with the wrong guide.\nThe Trail Curator takes you beyond the tourist trail.\n🧭 Book: antigravitystudio.com/booking\n\n#TrailCurator #HeritageTours #ExperientialTravel',
-      caption: 'Every city has a soul. We help you find it.\nHidden alleys, untold stories, forgotten flavours — curated for the curious traveller.\n\n📲 DM to plan your trail!\n\n#CityWalk #HeritageTour #TravelIndia',
-      story: '🏛️ The best travel memories aren\'t from tourist spots.\nThey\'re from the stories in between.\nSwipe up! 🧭',
-      reel: '🎬 When you thought you knew the city… 😮\nThe Trail Curator shows you what maps don\'t.\n🌍 Link in bio!\n\n#TrailReel #CityWalk #TravelReels',
-    },
-  };
-  const pk = pillar === 'main' ? 'radha' : pillar;
-  const pt = T[pk] || T.radha;
-  const fullCaption = pt[type] || pt.hook;
-  res.json({ fullCaption, content: fullCaption, text: fullCaption });
-});
+  // Step 1: Create media container
+  const isVideo = url.match(/\.(mp4|mov|avi|webm)/i);
+  const containerParams = isVideo
+    ? { media_type: 'REELS', video_url: url, caption }
+    : { image_url: url, caption };
+  const container = await apiPost(`${userId}/media`, containerParams);
+  if (!container.id) throw new Error('No container ID returned');
 
-app.get('/api/agent/design/theme/:pillar', requireDb, (req, res) => {
-  db.get('SELECT value FROM config WHERE key=?', ['theme_' + req.params.pillar], (err, row) => {
-    if (row && row.value) {
-      try {
-        const theme = JSON.parse(row.value);
-        return res.json({ pillar: req.params.pillar, success: true, theme });
-      } catch (_) {}
+  // Step 2: For video, wait for upload to finish (poll up to 60s)
+  if (isVideo) {
+    for (let i = 0; i < 12; i++) {
+      await new Promise(r => setTimeout(r, 5000));
+      const status = await new Promise((res, rej) => {
+        const qs = new URLSearchParams({ fields: 'status_code', access_token: token }).toString();
+        https.get(`https://graph.facebook.com/v19.0/${container.id}?${qs}`, r => {
+          let d = ''; r.on('data', c => d += c); r.on('end', () => { try { res(JSON.parse(d)); } catch(e) { rej(e); } });
+        }).on('error', rej);
+      });
+      if (status.status_code === 'FINISHED') break;
+      if (status.status_code === 'ERROR') throw new Error('Video processing failed on Instagram');
     }
-    res.json({ pillar: req.params.pillar, theme: null });
-  });
-});
+  }
 
-app.post('/api/agent/design/save-theme', requireAuth, requireDb, (req, res) => {
-  const { pillar, ...theme } = req.body;
-  if (!pillar) return res.status(400).json({ error: 'pillar required' });
-  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)',
-    ['theme_' + pillar, JSON.stringify(theme)],
-    err => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    }
-  );
-});
+  // Step 3: Publish
+  const publish = await apiPost(`${userId}/media_publish`, { creation_id: container.id });
+  return publish.id;
+}
 
-// ── SCHEDULE ──────────────────────────────────────────────────────────────────
-app.get('/api/schedule', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM schedule ORDER BY date ASC, time ASC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows || []);
-  });
-});
-
-app.post('/api/schedule', requireAuth, requireDb, (req, res) => {
-  const { pillar, date, time, topic, caption, mediaUrl, status } = req.body;
-  if (!date) return res.status(400).json({ error: 'date required' });
-  db.run(
-    'INSERT INTO schedule (pillar,date,time,topic,caption,mediaUrl,status) VALUES (?,?,?,?,?,?,?)',
-    [pillar||'', date, time||'', topic||'', caption||'', mediaUrl||'', status||'Scheduled'],
-    function(err) {
-      if (err) return res.status(500).json({ error: err.
+// Check queue every 2 minutes and post anything that's due
+setInterval(async () => {
+  if (!db || !dbReady) return;
+  if (!process.env.INSTAGRAM_USER_ID || !process.env.INSTAGRAM_TOKEN) return;
+  const now = new Date().toISOString();
+  db.all(
+    "SELECT * FROM instagram_queue WHERE status='pending' AND scheduledFor <= ? LIMIT 5",
+    [now],
+    async (err, rows) => {
+      if (err || !rows || !rows.length) return;
+      for (const post of rows) {
+        try {
+          db.run("UPDATE instagram_queue SET status='posting' WHERE id=?", [post.id]);
+          const postId = await postToInstagram(post);
+          db.run("UPDATE instagram_queue SET status='posted',postedAt=? WHERE id=?",
+            [new Date().toISOString(), post.id]);
+          console.log('[Instagram] Posted:', post.caption.slice(0, 30), '→ ID:', postId);
+      
