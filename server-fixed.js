@@ -540,6 +540,8 @@ if (db) db.serialize(() => {
   // Seed static files and set DB ready after a tiny delay for all CREATE/ALTER to finish
   setTimeout(function() {
     dbReady = true;
+    // Migrate: rename old 'corporate' pillar to 'veronica' for consistency
+    db.run("UPDATE media SET pillar='veronica' WHERE LOWER(pillar)='corporate'", [], () => {});
     seedStaticMedia();
     restoreYouTubeBackup();
   }, 300);
@@ -566,7 +568,7 @@ const storage = multer.diskStorage({
     // We use req.query.pillar (passed as ?pillar=xxx in the upload URL) as the reliable source.
     let folder = 'main';
     const p = (req.query.pillar || req.body.pillar || '').toLowerCase();
-    if (p === 'corporate') folder = 'corporate';
+    if (p === 'corporate' || p === 'veronica') folder = 'corporate';
     if (p === 'radha')     folder = 'sangeet';
     if (p === 'tour')      folder = 'tour';
     const dir = path.join(uploadsDir, folder);
@@ -1135,36 +1137,75 @@ app.post('/api/media/trim', requireAuth, requireDb, (req, res) => {
   if (!id || startTime === undefined || endTime === undefined)
     return res.status(400).json({ error: 'Missing parameters' });
 
-  db.get('SELECT * FROM media WHERE id=?', [id], (err, media) => {
+  db.get('SELECT * FROM media WHERE id=?', [id], async (err, media) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!media) return res.status(404).json({ error: 'Media not found' });
-    if (media.type !== 'video' || !media.url.startsWith('/uploads/'))
-      return res.status(400).json({ error: 'Invalid video file' });
+    if (media.type !== 'video') return res.status(400).json({ error: 'Not a video file' });
 
-    // media.url = /uploads/folder/filename — resolve against uploadsDir (persistent disk)
-    const relFromUploads = media.url.replace(/^\/uploads\//, '');
-    const inputPath    = path.join(uploadsDir, relFromUploads);
-    const parsedPath   = path.parse(inputPath);
-    const outputName   = `trimmed_${Date.now()}_${parsedPath.name}.mp4`;
-    const outputPath   = path.join(parsedPath.dir, outputName);
-    const outputUrl    = media.url.replace(parsedPath.base, outputName);
+    const outputName = `trimmed_${Date.now()}.mp4`;
+    const outputPath = path.join(uploadsDir, outputName);
+    const outputLocalUrl = `/uploads/${outputName}`;
+    let inputPath;
+    let tmpPath = null;
 
-    ffmpeg(inputPath)
-      .setStartTime(startTime)
-      .setDuration(endTime - startTime)
-      .output(outputPath)
-      .on('end', () => {
+    try {
+      if (media.url.startsWith('/uploads/')) {
+        // Local file
+        inputPath = path.join(uploadsDir, media.url.replace(/^\/uploads\//, ''));
+      } else {
+        // Remote URL (Cloudinary etc.) — download first
+        tmpPath = path.join(uploadsDir, `trim_tmp_${Date.now()}.mp4`);
+        inputPath = tmpPath;
+        await new Promise((resolve, reject) => {
+          const proto = media.url.startsWith('https') ? require('https') : require('http');
+          const file = fs.createWriteStream(tmpPath);
+          proto.get(media.url, r => {
+            r.pipe(file);
+            file.on('finish', () => { file.close(); resolve(); });
+          }).on('error', e => { try { fs.unlinkSync(tmpPath); } catch(_) {} reject(e); });
+        });
+      }
+
+      await new Promise((resolve, reject) => {
+        ffmpeg(inputPath)
+          .setStartTime(startTime)
+          .setDuration(endTime - startTime)
+          .output(outputPath)
+          .on('end', resolve)
+          .on('error', reject)
+          .run();
+      });
+
+      if (tmpPath) { try { fs.unlinkSync(tmpPath); } catch(_) {} }
+
+      const hasCloudinary = process.env.CLOUDINARY_NAME && process.env.CLOUDINARY_KEY && process.env.CLOUDINARY_SECRET;
+      const saveToDb = (fileUrl) => {
         db.run(
           'INSERT INTO media (name,url,pillar,type,originalName,size) VALUES (?,?,?,?,?,?)',
-          [`Trimmed: ${media.name}`, outputUrl, media.pillar, media.type, media.originalName, 0],
+          [`Trimmed: ${media.originalName||media.name}`, fileUrl, media.pillar, 'video', media.originalName||media.name, 0],
           function(e) {
             if (e) return res.status(500).json({ error: e.message });
-            res.json({ id: this.lastID, url: outputUrl });
+            res.json({ id: this.lastID, url: fileUrl });
           }
         );
-      })
-      .on('error', e => { console.error('FFmpeg Error:', e); res.status(500).json({ error: 'Video processing failed' }); })
-      .run();
+      };
+
+      if (hasCloudinary) {
+        cloudinary.config({ cloud_name: process.env.CLOUDINARY_NAME, api_key: process.env.CLOUDINARY_KEY, api_secret: process.env.CLOUDINARY_SECRET });
+        cloudinary.uploader.upload(outputPath, { folder: 'gig_portfolio/trimmed', resource_type: 'video' }, (error, result) => {
+          try { fs.unlinkSync(outputPath); } catch(_) {}
+          if (error) return res.status(500).json({ error: error.message });
+          saveToDb(result.secure_url);
+        });
+      } else {
+        saveToDb(outputLocalUrl);
+      }
+    } catch(e) {
+      if (tmpPath) { try { fs.unlinkSync(tmpPath); } catch(_) {} }
+      try { fs.unlinkSync(outputPath); } catch(_) {}
+      console.error('Trim error:', e);
+      res.status(500).json({ error: 'Video processing failed: ' + e.message });
+    }
   });
 });
 
@@ -1282,33 +1323,61 @@ app.delete('/api/media/all', requireAuth, requireDb, (req, res) => {
 app.post('/api/gphotos/album-scrape', requireAuth, async (req, res) => {
   const { albumUrl, pillar } = req.body;
   if (!albumUrl) return res.status(400).json({ error: 'albumUrl required' });
+
+  // Fetch HTML following up to 5 redirects
+  const fetchFollowRedirects = (urlStr, redirectsLeft) => new Promise((resolve, reject) => {
+    if (redirectsLeft <= 0) return reject(new Error('Too many redirects'));
+    const proto = urlStr.startsWith('https') ? require('https') : require('http');
+    const opts = new URL(urlStr);
+    proto.get({ hostname: opts.hostname, path: opts.pathname + opts.search,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5'
+      }
+    }, r => {
+      if (r.statusCode >= 301 && r.statusCode <= 308 && r.headers.location) {
+        const loc = r.headers.location.startsWith('http') ? r.headers.location : opts.origin + r.headers.location;
+        r.resume();
+        return resolve(fetchFollowRedirects(loc, redirectsLeft - 1));
+      }
+      let data = '';
+      r.on('data', d => data += d);
+      r.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+
   try {
-    const https = require('https');
-    const html = await new Promise((resolve, reject) => {
-      const opts = new URL(albumUrl);
-      https.get({ hostname: opts.hostname, path: opts.pathname + opts.search, headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; AntiGravityBot/1.0)',
-        'Accept': 'text/html,application/xhtml+xml'
-      }}, r => {
-        let data = '';
-        r.on('data', d => data += d);
-        r.on('end', () => resolve(data));
-      }).on('error', reject);
-    });
-    // Extract image URLs from Google Photos embedded data
-    // Pattern: ["https://lh3.googleusercontent.com/...", null, null, width, height]
-    const imgPattern = /\["(https:\/\/lh3\.googleusercontent\.com\/[^"]+)"(?:,null)*,(\d+),(\d+)\]/g;
+    const html = await fetchFollowRedirects(albumUrl, 5);
     const seen = new Set();
     const images = [];
+
+    // Pattern 1: standard JSON array format in initData
+    const p1 = /\["(https:\/\/lh3\.googleusercontent\.com\/[^"]{40,})"(?:,(?:null|\d+))*,(\d+),(\d+)\]/g;
     let m;
-    while ((m = imgPattern.exec(html)) !== null) {
-      const url = m[1];
+    while ((m = p1.exec(html)) !== null) {
+      const url = m[1].replace(/=w\d+.*$/, '');
       if (seen.has(url)) continue;
       seen.add(url);
-      // Request high-res version by appending =w1920-h1080
       images.push({ url: url + '=w1200', width: m[2], height: m[3] });
     }
-    if (images.length === 0) return res.status(422).json({ error: 'No photos found. Make sure the album is set to "Anyone with the link can view".' });
+
+    // Pattern 2: any lh3 URL with long ID (fallback — catches more formats)
+    if (images.length === 0) {
+      const p2 = /"(https:\/\/lh3\.googleusercontent\.com\/([A-Za-z0-9_\-]{50,})[^"]*)"/g;
+      while ((m = p2.exec(html)) !== null) {
+        const base = m[1].replace(/=w\d+.*$/, '').replace(/=[shc]\d+.*$/, '');
+        if (seen.has(base)) continue;
+        seen.add(base);
+        images.push({ url: base + '=w1200', width: 0, height: 0 });
+      }
+    }
+
+    if (images.length === 0) {
+      return res.status(422).json({
+        error: 'No photos found in this album. Make sure: 1) The album is shared as "Anyone with the link" 2) The URL is correct 3) Try copying the link directly from Google Photos'
+      });
+    }
     res.json({ photos: images, count: images.length });
   } catch(e) {
     res.status(500).json({ error: e.message });
@@ -1668,67 +1737,4 @@ app.post('/api/schedule', requireAuth, requireDb, (req, res) => {
     'INSERT INTO schedule (pillar,date,time,topic,caption,mediaUrl,status) VALUES (?,?,?,?,?,?,?)',
     [pillar||'', date, time||'', topic||'', caption||'', mediaUrl||'', status||'Scheduled'],
     function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true, id: this.lastID });
-    }
-  );
-});
-
-app.put('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
-  const { pillar, date, time, topic, caption, mediaUrl, status } = req.body;
-  db.run(
-    'UPDATE schedule SET pillar=?, date=?, time=?, topic=?, caption=?, mediaUrl=?, status=? WHERE id=?',
-    [pillar||'', date||'', time||'', topic||'', caption||'', mediaUrl||'', status||'Scheduled', req.params.id],
-    err => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    }
-  );
-});
-
-app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
-  db.run('DELETE FROM schedule WHERE id=?', [req.params.id], err => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
-
-
-// ── START SERVER ──────────────────────────────────────────────────────────────
-
-// ── Health check (used by Render.com healthCheckPath) ─────────────────────────
-
-// ── CSV Export for leads ──────────────────────────────────────────────────────
-app.get('/api/leads/export-csv', requireAuth, requireDb, (req, res) => {
-  db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const cols = ['id','name','phone','email','eventType','pillar','eventDate','budget','message','status','notes','timestamp'];
-    const lines = [cols.join(',')];
-    (rows || []).forEach(r => {
-      lines.push(cols.map(c => {
-        const v = (r[c] === null || r[c] === undefined) ? '' : String(r[c]);
-        return '"' + v.replace(/"/g, '""') + '"';
-      }).join(','));
-    });
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="leads.csv"');
-    res.send(lines.join('\n'));
-  });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });
-});
-
-// ── Global error guards ──────────────────────────────────────────────────────
-process.on('uncaughtException', (err) => {
-  console.error('[FATAL] Uncaught exception:', err.message);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error('[FATAL] Unhandled rejection:', reason);
-});
-
-app.listen(PORT, () => {
-  console.log(`Anti-Gravity Studio server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+      if (err) return res.status(500).json({ error: err.

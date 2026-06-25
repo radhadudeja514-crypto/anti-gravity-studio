@@ -423,54 +423,7 @@
       <p style="color:var(--text-muted);margin-top:0.75rem;max-width:520px;">Real moments from real celebrations — watch Radhaa in action.</p>
     </div>
     <div id="radhaVideoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
-      <div class="video-card reveal">
-        <div class="video-thumb" onclick="openVideo('YGqdpcUXBpY',this)">
-          <img src="https://img.youtube.com/vi/YGqdpcUXBpY/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
-      <div class="video-card reveal delay-1">
-        <div class="video-thumb" onclick="openVideo('SupXWnnW414',this)">
-          <img src="https://img.youtube.com/vi/SupXWnnW414/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
-      <div class="video-card reveal delay-2">
-        <div class="video-thumb" onclick="openVideo('5_LHEZduqYo',this)">
-          <img src="https://img.youtube.com/vi/5_LHEZduqYo/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
-      <div class="video-card reveal delay-3">
-        <div class="video-thumb" onclick="openVideo('UZ9kZyxQYT8',this)">
-          <img src="https://img.youtube.com/vi/UZ9kZyxQYT8/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
-      <div class="video-card reveal">
-        <div class="video-thumb" onclick="openVideo('cqRF5XThc50',this)">
-          <img src="https://img.youtube.com/vi/cqRF5XThc50/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
-      <div class="video-card reveal delay-1">
-        <div class="video-thumb" onclick="openVideo('FCGjyfjQ_VI',this)">
-          <img src="https://img.youtube.com/vi/FCGjyfjQ_VI/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
-      <div class="video-card reveal delay-2">
-        <div class="video-thumb" onclick="openVideo('_FaCT7iPYZ0',this)">
-          <img src="https://img.youtube.com/vi/_FaCT7iPYZ0/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
-      <div class="video-card reveal delay-3">
-        <div class="video-thumb" onclick="openVideo('7--X_RxyMK8',this)">
-          <img src="https://img.youtube.com/vi/7--X_RxyMK8/mqdefault.jpg" alt="Radhaa Performance" loading="lazy"/>
-          <div class="play-btn">▶</div>
-        </div>
-      </div>
+      <!-- Videos loaded dynamically from admin panel — upload yours via Admin → YouTube or Upload tab -->
     </div>
   </div>
 </section>
@@ -1042,7 +995,7 @@ loadGoogleReviews();
       if(m.type==='youtube'){
         var id=(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
         if(!id) return;
-        card.innerHTML=`<div class="video-thumb" onclick="openVideo('${id}',this)"><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${id}/mqdefault.jpg'"/><div class="play-btn">▶</div></div>`;
+        card.innerHTML=`<div class="video-thumb" onclick="openVideo('${id}',this)"><img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" loading="lazy" onerror="if(this.src.includes('mqdefault')){this.src='https://img.youtube.com/vi/${id}/default.jpg';}else{this.style.display='none';}"/><div class="play-btn">▶</div></div>`;
       } else if(m.type==='video'){
         card.innerHTML=`<div class="video-thumb"><video src="${m.url}" muted loop playsinline style="width:100%;height:100%;object-fit:cover" onmouseenter="this.play()" onmouseleave="this.pause()"></video><div class="play-btn">▶</div></div>`;
       } else {
@@ -1066,4 +1019,4 @@ loadGoogleReviews();
     }).catch(function(){});
   })();
 </body>
-</html>
+</html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              

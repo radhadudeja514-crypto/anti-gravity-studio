@@ -176,28 +176,32 @@
 
 <script>
 (function(){
-  var videos_veronica = ["YGqdpcUXBpY", "SupXWnnW414", "UZ9kZyxQYT8"];
-  var titles_veronica = ["YGqdpcUXBpY", "SupXWnnW414", "UZ9kZyxQYT8"];
+  // Load video IDs from admin DB — no hardcoded placeholders
+  var videos_veronica = [];
   var cur_veronica = 0;
   var timer_veronica = null;
 
   function initReel_veronica(){
+    if (!videos_veronica.length) return; // nothing to show
     var strip = document.getElementById('vreel-strip-veronica');
     var dots  = document.getElementById('vreel-dots-veronica');
+    if (!strip || !dots) return;
+    strip.innerHTML = ''; dots.innerHTML = '';
     videos_veronica.forEach(function(id, i){
       var thumb = document.createElement('img');
       thumb.src = 'https://i.ytimg.com/vi/'+id+'/mqdefault.jpg';
-      thumb.style.cssText = 'width:100px;height:56px;object-fit:cover;border-radius:0.4rem;cursor:pointer;opacity:'+(i===0?'1':'0.5')+';flex-shrink:0;transition:opacity .3s;border:2px solid '+(i===0?'"#8B5CF6"':'transparent');
+      thumb.onerror = function(){ this.src='https://img.youtube.com/vi/'+id+'/default.jpg'; };
+      thumb.style.cssText = 'width:100px;height:56px;object-fit:cover;border-radius:0.4rem;cursor:pointer;opacity:'+(i===0?'1':'0.5')+';flex-shrink:0;transition:opacity .3s;border:2px solid '+(i===0?'#8B5CF6':'transparent');
       thumb.onclick = function(){ playReel_veronica(i); };
       thumb.id = 'vreel-th-veronica-'+i;
       strip.appendChild(thumb);
       var dot = document.createElement('div');
-      dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:'+(i===0?'"#8B5CF6"':'rgba(255,255,255,0.3)')+';cursor:pointer;transition:all .3s;';
+      dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:'+(i===0?'#8B5CF6':'rgba(255,255,255,0.3)')+';cursor:pointer;transition:all .3s;';
       dot.onclick = function(){ playReel_veronica(i); };
       dot.id = 'vreel-dot-veronica-'+i;
       dots.appendChild(dot);
     });
-    document.getElementById('vreel-strip-veronica').style.display='flex';
+    strip.style.display='flex';
     playReel_veronica(0);
   }
 
@@ -206,18 +210,16 @@
     cur_veronica = idx;
     var id = videos_veronica[idx];
     var container = document.getElementById('vreel-veronica');
+    if (!container) return;
     container.innerHTML = '<iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/'+id+'?autoplay=1&mute=1&rel=0&modestbranding=1&controls=0&showinfo=0&loop=1&playlist='+id+'" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
-    // Update title
     var titleEl = document.getElementById('vreel-title-veronica');
-    if(titleEl) titleEl.textContent = ''; // titles fetched dynamically
-    // Update dots/thumbs
+    if(titleEl) titleEl.textContent = '';
     videos_veronica.forEach(function(_, i){
       var th  = document.getElementById('vreel-th-veronica-'+i);
       var dot = document.getElementById('vreel-dot-veronica-'+i);
-      if(th)  { th.style.opacity  = i===idx?'1':'0.5'; th.style.border='2px solid '+(i===idx?'"#8B5CF6"':'transparent'); }
-      if(dot) dot.style.background = i===idx?'"#8B5CF6"':'rgba(255,255,255,0.3)';
+      if(th)  { th.style.opacity  = i===idx?'1':'0.5'; th.style.border='2px solid '+(i===idx?'#8B5CF6':'transparent'); }
+      if(dot) dot.style.background = i===idx?'#8B5CF6':'rgba(255,255,255,0.3)';
     });
-    // Auto-advance after 45s
     timer_veronica = setTimeout(function(){
       playReel_veronica((idx+1) % videos_veronica.length);
     }, 45000);
@@ -225,21 +227,31 @@
 
   window.vreelNext = window.vreelNext || function(){};
   window.vreelPrev = window.vreelPrev || function(){};
-
-  // Override for this pillar
   var _origNext = window.vreelNext;
   window.vreelNext = function(p){
-    if(p==='veronica') playReel_veronica((cur_veronica+1) % videos_veronica.length);
+    if(p==='veronica'&&videos_veronica.length) playReel_veronica((cur_veronica+1) % videos_veronica.length);
     else _origNext(p);
   };
   var _origPrev = window.vreelPrev;
   window.vreelPrev = function(p){
-    if(p==='veronica') playReel_veronica((cur_veronica-1+videos_veronica.length) % videos_veronica.length);
+    if(p==='veronica'&&videos_veronica.length) playReel_veronica((cur_veronica-1+videos_veronica.length) % videos_veronica.length);
     else _origPrev(p);
   };
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', initReel_veronica);
-  else initReel_veronica();
+  // Load from DB
+  fetch('/api/media/public?pillar=veronica&fallback=main').then(function(r){return r.json();}).then(function(items){
+    var ytItems = (Array.isArray(items)?items:[]).filter(function(m){return m.type==='youtube';});
+    videos_veronica = ytItems.map(function(m){
+      var match = m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : null;
+    }).filter(Boolean);
+    if (videos_veronica.length) initReel_veronica();
+    // Also hide vreel section if no videos
+    else {
+      var reelSec = document.querySelector('.vreel-section, [id*="vreel"]');
+      if (reelSec) { var sec = reelSec.closest('section'); if(sec) sec.style.display='none'; }
+    }
+  }).catch(function(){});
 })();
 </script>
 
@@ -710,7 +722,7 @@
   <div class="container">
     <div class="reveal text-center" style="margin-bottom:2rem;"><div class="section-label">See Veronica Live</div><h2 class="display-sm">Corporate <span class="gradient-text-corp">Moments</span></h2></div>
     <div id="veronicaVideoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
-      <div class="corp-vid-card reveal"><div class="video-thumb" onclick="openVideo('YGqdpcUXBpY',this)"><img src="https://img.youtube.com/vi/YGqdpcUXBpY/hqdefault.jpg" alt="Veronica" loading="lazy"/><div class="play-btn">▶</div></div></div>
+      <!-- Videos loaded from admin panel -->
     </div>
   </div>
 </section>
@@ -918,16 +930,6 @@ loadGoogleReviews();
       if(m.type==='youtube'){
         var id=(m.name.match(/^youtube_([a-zA-Z0-9_-]{11})/)||[])[1];
         if(!id) return;
-        card.innerHTML=`<div class="video-thumb" onclick="openVideo('${id}',this)"><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${id}/mqdefault.jpg'"/><div class="play-btn">▶</div></div>`;
+        card.innerHTML=`<div class="video-thumb" onclick="openVideo('${id}',this)"><img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" loading="lazy" onerror="if(this.src.includes('mqdefault')){this.src='https://img.youtube.com/vi/${id}/default.jpg';}else{this.style.display='none';}"/><div class="play-btn">▶</div></div>`;
       } else if(m.type==='video'){
-        card.innerHTML=`<div class="video-thumb"><video src="${m.url}" muted loop playsinline style="width:100%;height:100%;object-fit:cover" onmouseenter="this.play()" onmouseleave="this.pause()"></video><div class="play-btn">▶</div></div>`;
-      } else {
-        card.innerHTML=`<div class="video-thumb" style="overflow:hidden"><img src="${m.url}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"/></div>`;
-      }
-      grid.appendChild(card);
-    });
-  }).catch(function(){});
-})();
-</script>
-</body>
-</html>
+        card.innerHTML=`<div class="video-thumb">

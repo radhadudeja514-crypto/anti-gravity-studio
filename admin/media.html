@@ -119,7 +119,7 @@
         <label class="form-label">Pillar (where it shows)</label>
         <select class="form-select" id="uPillar">
           <option value="radha">💍 Radhaa — Wedding pages</option>
-          <option value="corporate">🎤 Corporate — Veronica pages</option>
+          <option value="veronica">🎬 Veronica — Corporate pages</option>
           <option value="tour">🌍 Tour — Trail pages</option>
           <option value="main">🌐 Main — Homepage</option>
         </select>
@@ -152,7 +152,7 @@
         <select id="ytPillar" class="form-select">
           <option value="main">🌐 Main</option>
           <option value="radha">💍 Radhaa</option>
-          <option value="corporate">🎤 Corporate</option>
+          <option value="veronica">🎬 Veronica</option>
           <option value="tour">🌍 Tour</option>
         </select>
       </div>
@@ -232,7 +232,7 @@
             <label class="form-label">Save to pillar</label>
             <select id="gpPillar" class="form-select">
               <option value="radha">💍 Radhaa</option>
-              <option value="corporate">🎤 Corporate</option>
+              <option value="veronica">🎬 Veronica</option>
               <option value="tour">🌍 Tour</option>
               <option value="main">🌐 Main</option>
             </select>
@@ -356,7 +356,7 @@
         <label class="form-label">Save to pillar</label>
         <select id="cropPillar" class="form-select">
           <option value="radha">💍 Radhaa</option>
-          <option value="corporate">🎤 Corporate</option>
+          <option value="veronica">🎬 Veronica</option>
           <option value="tour">🌍 Tour</option>
           <option value="main">🌐 Main</option>
         </select>
@@ -775,8 +775,8 @@ async function trimVideo(){
 
 /* ── AI BULK UPLOAD ── */
 var aiBulkFiles = []; // {file, pillar, previewUrl}
-var PILLAR_OPTIONS = ['radha','corporate','tour','main'];
-var PILLAR_LABELS  = {'radha':'💍 Radhaa','corporate':'🎤 Corp','tour':'🌍 Tour','main':'🌐 Main'};
+var PILLAR_OPTIONS = ['radha','veronica','tour','main'];
+var PILLAR_LABELS  = {'radha':'💍 Radhaa','veronica':'🎬 Veronica','tour':'🌍 Tour','main':'🌐 Main'};
 
 document.getElementById('aiBulkDrop').addEventListener('click',function(){document.getElementById('aiBulkInput').click();});
 document.getElementById('aiBulkInput').addEventListener('change',function(){if(this.files.length)aiBulkLoadFiles(this.files);});
@@ -924,3 +924,4 @@ async function saveScrapedPhotos(){
 </script>
 </body>
 </html>
+     
