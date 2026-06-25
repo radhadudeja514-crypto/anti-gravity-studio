@@ -1767,4 +1767,160 @@ setInterval(async () => {
           db.run("UPDATE instagram_queue SET status='posted',postedAt=? WHERE id=?",
             [new Date().toISOString(), post.id]);
           console.log('[Instagram] Posted:', post.caption.slice(0, 30), '→ ID:', postId);
-      
+        } catch(e) {
+          console.error('[Instagram] Failed post', post.id, ':', e.message);
+          db.run("UPDATE instagram_queue SET status='failed',errorMsg=? WHERE id=?",
+            [e.message, post.id]);
+        }
+      }
+    }
+  );
+}, 2 * 60 * 1000);
+
+app.get('/api/agent/instagram/best-times', requireAuth, (_req, res) => {
+  res.json([
+    { day: 'Monday',    time: '09:00', score: 82 },
+    { day: 'Wednesday', time: '11:00', score: 91 },
+    { day: 'Friday',    time: '18:00', score: 88 },
+    { day: 'Saturday',  time: '10:00', score: 94 },
+    { day: 'Sunday',    time: '19:00', score: 87 },
+  ]);
+});
+
+app.get('/api/agent/marketing/all-pillars', requireAuth, requireDb, (_req, res) => {
+  db.all('SELECT pillar, COUNT(*) as mediaCount FROM media GROUP BY pillar', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const pillars = [
+      { id: 'radha',    name: 'Radhaa (Wedding)', icon: '💍' },
+      { id: 'veronica', name: 'Corporate',         icon: '🎙️' },
+      { id: 'tour',     name: 'Tour',              icon: '🧭' },
+      { id: 'main',     name: 'Main',              icon: '🌐' },
+    ];
+    res.json(pillars.map(p => ({
+      ...p,
+      mediaCount: (rows.find(r => r.pillar === p.id) || { mediaCount: 0 }).mediaCount,
+    })));
+  });
+});
+
+app.post('/api/agent/marketing/generate', requireAuth, (req, res) => {
+  const { pillar = 'radha', type = 'hook' } = req.body || {};
+  const T = {
+    radha: {
+      hook: '✨ Every love story deserves to be told beautifully.\nRadhaa brings your wedding to life with heartfelt hosting, emotional rituals & unforgettable moments.\n💍 Inquire now → antigravitystudio.com/booking\n\n#WeddingMC #WeddingHost #IndianWedding #Sangeet',
+      caption: 'From the first dance to the last toast — every moment curated with love.\nRadhaa is where emotions meet elegance.\n\n📲 DM to check availability!\n\n#WeddingCeremony #WeddingIndia #SangeetNight',
+      story: '💕 Your wedding deserves a storyteller. Not just an MC — an experience architect.\nSwipe up to see how we transform your big day. ✨',
+      reel: '🎬 POV: Your wedding MC just made everyone cry (happy tears) 😭✨\n💍 Link in bio!\n\n#WeddingReel #MCLife #WeddingMagic',
+    },
+    veronica: {
+      hook: '🎤 Your event is only as good as the energy in the room.\nVeronica — Corporate MC — keeps your audience engaged, energised & entertained.\n📩 Let\'s talk!\n\n#CorporateMC #EventHost #Emcee',
+      caption: 'From product launches to leadership summits — Veronica has hosted them all.\n\n📲 DM for event packages!\n\n#CorporateHost #EventEmcee #Veronica',
+      story: '🏢 Your next corporate event needs the right voice.\nVeronica delivers professionalism + energy every time. 🎤',
+      reel: '🎬 When your conference needs that energy boost 🔥\nVeronica — Corporate MC who owns the stage.\n📩 Link in bio!\n\n#EventReel #CorporateMC',
+    },
+    tour: {
+      hook: '🌍 Not all who wander are lost — some are just with the wrong guide.\nThe Trail Curator takes you beyond the tourist trail.\n🧭 Book: antigravitystudio.com/booking\n\n#TrailCurator #HeritageTours',
+      caption: 'Every city has a soul. We help you find it.\nHidden alleys, untold stories, forgotten flavours.\n\n📲 DM to plan your trail!\n\n#CityWalk #HeritageTour #TravelIndia',
+      story: '🏛️ The best travel memories aren\'t from tourist spots.\nThey\'re from the stories in between.\nSwipe up! 🧭',
+      reel: '🎬 When you thought you knew the city… 😮\nThe Trail Curator shows you what maps don\'t.\n🌍 Link in bio!\n\n#TrailReel #CityWalk',
+    },
+  };
+  const pk = (pillar === 'main' || pillar === 'corporate') ? 'radha' : pillar;
+  const pt = T[pk] || T.radha;
+  const fullCaption = pt[type] || pt.hook;
+  res.json({ fullCaption, content: fullCaption, text: fullCaption });
+});
+
+app.get('/api/agent/design/theme/:pillar', requireDb, (req, res) => {
+  db.get('SELECT value FROM config WHERE key=?', ['theme_' + req.params.pillar], (err, row) => {
+    if (row && row.value) {
+      try { return res.json({ pillar: req.params.pillar, success: true, theme: JSON.parse(row.value) }); } catch (_) {}
+    }
+    res.json({ pillar: req.params.pillar, theme: null });
+  });
+});
+
+app.post('/api/agent/design/save-theme', requireAuth, requireDb, (req, res) => {
+  const { pillar, ...theme } = req.body;
+  if (!pillar) return res.status(400).json({ error: 'pillar required' });
+  db.run('INSERT OR REPLACE INTO config (key,value) VALUES (?,?)',
+    ['theme_' + pillar, JSON.stringify(theme)],
+    err => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+// ── SCHEDULE ──────────────────────────────────────────────────────────────────
+app.get('/api/schedule', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT * FROM schedule ORDER BY date ASC, time ASC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows || []);
+  });
+});
+
+app.post('/api/schedule', requireAuth, requireDb, (req, res) => {
+  const { pillar, date, time, topic, caption, mediaUrl, status } = req.body;
+  if (!date) return res.status(400).json({ error: 'date required' });
+  db.run(
+    'INSERT INTO schedule (pillar,date,time,topic,caption,mediaUrl,status) VALUES (?,?,?,?,?,?,?)',
+    [pillar||'', date, time||'', topic||'', caption||'', mediaUrl||'', status||'Scheduled'],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, id: this.lastID });
+    }
+  );
+});
+
+app.put('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
+  const { pillar, date, time, topic, caption, mediaUrl, status } = req.body;
+  db.run(
+    'UPDATE schedule SET pillar=?, date=?, time=?, topic=?, caption=?, mediaUrl=?, status=? WHERE id=?',
+    [pillar||'', date||'', time||'', topic||'', caption||'', mediaUrl||'', status||'Scheduled', req.params.id],
+    err => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+app.delete('/api/schedule/:id', requireAuth, requireDb, (req, res) => {
+  db.run('DELETE FROM schedule WHERE id=?', [req.params.id], err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+app.get('/api/leads/export-csv', requireAuth, requireDb, (req, res) => {
+  db.all('SELECT * FROM leads ORDER BY timestamp DESC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const cols = ['id','name','phone','email','eventType','pillar','eventDate','budget','message','status','notes','timestamp'];
+    const lines = [cols.join(',')];
+    (rows || []).forEach(r => {
+      lines.push(cols.map(c => {
+        const v = (r[c] === null || r[c] === undefined) ? '' : String(r[c]);
+        return '"' + v.replace(/"/g, '""') + '"';
+      }).join(','));
+    });
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="leads.csv"');
+    res.send(lines.join('\n'));
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled rejection:', reason);
+});
+
+app.listen(PORT, () => {
+  console.log(`Anti-Gravity Studio server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
